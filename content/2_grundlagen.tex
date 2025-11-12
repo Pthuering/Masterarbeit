@@ -10,10 +10,45 @@
         \subsubsection{Grundlagen der Sprachverarbeitung}
         \label{sec:2.1.1}
         
-        % Ziel: 1,5 Seiten
-        % - Transformer-Architektur (kompakt)
-        % - Vortrainierte Sprachmodelle
-        % - Transfer Learning
+        Die automatisierte Verarbeitung und Transformation von Verkehrsinformationen stellt hohe Anforderungen an Natural Language Processing-Systeme. Präzision, Kontextverständnis und die Fähigkeit zur semantischen Umformulierung sind dabei zentrale Anforderungen. Moderne Ansätze der Sprachverarbeitung basieren auf der Transformer-Architektur, die seit ihrer Einführung im Jahr 2017 die Entwicklung von Sprachmodellen maßgeblich geprägt hat. Das in dieser Arbeit verwendete Modell LeoLM-7B baut auf dieser Architektur auf und nutzt deren Vorteile für die Verarbeitung deutschsprachiger Texte.
+        
+        \paragraph{Transformer-Architektur}
+        
+        Die Transformer-Architektur wurde 2017 von Vaswani et al. mit dem wegweisenden Paper „Attention is All You Need" eingeführt \cite{vaswani2017attention}. Im Gegensatz zu vorherigen Ansätzen wie Recurrent Neural Networks (RNNs) oder Long Short-Term Memory (LSTM) verzichtet die Transformer-Architektur vollständig auf rekurrente Strukturen und basiert stattdessen auf dem Attention-Mechanismus. Dieser fundamentale Paradigmenwechsel ermöglicht die parallele Verarbeitung von Sequenzen und führt zu deutlich schnelleren Trainingszeiten sowie besserer Skalierbarkeit.
+        
+        Das Kernprinzip der Transformer-Architektur ist der Self-Attention-Mechanismus \cite{vaswani2017attention}. Dieser ermöglicht es jedem Token in einer Sequenz, auf alle anderen Tokens im Kontext zuzugreifen und deren Relevanz für die eigene Repräsentation zu bewerten. Durch den Einsatz von Multi-Head Attention werden mehrere parallele Attention-Mechanismen verwendet, die unterschiedliche Aspekte der Kontextbeziehungen erfassen können \cite{vaswani2017attention}. Diese Architektur ermöglicht es dem Modell, komplexe syntaktische und semantische Abhängigkeiten auch über große Distanzen im Text hinweg zu modellieren, ohne unter dem Vanishing-Gradient-Problem zu leiden, das RNNs bei langen Sequenzen beeinträchtigt.
+        
+        Transformer-basierte Modelle lassen sich in drei Hauptkategorien einteilen: Encoder-Only-Modelle wie BERT \cite{devlin2018bert}, die primär für bidirektionale Textklassifikation und Embeddings konzipiert sind, Decoder-Only-Modelle wie die GPT-Serie \cite{radford2018improving, radford2019language}, die für autoregressive Textgenerierung optimiert sind, sowie Encoder-Decoder-Architekturen wie der ursprüngliche Transformer \cite{vaswani2017attention} und T5 \cite{raffel2020exploring}, die vor allem für Übersetzungsaufgaben entwickelt wurden. Für die in dieser Arbeit behandelte Aufgabe der Textgenerierung und -transformation ist die Decoder-Only-Architektur besonders geeignet, da sie speziell für die sequenzielle Erzeugung von Text konzipiert wurde.
+        
+        \paragraph{Vortrainierte Sprachmodelle}
+        
+        Ein zentrales Konzept moderner NLP-Systeme ist das Pretraining von Sprachmodellen auf großen, unlabeled Textkorpora. Durch Self-Supervised Learning, bei dem das Modell darauf trainiert wird, das jeweils nächste Token in einer Sequenz vorherzusagen \cite{radford2018improving}, entwickeln diese Modelle ein umfassendes Sprachverständnis inklusive Syntax, Semantik und implizitem Weltwissen. Zu den einflussreichsten vortrainierten Modellen gehören BERT \cite{devlin2018bert} mit seinem bidirektionalen Masked Language Modeling-Ansatz, die GPT-Serie \cite{radford2018improving, radford2019language} für autoregressive Textgenerierung sowie T5 \cite{raffel2020exploring} mit seinem universellen Text-to-Text-Framework.
+        
+        Für die vorliegende Arbeit ist insbesondere die Mistral-7B-Architektur von Bedeutung, da sie die Grundlage für das verwendete LeoLM-Modell bildet. Mistral 7B \cite{jiang2023mistral} ist ein hocheffizienter Decoder-Only-Transformer mit 7 Milliarden Parametern, der mehrere innovative Architekturmerkmale aufweist. Grouped-Query Attention (GQA) reduziert die Größe des Key-Value-Cache und ermöglicht schnellere Inferenz \cite{jiang2023mistral}. Sliding Window Attention erlaubt die effiziente Verarbeitung langer Kontexte, während der Rolling Buffer Cache die Speichernutzung optimiert \cite{jiang2023mistral}. Mit 7 Milliarden Parametern stellt Mistral einen Sweet Spot zwischen Modellleistung und Ressourceneffizienz dar und übertrifft in Benchmarks viele deutlich größere Modelle \cite{jiang2023mistral}. Als Open-Source-Modell unter Apache 2.0 Lizenz ist es besonders für lokale Ausführung und Fine-Tuning geeignet.
+        
+        Ein wichtiger Unterschied besteht zwischen Base Models und Instruct Models. Base Models wie Mistral-7B \cite{jiang2023mistral} sind auf reines Language Modeling trainiert \cite{radford2019language} und setzen primär Texte fort, ohne notwendigerweise expliziten Anweisungen zu folgen. Sie sind als Ausgangspunkt für aufgabenspezifisches Fine-Tuning konzipiert. Instruct Models hingegen durchlaufen zusätzlich ein Instruction Tuning \cite{wei2021finetuned}, bei dem sie mittels Supervised Fine-Tuning auf Instruktionsdatensätzen trainiert werden, um gezielt Anweisungen zu befolgen. Optional kann dieser Prozess durch Reinforcement Learning from Human Feedback (RLHF) \cite{ouyang2022training} weiter verfeinert werden. Mistral bietet beide Varianten an: Mistral-7B als Base Model und Mistral-7B-Instruct als instruction-tuned Version \cite{jiang2023mistral}. Der detaillierte Vergleich und die Auswahlbegründung zwischen diesen Varianten erfolgt in Kapitel 4.
+        
+        Für deutschsprachige Anwendungen ist die LeoLM-Familie von besonderer Relevanz. Diese Modelle nutzen Mistral-7B als Basis und durchlaufen ein Continued Pretraining auf deutschen Textkorpora \cite{leolm2023}. Das in dieser Arbeit verwendete Modell leo-mistral-hessianai-7b ist eine Base-Variante, die speziell für die deutsche Sprache optimiert wurde \cite{leolm2023}. Diese Adaption kombiniert die architektonischen Vorteile und die Effizienz von Mistral mit erhöhter Sprachkompetenz im Deutschen und erzielt dadurch bessere Ergebnisse für deutschsprachige Anwendungen als rein englischsprachige Basismodelle. Die Tokenization erfolgt bei Mistral mittels Byte Pair Encoding (BPE) mit einem Vokabular von 32.000 Tokens \cite{jiang2023mistral}, wobei LeoLM einen an die deutsche Morphologie angepassten Tokenizer verwendet \cite{leolm2023}, der besser mit Komposita, Umlauten und anderen sprachspezifischen Besonderheiten umgehen kann.
+        
+        \paragraph{Transfer Learning}
+        
+        Das Konzept des Transfer Learning bildet die theoretische Grundlage für die Nutzung vortrainierter Modelle in spezifischen Anwendungsdomänen. Transfer Learning bezeichnet den Wissenstransfer von einer Source Domain, in der das Modell vortrainiert wurde, zu einer Target Domain, für die es angepasst werden soll \cite{pan2010survey}. Dieser Ansatz reduziert den Bedarf an aufgabenspezifischen Trainingsdaten und die erforderliche Trainingszeit erheblich.
+        
+        Das etablierte Pretrain-Finetune-Paradigma verläuft in zwei Phasen: Zunächst erfolgt das Pretraining auf großen, unlabeled Textkorpora mittels unsupervised Learning \cite{radford2018improving}, wodurch das Modell grundlegendes Sprachverständnis, syntaktische Strukturen, semantische Zusammenhänge und implizites Weltwissen erwirbt. In der zweiten Phase wird das Modell mittels Fine-Tuning auf eine spezifische Aufgabe angepasst \cite{howard2018universal}, wobei supervised Learning mit aufgabenspezifischen Daten zum Einsatz kommt. Im Kontext dieser Arbeit bedeutet dies die Spezialisierung auf die Transformation von LVB-Verkehrsanweisungen.
+        
+        Die Vorteile von Transfer Learning sind vielfältig: Howard und Ruder zeigten mit ULMFiT, dass durch Transfer Learning mit nur 100 gelabelten Beispielen eine vergleichbare Performance erreicht werden kann wie mit 10.000 Beispielen beim Training from-scratch \cite{howard2018universal}. Vortrainierte Gewichte dienen als optimaler Startpunkt und beschleunigen das Training erheblich. Zudem führt das bereits vorhandene Sprachverständnis zu besserer Generalisierung auf neue Daten \cite{pan2010survey}.
+        
+        Dennoch bestehen Herausforderungen: Catastrophic Forgetting bezeichnet den Verlust vortrainierter Fähigkeiten während des Fine-Tunings, dem in Kapitel 2.2.4 weiter nachgegangen wird. Der Domain Shift zwischen Pretraining-Daten und Zieldomäne \cite{pan2010survey} kann zu Leistungseinbußen führen, insbesondere wenn sich Vokabular oder Sprachstil deutlich unterscheiden. Bei kleinen Datensätzen besteht zudem die Gefahr des Overfittings, was ebenfalls in Kapitel 2.2.4 behandelt wird.
+        
+        Für die vorliegende Arbeit ist besonders relevant, dass LeoLM bereits auf umfangreichen deutschen Textkorpora vortrainiert wurde \cite{leolm2023}, was eine solide Basis für die weitere Spezialisierung bildet. Das Fine-Tuning auf den vergleichsweise kleinen Datensatz der LVB-Verkehrsanweisungen wird durch Transfer Learning erst praktikabel und ermöglicht die notwendige domänenspezifische Anpassung an die fachsprachlichen Anforderungen des Verkehrssektors.
+        
+        % LITERATUR für dieses Kapitel:
+        % - Vaswani et al. (2017): "Attention Is All You Need"
+        % - Devlin et al. (2018): "BERT: Pre-training of Deep Bidirectional Transformers"
+        % - Radford et al. (2018-2023): GPT-Serie
+        % - Howard & Ruder (2018): "ULMFiT: Universal Language Model Fine-tuning"
+        % - Pan & Yang (2010): "A Survey on Transfer Learning"
+        % - LeoLM-Dokumentation
         
         
         \subsubsection{NLP-Anwendungen im Verkehrssektor}
@@ -77,6 +112,39 @@
         % - Instruction Tuning
         % - Template-Design für Automatisierung
         % - Zero-Shot (kurz)
+        
+        
+        \subsubsection{Datensätze für Fine-Tuning}
+        \label{sec:2.2.3}
+        
+        % Ziel: 1,5-2 Seiten
+        % - Struktur von Input-Output-Paaren für Supervised Fine-Tuning
+        % - Annotationsrichtlinien und Qualitätssicherung
+        % - Datenaugmentierung für NLP (Paraphrasing, Back-Translation, Synthetic Data)
+        % - Umgang mit kleinen Datensätzen
+        %   * Few-Shot Learning Strategien
+        %   * Data Efficiency Techniques
+        % - Datenverteilung und Class Balance
+        % - Train-Validation-Test-Split Best Practices
+        
+        
+        \subsubsection{Herausforderungen beim Fine-Tuning}
+        \label{sec:2.2.4}
+        
+        % Ziel: 1-1,5 Seiten
+        % - Overfitting: Ursachen und Vermeidungsstrategien
+        %   * Regulierung (Dropout, Weight Decay)
+        %   * Early Stopping
+        %   * Datenaugmentierung
+        % - Catastrophic Forgetting
+        %   * Definition: Verlust von vortrainierten Fähigkeiten
+        %   * Ursachen: Zu aggressives Fine-Tuning
+        %   * Gegenmaßnahmen:
+        %     - Niedrigere Learning Rates
+        %     - LoRA als sanftere Alternative zu Full Fine-Tuning
+        %     - Regularisierung
+        %     - Mixed Task Training
+        % - Underfitting und suboptimale Konvergenz
 
 
     \subsection{Ressourceneffizienz und Modelloptimierung}
@@ -114,8 +182,18 @@
         \subsubsection{Weitere Optimierungsansätze}
         \label{sec:2.3.3}
         
-        % Ziel: 1 Seite
-        % - RAG-Systeme (konzeptionell, falls als Backup benötigt)
+        % Ziel: 1,5-2 Seiten
+        % - RAG-Systeme (Retrieval-Augmented Generation)
+        %   * Konzept: Dynamischer Retrieval + Generation
+        %   * Zwei-Stufen-Prozess (Retrieval aus Vektorstore, dann LLM-Generation)
+        %   * Vorteile: Skalierung auf große Wissensbasen, Aktualität
+        %   * Anwendungsfälle im Verkehrssektor
+        %   * Hardware-Anforderungen und Komplexität
+        % - Knowledge-Enhanced Prompting als vereinfachte Alternative
+        %   * Statische Einbettung von Domänenwissen in System-Prompts
+        %   * Vorteile: Einfachere Implementierung, geringere Hardware-Anforderungen
+        %   * Limitierungen: Begrenzte Wissensbasis (Context-Window), keine Dynamik
+        %   * Geeignet für überschaubare, stabile Domänen
         % - Modellkompression (Pruning, Destillation - kurz erwähnen)
         % - Vergleich verschiedener Ansätze
 

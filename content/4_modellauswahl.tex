@@ -1,19 +1,76 @@
 \section{Modellauswahl: leo-mistral-hessianai-7b} \label{chap:4}
 
-% Ziel: 2-3 Seiten
+% Ziel: 3-4 Seiten
 
-    \subsection{Begründung der Wahl}
+    \subsection{Anforderungen an das Modell}
     \label{sec:4.1}
     
-    % - Deutschsprachiges Modell
-    % - Moderate Größe (7B Parameter)
-    % - Open-Source
+    % - Deutschsprachige Kompetenz (LVB-Verkehrsanweisungen)
+    % - Moderate Größe für lokale Ausführung (Hardware-Limitierungen)
+    % - Open-Source (DSGVO-Konformität, keine API-Abhängigkeit)
+    % - Fine-Tuning-fähig (Anpassung an spezifische Domäne)
+    % - Gute Textgenerierungs-Qualität
 
 
-    \subsection{Modellvarianten}
+    \subsection{Modellvergleich und Auswahlprozess}
     \label{sec:4.2}
     
-    % - Vollmodell
-    % - Quantisierte Versionen (INT8, INT4)
-    % - Erwartete Trade-offs
+    % VERGLEICH DER DREI KANDIDATEN:
+    %
+    % 1. Mistral-7B (Base):
+    %    - Englisches Base Model
+    %    - Hohe Baseline-Performance
+    %    - Für Fine-Tuning optimiert
+    %    - Nachteil: Nicht auf Deutsch vortrainiert
+    %    - Würde mehr deutsche Trainingsdaten für Fine-Tuning benötigen
+    %
+    % 2. Mistral-7B-Instruct:
+    %    - Englisches Instruct-Model
+    %    - Folgt Anweisungen out-of-the-box
+    %    - Bereits SFT durchgeführt
+    %    - Nachteil: Nicht auf Deutsch vortrainiert
+    %    - Nachteil: Instruction Tuning könnte bei erneutem Fine-Tuning teilweise überschrieben werden
+    %    - Gefahr von Catastrophic Forgetting der Instruct-Fähigkeiten
+    %
+    % 3. leo-mistral-hessianai-7b (GEWÄHLT):
+    %    - Base Model mit deutschem Continued Pretraining
+    %    - Mistral-7B Architektur + deutsche Sprachkompetenz
+    %    - Optimale Basis für deutschsprachiges Fine-Tuning
+    %    - Open-Source (HessianAI)
+    %    - Kein vorheriges Instruction Tuning → mehr Flexibilität beim Fine-Tuning
+    %
+    % BEGRÜNDUNG DER WAHL:
+    % - Deutsche Sprachkompetenz essentiell für LVB-Anwendungsfall
+    % - Base-Variante ermöglicht domänenspezifisches Fine-Tuning ohne Konflikte
+    % - Kleiner Datensatz (LVB): Base Model + Fine-Tuning besser als Instruct-Prompting
+    % - Bessere Kontrolle über Output-Format durch eigenes Fine-Tuning
+    % - Hardware-kompatibel (7B Parameter)
+
+
+    \subsection{Modellvarianten für Deployment}
+    \label{sec:4.3}
+    
+    % Nach Fine-Tuning werden drei Varianten erstellt:
+    %
+    % - Vollmodell (FP16/BF16):
+    %   * Beste Qualität
+    %   * ~14 GB VRAM
+    %   * Baseline für Qualitätsvergleich
+    %
+    % - INT8-Quantisierung:
+    %   * ~7 GB VRAM
+    %   * Moderate Qualitätseinbuße
+    %   * Schnellere Inferenz
+    %
+    % - INT4-Quantisierung:
+    %   * ~3.5 GB VRAM
+    %   * Größere Qualitätseinbuße
+    %   * Maximale Effizienz
+    %
+    % Erwartete Trade-offs (siehe Kap. 2.3.2 für Theorie):
+    % - Speicher vs. Qualität
+    % - Inferenzgeschwindigkeit vs. Präzision
+    % - Deployment-Flexibilität
+    %
+    % Evaluation in Kapitel 7: Vergleich aller drei Varianten
 
