@@ -1,0 +1,71 @@
+\section{Implementierung} \label{chap:6}
+
+% Ziel: 14-16 Seiten
+
+    \subsection{Technische Umsetzung}
+    \label{sec:6.1}
+    
+    % Ziel: 2-3 Seiten
+    % - Entwicklungsumgebung und Hardware
+    % - Frameworks und Bibliotheken (Transformers, PEFT, etc.)
+    % - Software-Architektur (nur Überblick, Details in Anhang)
+
+
+    \subsection{Fine-Tuning des Modells}
+    \label{sec:6.2}
+    
+    % Ziel: 8-10 Seiten
+    % KERNKAPITEL - hier passiert die Hauptarbeit
+    
+        \subsubsection{LoRA-basiertes Fine-Tuning}
+        \label{sec:6.2.1}
+        
+        % Ziel: 4-5 Seiten
+        % - Konfiguration der LoRA-Parameter
+        %   * Rank, Alpha, Target Modules
+        %   * Begründung der Parameterwahl
+        % - Trainingsprozess
+        %   * Hyperparameter (Learning Rate, Batch Size, Epochs)
+        %   * Trainingsverhalten und Konvergenz
+        %   * Overfitting-Vermeidung
+        % - Iterative Optimierung
+        %   * Anpassungen basierend auf Validierungsergebnissen
+        %   * Verschiedene Experimente
+        
+        
+        \subsubsection{Prompt Engineering und Automatisierung}
+        \label{sec:6.2.2}
+        
+        % Ziel: 3-4 Seiten
+        % - Design der Prompt-Templates
+        %   * System-Prompts
+        %   * Instruction-Format
+        %   * Few-Shot-Beispiele (wenn verwendet)
+        % - Automatisierungslogik
+        %   * Preprocessing-Pipeline
+        %   * Template-Filling
+        %   * Format-Erkennung
+        % - Iteration und Verfeinerung
+        %   * A/B-Tests verschiedener Prompts
+        %   * Optimierung für Konsistenz
+        
+        
+        \subsubsection{Quantisierung}
+        \label{sec:6.2.3}
+        
+        % Ziel: 1 Seite
+        % - Anwendung der Quantisierung auf das fine-getunte Modell
+        % - INT8 und INT4 Varianten
+        % - Technische Umsetzung mit Open-Source-Tools
+        % - Gemessene Inferenzgeschwindigkeit (falls messbar)
+
+
+    \subsection{Qualitätssicherung und Validierung}
+    \label{sec:6.3}
+    
+    % Ziel: 3-4 Seiten
+    % - Implementierung automatisierter Checks
+    % - Halluzination Detection
+    % - Semantische Konsistenzprüfung
+    % - Feedback-Loop für Verbesserungen
+

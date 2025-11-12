@@ -1,0 +1,146 @@
+\section{Theoretische Grundlagen und Stand der Forschung} \label{chap:2}
+
+% Ziel: 16-18 Seiten
+
+    \subsection{Natural Language Processing für Verkehrsinformationen}
+    \label{sec:2.1}
+    
+    % Ziel: 5-6 Seiten
+    
+        \subsubsection{Grundlagen der Sprachverarbeitung}
+        \label{sec:2.1.1}
+        
+        % Ziel: 1,5 Seiten
+        % - Transformer-Architektur (kompakt)
+        % - Vortrainierte Sprachmodelle
+        % - Transfer Learning
+        
+        
+        \subsubsection{NLP-Anwendungen im Verkehrssektor}
+        \label{sec:2.1.2}
+        
+        % Ziel: 2-3 Seiten
+        % Stand der Forschung:
+        % - Verkehrsvorhersage und -management
+        % - Automatisierte Berichtserstellung und Unfallanalyse
+        % - Texttransformation und -klassifizierung
+        % - Öffentliche Verkehrsinformationsdienste
+        % - Sentimentanalyse von Social-Media-Daten
+        % - Mehrsprachige Verarbeitung (kurz erwähnen)
+        %
+        % Erfolge und Herausforderungen:
+        % - Leistungsstarke Modelle für Zusammenfassung und Klassifizierung
+        % - Effektive Bearbeitung von Fahrgastanfragen
+        
+        
+        \subsubsection{Domänenspezifische Sprachmodelle}
+        \label{sec:2.1.3}
+        
+        % Ziel: 1,5-2 Seiten
+        % Spezialisierte Modelle und ihre Erfolge:
+        % - TrafficSafetyGPT: Domänenspezifisches Feintuning als Erfolgsfaktor
+        % - Multimodale Integration (Reduktion der Fehlerrate um 54,2%)
+        % - Domain-Specific Pre-Training auf Verkehrssicherheits-Korpora
+        % - Erweiterte Fachterminologie-Datenbanken
+        % - Besonderheiten deutschsprachiger Modelle (LeoLM-Familie)
+        %
+        % Erkenntnisse für diese Arbeit:
+        % - Stufenweise multimodale Integration verschiedener Optimierungsmethoden
+        % - Strategien für kleine Datensätze
+
+
+    \subsection{Sprachmodelle und Fine-Tuning}
+    \label{sec:2.2}
+    
+    % Ziel: 4-5 Seiten
+    
+        \subsubsection{Fine-Tuning-Methoden}
+        \label{sec:2.2.1}
+        
+        % Ziel: 2,5-3 Seiten
+        % - Transfer Learning: Grundkonzept
+        % - LoRA (Low-Rank Adaptation) - ausführlich, da verwendet
+        %   * Funktionsweise
+        %   * Parameter (Rank, Alpha, Target Modules)
+        %   * Vorteile gegenüber Full Fine-Tuning
+        % - Andere parameter-effiziente Methoden (kurz erwähnen)
+        %   * Adapter
+        %   * Prefix Tuning
+        %   * Prompt Tuning
+        
+        
+        \subsubsection{Prompt Engineering}
+        \label{sec:2.2.2}
+        
+        % Ziel: 1,5-2 Seiten
+        % - Few-Shot Learning
+        % - Instruction Tuning
+        % - Template-Design für Automatisierung
+        % - Zero-Shot (kurz)
+
+
+    \subsection{Ressourceneffizienz und Modelloptimierung}
+    \label{sec:2.3}
+    
+    % Ziel: 4-5 Seiten
+    
+        \subsubsection{Problematik großer Sprachmodelle}
+        \label{sec:2.3.1}
+        
+        % Ziel: 1,5 Seiten
+        % - Energieverbrauch und CO2-Bilanz großer Modelle
+        % - Überdimensionierung in der Praxis
+        % - Wirtschaftliche und ökologische Implikationen
+        % - Notwendigkeit ressourceneffizienter Alternativen
+        
+        
+        \subsubsection{Quantisierung}
+        \label{sec:2.3.2}
+        
+        % Ziel: 2,5-3 Seiten
+        % AUSFÜHRLICH, da zentral für die Arbeit:
+        % - Grundprinzip der Quantisierung
+        % - INT8/INT4-Quantisierung
+        % - Theoretische Einsparungen bei Speicher und Rechenleistung
+        % - Speicherbedarf (konkrete Zahlen aus Literatur)
+        % - Inferenzgeschwindigkeit
+        % - Energieverbrauch (theoretische Berechnungen)
+        % - Trade-off: Effizienz vs. Qualität
+        % - Quantisierung vor vs. nach Fine-Tuning
+        % - Verfügbare Open-Source-Tools (llama.cpp, bitsandbytes, GPTQ)
+        % - Erwartete praktische Implikationen
+        
+        
+        \subsubsection{Weitere Optimierungsansätze}
+        \label{sec:2.3.3}
+        
+        % Ziel: 1 Seite
+        % - RAG-Systeme (konzeptionell, falls als Backup benötigt)
+        % - Modellkompression (Pruning, Destillation - kurz erwähnen)
+        % - Vergleich verschiedener Ansätze
+
+
+    \subsection{Qualitätssicherung bei KI-generierten Texten}
+    \label{sec:2.4}
+    
+    % Ziel: 2-2,5 Seiten
+    
+        \subsubsection{Evaluationsmetriken für NLP}
+        \label{sec:2.4.1}
+        
+        % Ziel: 1 Seite
+        % - BLEU, ROUGE (kurz)
+        % - Semantische Ähnlichkeitsmetriken (BERTScore)
+        % - Perplexity
+        % - Domänenspezifische Metriken
+        
+        
+        \subsubsection{Halluzination Detection und Validierung}
+        \label{sec:2.4.2}
+        
+        % Ziel: 1-1,5 Seiten
+        % - Self-Consistency Checks
+        % - Fact Checking gegen Eingabedaten
+        % - Automatisierte vs. manuelle Evaluation
+        % - Praktische Ansätze für ressourcenlimitierte Umgebungen
+
