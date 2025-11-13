@@ -24,22 +24,191 @@
         % - Qualitätssicherung der Annotationen
         
         
-        \subsubsection{Datenaugmentierung}
+        \subsubsection{Qualitätssicherung und Validierung}
         \label{sec:5.2.2}
         
-        % - Formatvariationen
-        % - Synthetische Beispiele
+        % AUTOMATISIERTE VALIDIERUNG MITTELS PYTHON-SKRIPTEN
+        % Um die Qualität und Konsistenz des Trainingsdatensatzes sicherzustellen, wurde eine 
+        % mehrstufige automatisierte Validierung mittels Python-Skripten durchgeführt.
+        %
+        % 1. STRUKTURVALIDIERUNG
+        % - Prüfung der korrekten Textstruktur gemäß den in Abschnitt~\ref{sec:3.2} definierten Regeln:
+        %   * Zeitrahmen/Zeitangaben am Anfang der Meldung
+        %   * Grund/Ursache am Ende der Meldung
+        % - Identifikation struktureller Inkonsistenzen
+        % - Flagging von Abweichungen für manuelle Überprüfung
+        %
+        % 2. LINIEN- UND FAHRZEUGTYP-VALIDIERUNG
+        % - Abgleich der Liniennummern mit LVB-Linienverzeichnis
+        % - Zuordnung der korrekten Fahrzeugtypen (Straßenbahn, Bus, etc.) zu Liniennummern
+        % - Erkennung ungültiger oder veralteter Linienbezeichnungen
+        % - Konsistenzprüfung zwischen Input und Output
+        %
+        % 3. ENTITÄTEN-KONSISTENZPRÜFUNG
+        % - Extraktion von Named Entities (Haltestellen, Straßennamen) aus Input und Output
+        % - Abgleich der genannten Entitäten zwischen Input und Output
+        % - Erkennung von:
+        %   * Fehlenden Haltestellen im Output (Informationsverlust)
+        %   * Zusätzlichen/halluzinierten Haltestellen im Output
+        %   * Abweichenden Schreibweisen von Straßennamen
+        %   * Inkonsistenten Ortsangaben
+        % - Berechnung von Entity-Overlap-Metriken
+        %
+        % 3a. MASSNAHMENTYP-VALIDIERUNG
+        % - Automatische Erkennung der Maßnahmentypen in Input und Output:
+        %   * Haltestelle entfällt
+        %   * Umleitung über alternative Strecke
+        %   * Verkürzung der Linie
+        %   * Ersatzverkehr
+        %   * Kombinationen mehrerer Maßnahmen
+        % - Prüfung auf korrekte Übertragung der Maßnahmeninformation
+        % - Monitoring der Verteilung der Maßnahmentypen im Datensatz
+        % - Identifikation unterrepräsentierter Maßnahmentypen für gezielte Augmentierung
+        %
+        % 4. ZUSÄTZLICHE VALIDIERUNGSPRÜFUNGEN
+        % - Duplikatsprüfung: Identifikation identischer oder nahezu identischer Trainingsbeispiele
+        % - Zeichensatzvalidierung: Prüfung auf korrekte UTF-8-Kodierung, Sonderzeichen, Umlaute
+        % - Längenvalidierung: Überprüfung von Min/Max-Tokenlängen für Input und Output
+        % - Vollständigkeitsprüfung: Sicherstellung, dass alle Pflichtfelder vorhanden sind
+        % - Format-Konsistenz: Einheitliche Struktur aller Trainingsbeispiele (JSON-Schema)
+        %
+        % ERGEBNISSE UND KORREKTURPROZESS
+        % - Anzahl identifizierter Fehler pro Kategorie
+        % - Manuelle Nachbearbeitung bei kritischen Inkonsistenzen
+        % - Iterative Verbesserung des Datensatzes
+        % - Finale Validierungsstatistiken
+        %
+        % BEDEUTUNG FÜR MODELLQUALITÄT
+        % - Verhindert Training auf fehlerhaften Daten
+        % - Reduziert Halluzinationen bei Ortsnamen
+        % - Sichert Konsistenz mit LVB-Vorgaben (Abschnitt~\ref{sec:3.2})
+        % - Erhöht Vertrauen in Trainingsdaten
+        
+        
+        \subsubsection{Datenaugmentierung}
+        \label{sec:5.2.3}
+        
+        % EINLEITUNG MIT VERWEIS AUF THEORIE
+        % Die Datenaugmentierung für den LVB-Trainingsdatensatz basiert auf den in Abschnitt~\ref{sec:2.2.3}
+        % vorgestellten theoretischen Grundlagen zu Data Augmentation und Balanced Datasets.
+        % Die folgenden Strategien wurden implementiert, um einen ausgewogenen und qualitativ
+        % hochwertigen Datensatz zu schaffen.
+        %
+        % DATENVARIATIONEN NACH KOMPLEXITÄTSKATEGORIEN
+        % Der Trainingsdatensatz wurde bewusst so zusammengestellt, dass er alle in Abschnitt~\ref{sec:3.2.1}
+        % definierten Komplexitätskategorien von Verkehrsmeldungen abdeckt:
+        %
+        % VERTEILUNG DER KATEGORIEN IM DATENSATZ:
+        % - Kategorie 1 (Einzellinie, eine Richtung): X Beispiele
+        % - Kategorie 2 (Einzellinie, mehrere Richtungen unterschiedlich): X Beispiele
+        % - Kategorie 3 (Einzellinie, beide Richtungen gleich): X Beispiele
+        % - Kategorie 4 (Mehrere Linien, gleiche Maßnahmen): X Beispiele
+        % - Kategorie 5 (Mehrere Linien, unterschiedliche Maßnahmen): X Beispiele
+        % - Kategorie 6 (Mehrere Zeiträume/Bauphasen): X Beispiele
+        % - Kategorie 7 (Kombination Zeiträume + mehrere Linien): X Beispiele
+        %
+        % RATIONALE FÜR VERTEILUNG:
+        % - Einfache Kategorien (1-3) bilden Grundlage, häufiger vertreten
+        % - Komplexe Kategorien (5-7) in geringerem Maße, aber ausreichend für Generalisierung
+        % - Kategorie 4 (mehrere Linien gleich) wichtig für Effizienz der Darstellung
+        %
+        % AUGMENTIERUNGSSTRATEGIEN:
+        %
+        % 1. DISAGGREGATION GEBÜNDELTER VERKEHRSANWEISUNGEN
+        % - Aus einer Quell-Verkehrsanweisung wurden nicht nur die standardmäßig vorgesehenen Texte erzeugt
+        % - Gebündelte Texte (z.B. mehrere Linien in einem Text) wurden zusätzlich in separate Einzelansagen aufgeteilt
+        % - Richtungsspezifische Meldungen wurden sowohl gebündelt als auch getrennt erstellt
+        % - Systematisches Vorgehen durch alle Komplexitätskategorien:
+        %   * Kategorie 4-7 (gebündelte Meldungen) → Zerlegung in Kategorie 1-3 (Einzelmeldungen)
+        %   * Beispiel: "Linien 1 und 2 umgeleitet" → "Linie 1 umgeleitet" + "Linie 2 umgeleitet"
+        % - Ziel: Ausgewogene Verteilung über alle Komplexitätsstufen
+        % - Rationale: Balanced datasets verbessern Generalisierung \cite{feng2021survey}
+        % - Verteilungsstrategie: Empirisch basierend auf Häufigkeit in Produktivdaten mit gezieltem Oversampling seltener Kategorien
+        % - Vermeidung extremer Imbalance (Verhältnis max. 1:3 zwischen häufigster und seltenster Kategorie)
+        %
+        % 2. SYNTHETISCHE BEISPIELE MIT REALEN ENTITÄTEN
+        % - Generierung synthetischer Trainingsbeispiele für unterrepräsentierte Kategorien
+        % - Ansatz basiert auf Template-basierter Augmentierung mit Constraint-Enforcement \cite{kumar2020data}
+        % - Strikte Einhaltung der Realitätstreue:
+        %   * Nur real existierende Liniennummern des LVB-Netzes
+        %   * Korrekte Zuordnung von Fahrzeugtypen zu Liniennummern
+        %   * Ausschließlich existierende Haltestellen und Straßennamen
+        % - Einhaltung der vorgegebenen Textstruktur (siehe Abschnitt~\ref{sec:3.2})
+        % - Vermeidung von Halluzinationen durch Verwendung einer validierten Entitätsdatenbank
+        % - Synthetic data generation für NLP nachweislich effektiv \cite{feng2021survey}
+        % - Anteil synthetischer Daten: Ca. 20-30% des domänenspezifischen Datensatzes
+        % - Orientierung an EDA-Empfehlungen für kleine Datensätze \cite{wei2019eda}
+        % - Balance zwischen realen Daten (höhere Validität) und synthetischen (größere Abdeckung)
+        %
+        % 3. BALANCE DER MASSNAHMENTYPEN
+        % - Gleichmäßige Verteilung verschiedener Maßnahmentypen im Datensatz:
+        %   * Haltestelle entfällt
+        %   * Umleitung über alternative Strecke
+        %   * Verkürzung der Linie
+        %   * Ersatzverkehr
+        %   * Kombinationen mehrerer Maßnahmen
+        % - Monitoring der Verteilung durch dediziertes Validierungsskript (siehe Abschnitt~\ref{sec:5.2.2})
+        % - Gezielte Augmentierung unterrepräsentierter Maßnahmentypen
+        % - Class imbalance problematisch für Modellperformance \cite{wei2019eda}
+        % - Balanced sampling empfohlen für kleine Datensätze \cite{feng2021survey}
+        %
+        % 4. ANSAGETEXTE
+        % - Separate Behandlung von Ansagetexten für Fahrgastinformation
+        % - Anzahl basierend auf Häufigkeit in Quelldaten
+        % - Anpassung an neue Strukturvorgaben
+        % - Keine weitere Disaggregation, da entscheidende Faktoren:
+        %   * Kompaktheit der Information
+        %   * Streckenabschnittsbezogenheit
+        % - Fokus auf:
+        %   * Korrekte Abgrenzung von Streckenabschnitten
+        %   * Priorisierung fahrgastrelevanter Informationen
+        %   * Vermeidung redundanter Details
+        %
+        % 5. SPEZIALTRAINING: LINIEN-FAHRZEUGTYP-ZUORDNUNG
+        % - 200 dedizierte Trainingsbeispiele zur korrekten Zuordnung
+        % - Explizites Training der Beziehung: Liniennummer ↔ Fahrzeugtyp (Straßenbahn/Bus)
+        % - Abdeckung aller Linien im LVB-Netz
+        % - Integration mit Validierungsskript (siehe Abschnitt~\ref{sec:5.2.2}, Punkt 2)
+        %
+        % 6. ALLGEMEINE DEUTSCHSPRACHIGE DATEN (CATASTROPHIC FORGETTING)
+        % - XXX Trainingsbeispiele aus öffentlichen deutschen NLP-Datensätzen
+        % - Zweck: Verhinderung von Catastrophic Forgetting (siehe Abschnitt~\ref{sec:2.2.4})
+        % - Erhalt allgemeiner deutscher Sprachfähigkeiten während domänenspezifischem Fine-Tuning
+        % - Vermeidung von Overfitting auf LVB-spezifische Formulierungen
+        % - Strategie entspricht "continual learning" approach \cite{raffel2020exploring}
+        % - Mixing-Ratio: Ca. 10-15% allgemeine Daten zu domänenspezifischen Daten
+        % - Verhältnis balanciert Spezialisierung vs. Erhalt allgemeiner Fähigkeiten
+        % - Höherer Anteil domänenspezifischer Daten priorisiert, da Aufgabe stark spezialisiert
+        %
+        % 7. MEHRSPRACHIGKEIT: ENGLISCHE DATEN (OPTIONAL)
+        % - Erwägung: Integration englischer Trainingsbeispiele zur Erhaltung der Zweisprachigkeit
+        % - LeoLM-Basismodell wurde auf mehrsprachigen Daten trainiert (inkl. Englisch)
+        % - Empfehlung: Ca. 500-800 englische general-purpose Beispiele
+        % - Verhältnis: ~5-10% des Gesamtdatensatzes
+        % - Vorteil: Erhalt der englischen Sprachfähigkeiten für zukünftige Erweiterungen
+        % - Nachteil: Ressourcen für domänenfremde Daten
+        % - Entscheidung: [Je nach Projektanforderungen - noch festzulegen]
+        % - Multilingual training data erhält cross-lingual capabilities \cite{raffel2020exploring}
+        % - Empfohlenes Verhältnis: 5-10% englische Daten bei monolingualer deutscher Anwendung
+        % - T5-Studie zeigt: Geringe Beimischung anderer Sprachen ausreichend für Erhalt \cite{raffel2020exploring}
+        % - Trade-off: Mehr englische Daten → bessere Mehrsprachigkeit, aber weniger Fokus auf deutsche Domäne
+        %
+        % HERAUSFORDERUNGEN:
+        % - Balance zwischen einfachen und komplexen Beispielen
+        % - Vermeidung von Überanpassung auf häufige Muster
+        % - Sicherstellung korrekter Darstellungskonventionen bei Augmentierung
+        % - Trade-off zwischen Domänenspezialisierung und allgemeiner Sprachfähigkeit
         
         
         \subsubsection{Datensatzstruktur}
-        \label{sec:5.2.3}
+        \label{sec:5.2.4}
         
         % - Train-Validation-Test-Split
         % - Größe und Verteilung
         
         
         \subsubsection{Herausforderungen bei kleinem Datensatz}
-        \label{sec:5.2.4}
+        \label{sec:5.2.5}
         
         % - Strategien aus der Literatur (multimodale Integration, stufenweise Optimierung)
         % - Übertragung auf diese Arbeit

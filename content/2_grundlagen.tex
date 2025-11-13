@@ -26,7 +26,7 @@
         
         Für die vorliegende Arbeit ist insbesondere die Mistral-7B-Architektur von Bedeutung, da sie die Grundlage für das verwendete LeoLM-Modell bildet. Mistral 7B \cite{jiang2023mistral} ist ein hocheffizienter Decoder-Only-Transformer mit 7 Milliarden Parametern, der mehrere innovative Architekturmerkmale aufweist. Grouped-Query Attention (GQA) reduziert die Größe des Key-Value-Cache und ermöglicht schnellere Inferenz \cite{jiang2023mistral}. Sliding Window Attention erlaubt die effiziente Verarbeitung langer Kontexte, während der Rolling Buffer Cache die Speichernutzung optimiert \cite{jiang2023mistral}. Mit 7 Milliarden Parametern stellt Mistral einen Sweet Spot zwischen Modellleistung und Ressourceneffizienz dar und übertrifft in Benchmarks viele deutlich größere Modelle \cite{jiang2023mistral}. Als Open-Source-Modell unter Apache 2.0 Lizenz ist es besonders für lokale Ausführung und Fine-Tuning geeignet.
         
-        Ein wichtiger Unterschied besteht zwischen Base Models und Instruct Models. Base Models wie Mistral-7B \cite{jiang2023mistral} sind auf reines Language Modeling trainiert \cite{radford2019language} und setzen primär Texte fort, ohne notwendigerweise expliziten Anweisungen zu folgen. Sie sind als Ausgangspunkt für aufgabenspezifisches Fine-Tuning konzipiert. Instruct Models hingegen durchlaufen zusätzlich ein Instruction Tuning \cite{wei2021finetuned}, bei dem sie mittels Supervised Fine-Tuning auf Instruktionsdatensätzen trainiert werden, um gezielt Anweisungen zu befolgen. Optional kann dieser Prozess durch Reinforcement Learning from Human Feedback (RLHF) \cite{ouyang2022training} weiter verfeinert werden. Mistral bietet beide Varianten an: Mistral-7B als Base Model und Mistral-7B-Instruct als instruction-tuned Version \cite{jiang2023mistral}. Der detaillierte Vergleich und die Auswahlbegründung zwischen diesen Varianten erfolgt in Kapitel 4.
+        Ein wichtiger Unterschied besteht zwischen Base Models und Instruct Models. Base Models wie Mistral-7B \cite{jiang2023mistral} sind auf reines Language Modeling trainiert \cite{radford2019language} und setzen primär Texte fort, ohne notwendigerweise expliziten Anweisungen zu folgen. Sie sind als Ausgangspunkt für aufgabenspezifisches Fine-Tuning konzipiert. Instruct Models hingegen durchlaufen zusätzlich ein Instruction Tuning \cite{wei2021finetuned}, bei dem sie mittels Supervised Fine-Tuning auf Instruktionsdatensätzen trainiert werden, um gezielt Anweisungen zu befolgen. Optional kann dieser Prozess durch Reinforcement Learning from Human Feedback (RLHF) \cite{ouyang2022training} weiter verfeinert werden. Mistral bietet beide Varianten an: Mistral-7B als Base Model und Mistral-7B-Instruct als instruction-tuned Version \cite{jiang2023mistral}. Der detaillierte Vergleich und die Auswahlbegründung zwischen diesen Varianten erfolgt in Kapitel~\ref{chap:4}.
         
         Für deutschsprachige Anwendungen ist die LeoLM-Familie von besonderer Relevanz. Diese Modelle nutzen Mistral-7B als Basis und durchlaufen ein Continued Pretraining auf deutschen Textkorpora \cite{leolm2023}. Das in dieser Arbeit verwendete Modell leo-mistral-hessianai-7b ist eine Base-Variante, die speziell für die deutsche Sprache optimiert wurde \cite{leolm2023}. Diese Adaption kombiniert die architektonischen Vorteile und die Effizienz von Mistral mit erhöhter Sprachkompetenz im Deutschen und erzielt dadurch bessere Ergebnisse für deutschsprachige Anwendungen als rein englischsprachige Basismodelle. Die Tokenization erfolgt bei Mistral mittels Byte Pair Encoding (BPE) mit einem Vokabular von 32.000 Tokens \cite{jiang2023mistral}, wobei LeoLM einen an die deutsche Morphologie angepassten Tokenizer verwendet \cite{leolm2023}, der besser mit Komposita, Umlauten und anderen sprachspezifischen Besonderheiten umgehen kann.
         
@@ -38,7 +38,7 @@
         
         Die Vorteile von Transfer Learning sind vielfältig: Howard und Ruder zeigten mit ULMFiT, dass durch Transfer Learning mit nur 100 gelabelten Beispielen eine vergleichbare Performance erreicht werden kann wie mit 10.000 Beispielen beim Training from-scratch \cite{howard2018universal}. Vortrainierte Gewichte dienen als optimaler Startpunkt und beschleunigen das Training erheblich. Zudem führt das bereits vorhandene Sprachverständnis zu besserer Generalisierung auf neue Daten \cite{pan2010survey}.
         
-        Dennoch bestehen Herausforderungen: Catastrophic Forgetting bezeichnet den Verlust vortrainierter Fähigkeiten während des Fine-Tunings, dem in Kapitel 2.2.4 weiter nachgegangen wird. Der Domain Shift zwischen Pretraining-Daten und Zieldomäne \cite{pan2010survey} kann zu Leistungseinbußen führen, insbesondere wenn sich Vokabular oder Sprachstil deutlich unterscheiden. Bei kleinen Datensätzen besteht zudem die Gefahr des Overfittings, was ebenfalls in Kapitel 2.2.4 behandelt wird.
+        Dennoch bestehen Herausforderungen: Catastrophic Forgetting bezeichnet den Verlust vortrainierter Fähigkeiten während des Fine-Tunings, dem in Abschnitt~\ref{sec:2.2.4} weiter nachgegangen wird. Der Domain Shift zwischen Pretraining-Daten und Zieldomäne \cite{pan2010survey} kann zu Leistungseinbußen führen, insbesondere wenn sich Vokabular oder Sprachstil deutlich unterscheiden. Bei kleinen Datensätzen besteht zudem die Gefahr des Overfittings, was ebenfalls in Abschnitt~\ref{sec:2.2.4} behandelt wird.
         
         Für die vorliegende Arbeit ist besonders relevant, dass LeoLM bereits auf umfangreichen deutschen Textkorpora vortrainiert wurde \cite{leolm2023}, was eine solide Basis für die weitere Spezialisierung bildet. Das Fine-Tuning auf den vergleichsweise kleinen Datensatz der LVB-Verkehrsanweisungen wird durch Transfer Learning erst praktikabel und ermöglicht die notwendige domänenspezifische Anpassung an die fachsprachlichen Anforderungen des Verkehrssektors.
         
@@ -117,15 +117,100 @@
         \subsubsection{Datensätze für Fine-Tuning}
         \label{sec:2.2.3}
         
-        % Ziel: 1,5-2 Seiten
-        % - Struktur von Input-Output-Paaren für Supervised Fine-Tuning
-        % - Annotationsrichtlinien und Qualitätssicherung
-        % - Datenaugmentierung für NLP (Paraphrasing, Back-Translation, Synthetic Data)
-        % - Umgang mit kleinen Datensätzen
-        %   * Few-Shot Learning Strategien
-        %   * Data Efficiency Techniques
-        % - Datenverteilung und Class Balance
-        % - Train-Validation-Test-Split Best Practices
+        % Ziel: 2-2,5 Seiten
+        
+        % EINLEITUNG
+        % - Qualität und Zusammenstellung von Trainingsdaten als kritischer Erfolgsfaktor
+        % - Besondere Herausforderungen bei kleinen domänenspezifischen Datensätzen
+        % - Transfer Learning reduziert Datenbedarf, aber ausreichende Qualität bleibt essentiell
+        
+        % 1. STRUKTUR VON TRAININGSDATEN
+        % - Input-Output-Paare für Supervised Fine-Tuning
+        % - Format-Anforderungen (JSON, JSONL, spezifische Modell-Formate)
+        % - Konsistenz in Struktur und Formatierung
+        % - Annotationsrichtlinien: Klare, eindeutige Richtlinien zur Qualitätssicherung
+        % - Inter-Annotator Agreement als Qualitätsmetrik
+        
+        % 2. DATA AUGMENTATION STRATEGIEN
+        % - Definition und Motivation: Vergrößerung des Datensatzes ohne zusätzliche manuelle Annotation
+        % - Ziele: Generalisierung verbessern, Overfitting reduzieren, Robustheit erhöhen
+        %
+        % Methoden der Datenaugmentierung \cite{feng2021survey}:
+        % a) RULE-BASED AUGMENTATION:
+        %    - Synonym Replacement: Austausch von Wörtern durch Synonyme
+        %    - Random Insertion: Einfügen zusätzlicher Wörter
+        %    - Random Swap: Vertauschen von Wortpositionen
+        %    - Random Deletion: Entfernen einzelner Wörter
+        %    - EDA (Easy Data Augmentation) \cite{wei2019eda}: Kombination obiger Techniken
+        %    - Effektiv bei kleinen Datensätzen (50-500 Beispiele)
+        %
+        % b) MODEL-BASED AUGMENTATION:
+        %    - Back-Translation: Übersetzung in andere Sprache und zurück
+        %    - Paraphrasing mit vortrainierten Modellen
+        %    - Contextual Word Embeddings für Ersetzungen
+        %    - Template-basierte Generierung \cite{kumar2020data}
+        %    - Höhere Qualität, aber rechenintensiver
+        %
+        % c) SYNTHETIC DATA GENERATION:
+        %    - Generierung komplett neuer Beispiele durch LLMs
+        %    - Constraint-basierte Generation mit validierten Entitäten \cite{kumar2020data}
+        %    - Kontrolle über Diversität und Abdeckung
+        %    - Risiko: Halluzinationen und unrealistische Beispiele
+        %    - Best Practice: Kombination aus realen und synthetischen Daten (typisch 20-30% synthetisch)
+        %
+        % Empirische Erkenntnisse:
+        % - EDA zeigt 50% der Daten können gleiche Accuracy erreichen wie 100% ohne Augmentierung \cite{wei2019eda}
+        % - Effekt verstärkt sich bei kleineren Datensätzen
+        % - Qualität wichtiger als Quantität bei synthetischen Daten
+        
+        % 3. BALANCED DATASETS UND CLASS DISTRIBUTION
+        % - Problematik unbalancierter Datensätze:
+        %   * Modell tendiert zu häufigen Klassen
+        %   * Schlechtere Performance auf seltenen, aber wichtigen Fällen
+        %   * Bias in Vorhersagen
+        % - Strategien für Balance \cite{feng2021survey}:
+        %   * Oversampling unterrepräsentierter Kategorien
+        %   * Undersampling überrepräsentierter Kategorien (mit Vorsicht)
+        %   * Synthetic Minority Over-sampling (SMOTE-ähnliche Ansätze)
+        %   * Class-weighted Loss Functions
+        % - Empfohlene Verhältnisse:
+        %   * Ideale Balance: Gleiche Anzahl pro Kategorie
+        %   * Praxis: Max. 1:3 Verhältnis zwischen seltenster und häufigster Kategorie akzeptabel
+        %   * Bei stärkerer Imbalance: Gezielte Augmentierung erforderlich
+        
+        % 4. UMGANG MIT KLEINEN DATENSÄTZEN
+        % - Definition "klein": Typischerweise < 1000 Beispiele für Fine-Tuning
+        % - Few-Shot Learning als Alternative \cite{wei2021finetuned}
+        % - Data Efficiency Techniques:
+        %   * Aggressive Augmentierung (aber Qualität wahren)
+        %   * Parameter-effiziente Methoden (LoRA) reduzieren Overfitting-Risiko
+        %   * Niedrigere Learning Rates
+        %   * Early Stopping basierend auf Validation Loss
+        % - Mixed Task Training:
+        %   * Kombination domänenspezifischer und allgemeiner Daten
+        %   * Verhältnis typisch 85-90% spezifisch, 10-15% allgemein \cite{raffel2020exploring}
+        %   * Verhindert Catastrophic Forgetting (siehe Abschnitt~\ref{sec:2.2.4})
+        %   * Erhält Generalisierungsfähigkeit
+        
+        % 5. TRAIN-VALIDATION-TEST-SPLIT
+        % - Standard-Aufteilung: 70-80% Training, 10-15% Validation, 10-15% Test
+        % - Bei kleinen Datensätzen: 80-10-10 oder Cross-Validation
+        % - Wichtig: Stratified Split bei kategorischen Daten (erhält Balance)
+        % - Temporale Splits bei zeitabhängigen Daten
+        % - Vermeidung von Data Leakage zwischen Splits
+        
+        % 6. QUALITÄTSSICHERUNG
+        % - Automatisierte Validierung (siehe Abschnitt~\ref{sec:5.2.2} für praktische Umsetzung):
+        %   * Strukturprüfung (Format, Pflichtfelder)
+        %   * Konsistenzprüfung (Entitäten, Fakten)
+        %   * Duplikatserkennung
+        % - Manuelle Stichprobenprüfung
+        % - Iterative Verbesserung basierend auf Modellfehlern
+        
+        % ÜBERGANG zu Kapitel~\ref{chap:5}:
+        % - Diese theoretischen Grundlagen bilden Basis für praktische Datensatzerstellung
+        % - Konkrete Anwendung dieser Prinzipien in Abschnitt~\ref{sec:5.2} beschrieben
+        % - Anpassung an spezifische Anforderungen der Verkehrsanweisungstransformation
         
         
         \subsubsection{Herausforderungen beim Fine-Tuning}

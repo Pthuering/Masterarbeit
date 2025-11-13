@@ -21,6 +21,65 @@
     % - Beispiele und Komplexität
     % - Zielformate für verschiedene Nutzergruppen
     % - Linguistische Besonderheiten
+    
+        \subsubsection{Kategorisierung von Verkehrsmeldungen nach Komplexität}
+        \label{sec:3.2.1}
+        
+        % KOMPLEXITÄTSKATEGORIEN VON VERKEHRSMELDUNGEN
+        % Die Verkehrsanweisungen der LVB lassen sich nach Art und Umfang der betroffenen
+        % Linien und Maßnahmen in verschiedene Kategorien einteilen:
+        %
+        % KATEGORIE 1: EINZELLINIE, EINE RICHTUNG
+        % - Eine Linie in eine Richtung betroffen
+        % - Einfachste Struktur
+        % - Beispiel: "Linie 3 fährt Richtung Taucha über Umleitung"
+        %
+        % KATEGORIE 2: EINZELLINIE, MEHRERE RICHTUNGEN MIT UNTERSCHIEDLICHEN MASSNAHMEN
+        % - Eine Linie in mehrere Richtungen betroffen
+        % - Jede Richtung hat unterschiedliche Umleitungen/Maßnahmen
+        % - Darstellung: Richtungsspezifische Maßnahmen werden hintereinander formuliert
+        % - Reihenfolge: Erst Richtung A, dann Richtung B
+        % - Beispiel: "Linie 11 fährt Richtung Schkeuditz über X, Richtung Markkleeberg über Y"
+        %
+        % KATEGORIE 3: EINZELLINIE, BEIDE RICHTUNGEN MIT GLEICHEN MASSNAHMEN
+        % - Eine Linie in beide Richtungen betroffen
+        % - Identische Maßnahmen für beide Richtungen
+        % - Beispiel: "Linie 7 wird in beiden Richtungen umgeleitet"
+        %
+        % KATEGORIE 4: MEHRERE LINIEN MIT GLEICHEN MASSNAHMEN
+        % - Mehrere Linien von identischen Maßnahmen betroffen
+        % - Darstellung: Aufzählung der betroffenen Linien
+        % - Beispiel: "Die Linien 1, 2 und 3 werden über Straße X umgeleitet"
+        %
+        % KATEGORIE 5: MEHRERE LINIEN MIT UNTERSCHIEDLICHEN MASSNAHMEN
+        % - Mehrere Linien, jede mit individuellen Maßnahmen
+        % - Hohe Komplexität durch mehrfache Differenzierung
+        % - Beispiel: "Linie 3 über Route A, Linie 7 über Route B, Linie 11 verkehrt nicht"
+        %
+        % KATEGORIE 6: MEHRERE ZEITRÄUME/BAUPHASEN
+        % - Maßnahmen ändern sich über verschiedene Zeiträume
+        % - Unterschiedliche Regelungen pro Bauphase
+        % - Beispiel: "Phase 1 (01.-15.03.): Linie 3 umgeleitet; Phase 2 (16.-31.03.): zusätzlich Linie 7"
+        %
+        % KATEGORIE 7: KOMBINATION AUS ZEITRÄUMEN UND MEHREREN LINIEN
+        % - Höchste Komplexität
+        % - Verschiedene Linien mit unterschiedlichen Maßnahmen über mehrere Zeiträume
+        %
+        % DARSTELLUNGSKONVENTIONEN:
+        % - Maßnahmen im gleichen Zeitraum werden in einem Text hintereinander zusammengefasst
+        % - Mehrere Linien mit gleicher Maßnahme werden durch Aufzählung zusammengefasst
+        % - Richtungsspezifische Maßnahmen werden hintereinander formuliert (erst Richtung A, dann B)
+        % - Verschiedene Zeiträume/Bauphasen werden explizit gekennzeichnet
+        %
+        % BEISPIEL KOMBINATION (Kategorie 7):
+        % "Vom 1. bis 15. März fahren die Linien 1 und 2 Richtung Nord über Umleitung X,
+        %  Richtung Süd über Umleitung Y. Linie 3 verkehrt nicht. Ab 16. März fahren alle
+        %  Linien wieder regulär."
+        %
+        % RELEVANZ FÜR MODELLTRAINING:
+        % - Diese Kategorien bestimmen die Diversität des Trainingsdatensatzes (siehe Abschnitt~\ref{sec:5.2.3})
+        % - Unterschiedliche Komplexitätsstufen erfordern differenzierte Transformationsstrategien
+        % - Verteilung der Kategorien beeinflusst Modellperformance
 
 
     \subsection{Anforderungen an das System}
