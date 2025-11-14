@@ -286,203 +286,65 @@ Praktische Implikationen für diese Arbeit umfassen höhere Iterationsgeschwindi
         
         % Ziel: 1,5-2 Seiten
         
-        % EINLEITUNG - PROMPT ENGINEERING ALS KOMPLEMENTÄRE METHODE:
-        % - Fine-Tuning (Abschnitt~\ref{sec:2.2.1}): Permanente Modellanpassung durch Parameteränderung
-        % - Prompt Engineering: Verhaltenssteuerung ohne Gewichtsänderungen
-        % - Synergieeffekt: Fine-Tuning für domänenspezifische Fähigkeiten, Prompts für aufgabenspezifische Kontrolle
-        % - Relevanz für diese Arbeit: Stilrichtlinien, Formatvorgaben, Konsistenz
-        
-        % VON ZERO-SHOT ZU FEW-SHOT:
-        % - Zero-Shot Prompting: Nur Instruktion, keine Beispiele
-        %   * Definition: Modell erhält Aufgabenbeschreibung ohne Demonstrationen
-        %   * Stärke: Funktioniert bei großen, instruction-tuned Modellen (GPT-4, Claude)
-        %   * Limitation: Base Models (wie LeoLM-7B) haben schwache Zero-Shot-Performance
-        %   * Nicht ausreichend für komplexe Transformationsaufgaben
-        %   * Beispiel: "Schreibe diese Verkehrsanweisung verständlich um." → Unpräzise Ergebnisse
-        %
-        % - Few-Shot Learning: Aufgabe + Beispiele im Prompt \cite{wei2021finetuned,berryman2024prompt}
-        %   * Definition: In-Context Learning durch Demonstration gewünschten Verhaltens
-        %   * Mechanismus: Modell erkennt Muster aus Input-Output-Paaren
-        %   * Anzahl Beispiele: Typisch 1-10 Shots (Context-Window-limitiert) \cite{berryman2024prompt}
-        %   * Empirische Erkenntnisse: Dramatische Leistungssteigerung vs. Zero-Shot \cite{wei2021finetuned}
-        %   * Performance skaliert mit Beispielanzahl (bis zu Plateau-Effekt) \cite{berryman2024prompt}
-        %
-        % - Few-Shot vs. Fine-Tuning \cite{berryman2024prompt}:
-        %   * Few-Shot: Keine permanenten Änderungen, flexibel anpassbar
-        %   * Fine-Tuning: Modellgewichte ändern sich, domänenspezifische Expertise
-        %   * Trade-off: Few-Shot benötigt längere Prompts (Kontext-Token-Kosten)
-        %   * Kombination optimal: Fine-Tuning für Grundfähigkeiten + Few-Shot für Nuancen
-        
-        % FEW-SHOT PROMPT DESIGN - PRAKTISCHE ÜBERLEGUNGEN:
-        %
-        % 1. Beispielauswahl (Example Selection) \cite{berryman2024prompt}:
-        %    - Diversität: Abdeckung verschiedener Störungstypen (Bauarbeiten, technische Störungen, Umleitungen)
-        %    - Repräsentativität: Häufigste Fälle zuerst, Edge Cases später
-        %    - Qualität über Quantität: 3 perfekte Beispiele > 10 durchschnittliche \cite{berryman2024prompt}
-        %    - Balancierung: Gleiche Verteilung wie im Datensatz (siehe Abschnitt~\ref{sec:2.2.3})
-        %
-        % 2. Beispielreihenfolge (Example Ordering) \cite{berryman2024prompt}:
-        %    - Recency Bias: Letzte Beispiele haben stärksten Einfluss
-        %    - Strategie: Komplexität aufsteigend (einfach → schwierig)
-        %    - Ähnlichkeitsbasierte Sortierung: Relevanteste Beispiele zuerst
-        %
-        % 3. Formatierung und Struktur \cite{berryman2024prompt}:
-        %    - Klare Trennung zwischen Input und Output (z.B. "Input:", "Output:")
-        %    - Konsistente Formatierung über alle Beispiele hinweg
-        %    - Delimiter zwischen Beispielen (z.B. "---", "\n\n")
-        %    - Template-Konsistenz: Gleiche Struktur wie bei Inferenz
-        
-        % INSTRUCTION PROMPTING - SYSTEMANWEISUNGEN:
-        %
-        % - Definition: Explizite Aufgabenbeschreibung vor Beispielen
-        % - Komponenten effektiver Instructions \cite{berryman2024prompt,ouyang2022training}:
-        %   * Rollenspezifikation: "Du bist ein Experte für Fahrgastinformation im ÖPNV"
-        %   * Aufgabendefinition: Präzise Beschreibung der Transformation
-        %   * Constraints: Was NICHT getan werden darf (keine Halluzinationen, keine Informationsweglassung)
-        %   * Stilrichtlinien: Tonalität, Formalität, Zielgruppe
-        %   * Ausgabeformat: Erwartete Struktur des generierten Texts
-        %
-        % - Instruction-Länge und Spezifität \cite{berryman2024prompt}:
-        %   * Trade-off: Detailliert vs. flexibel
-        %   * Zu vage: "Schreibe verständlich" → Interpretation variiert
-        %   * Zu spezifisch: "Nutze genau 2 Sätze mit maximal 15 Wörtern" → Unnatürlich
-        %   * Optimal: Prinzipien statt starre Regeln ("Bevorzuge aktive Formulierungen")
-        %
-        % - Negativbeispiele und Abgrenzungen \cite{berryman2024prompt}:
-        %   * "Schreibe NICHT im Telegrammstil" (effektiver als nur positive Vorgaben)
-        %   * "Erfinde KEINE Details, die nicht in der Eingabe stehen" (Anti-Halluzination)
-        %   * Empirisch: Kombination aus positiven und negativen Constraints am effektivsten
-        
-        % CHAIN-OF-THOUGHT PROMPTING - KOMPLEXE REASONING:
-        %
-        % - Grundkonzept \cite{berryman2024prompt,bonstra2024prompt}:
-        %   * Standard-Prompting: Direkte Input → Output-Zuordnung
-        %   * Chain-of-Thought: Zwischenschritte explizit machen
-        %   * Mechanismus: Modell zeigt Denkprozess ("Lass uns Schritt für Schritt denken") \cite{bonstra2024prompt}
-        %   * Besonders effektiv bei Multi-Hop-Reasoning und komplexen Transformationen \cite{berryman2024prompt}
-        %
-        % - Anwendung auf Verkehrsanweisungs-Transformation:
-        %   * Schritt 1: Identifiziere Kernaussage (welche Linie, welche Störung)
-        %   * Schritt 2: Extrahiere Entitäten (Liniennummern, Haltestellen, Zeitangaben)
-        %   * Schritt 3: Bestimme Fahrzeugtyp aus Knowledge Base
-        %   * Schritt 4: Formuliere verständlichen Satz mit allen Informationen
-        %   * Vorteil: Reduziert Fehler durch strukturierten Prozess
-        %
-        % - Zero-Shot-CoT vs. Few-Shot-CoT \cite{bonstra2024prompt}:
-        %   * Zero-Shot-CoT: "Lass uns Schritt für Schritt denken" als Trigger
-        %   * Few-Shot-CoT: Beispiele mit expliziten Reasoning-Schritten
-        %   * Few-Shot-CoT überlegen bei domänenspezifischen Aufgaben
-        %   * Relevant für diese Arbeit: Strukturierte Transformation mit Reasoning
-        %
-        % - Limitierungen \cite{berryman2024prompt}:
-        %   * Erhöhter Token-Verbrauch durch Zwischenschritte
-        %   * Nicht notwendig bei einfachen Transformationen
-        %   * Produktionsumgebung: Post-Processing entfernt Reasoning (nur Endergebnis ausgeben)
-        
-        % PROMPT TEMPLATE DESIGN FÜR AUTOMATISIERUNG:
-        %
-        % - Motivation: Manuelle Prompts für einzelne Anfragen vs. Templates für Batch-Verarbeitung \cite{berryman2024prompt}
-        % - Template-Struktur \cite{berryman2024prompt}:
-        %   * System Prompt: Statisch, enthält Rollenspezifikation und Grundregeln
-        %   * Few-Shot Examples: Statisch oder dynamisch ausgewählt
-        %   * User Prompt: Variabel, enthält konkrete Verkehrsanweisung
-        %   * Optional: Knowledge Context (Linien-Fahrzeug-Zuordnungen als JSON)
-        %
-        % - Variablen-Substitution \cite{berryman2024prompt}:
-        %   * Platzhalter für dynamische Inhalte: {INPUT_INSTRUCTION}, {KNOWLEDGE_BASE}
-        %   * Formatierung: JSON-Escaping, Whitespace-Normalisierung
-        %   * Validierung: Prüfung auf vollständige Substitution vor Inferenz
-        %
-        % - Template-Typen für verschiedene Störungskategorien:
-        %   * Typ A: Bauarbeiten (erfordert Alternativrouten-Information)
-        %   * Typ B: Technische Störungen (erfordert Fahrzeugtyp-Präzision)
-        %   * Typ C: Umleitungen (erfordert geografische Klarheit)
-        %   * Adaptive Template-Auswahl basierend auf Input-Klassifizierung
-        
-        % PROMPT OPTIMIZATION - ITERATIVE VERBESSERUNG:
-        %
-        % - Systematische Optimierung \cite{berryman2024prompt}:
-        %   * Baseline erstellen: Einfacher Prompt als Ausgangspunkt
-        %   * Fehleranalyse: Welche Arten von Fehlern treten auf?
-        %   * Gezielte Constraints hinzufügen: Adressierung spezifischer Fehlerklassen
-        %   * A/B-Testing: Verschiedene Prompt-Varianten vergleichen
-        %   * Iterative Refinement: Schrittweise Verbesserung
-        %
-        % - Automatische Prompt Optimization (kurz erwähnen) \cite{berryman2024prompt}:
-        %   * APE (Automatic Prompt Engineering)
-        %   * LLMs generieren und evaluieren Prompt-Varianten
-        %   * Nicht in dieser Arbeit verwendet (zu ressourcenintensiv)
-        %   * Manuelle Optimierung praktikabler bei kleinem Anwendungsbereich
-        %
-        % - Metrik-gesteuerte Optimierung \cite{berryman2024prompt}:
-        %   * Faktentreue: Prüfung gegen strukturierte Eingabedaten
-        %   * Stilkonformität: Einhaltung der Richtlinien (siehe Abschnitt~\ref{sec:3.2})
-        %   * Konsistenz: Gleiche Eingaben → identische Ausgaben (deterministische Temperatur)
-        %   * Effizienz: Token-Länge minimieren bei gleichbleibender Qualität
-        
-        % ADVANCED PROMPTING TECHNIQUES (KURZ):
-        %
-        % - Self-Consistency \cite{bonstra2024prompt}:
-        %   * Mehrfache Generierung mit Sampling, dann Mehrheitsentscheidung
-        %   * Reduziert Halluzinationen durch Konsensbildung
-        %   * Trade-off: Mehrfache Inferenz-Kosten
-        %   * Anwendbar bei kritischen Transformationen
-        %
-        % - Least-to-Most Prompting \cite{berryman2024prompt}:
-        %   * Zerlegt komplexe Aufgaben in einfachere Teilschritte
-        %   * Jeder Schritt baut auf vorherigem auf
-        %   * Ähnlich zu Chain-of-Thought, aber strukturierter
-        %
-        % - ReAct (Reasoning + Acting) \cite{berryman2024prompt}:
-        %   * Kombination aus Reasoning und Tool-Use
-        %   * Modell entscheidet, wann externe Informationen benötigt werden
-        %   * Nicht direkt relevant für diese Arbeit (keine externen Tools)
-        
-        % PROMPTING BEI BASE MODELS VS. INSTRUCTION-TUNED MODELS:
-        %
-        % - Base Models (wie LeoLM-7B Base) \cite{berryman2024prompt}:
-        %   * Schwache Instruktionsbefolgung ohne Fine-Tuning
-        %   * Tendenz zur Textkontinuation statt Aufgabenlösung
-        %   * Erfordern präzisere, strukturiertere Prompts
-        %   * Few-Shot Examples essentiell (nicht optional)
-        %   * Completion-Framing: "Text: ... Umschreibung:" (statt "Schreibe um:")
-        %
-        % - Instruction-Tuned Models (wie LeoLM-7B-Instruct) \cite{berryman2024prompt,ouyang2022training}:
-        %   * Bessere Zero-Shot-Performance
-        %   * Verstehen imperative Formulierungen ("Transformiere", "Schreibe")
-        %   * Flexiblere Prompt-Formate akzeptabel
-        %   * Few-Shot verbessert weiter, aber weniger kritisch
-        %
-        % - Implikation für diese Arbeit \cite{berryman2024prompt}:
-        %   * Base Model gewählt (siehe Kapitel~\ref{chap:4})
-        %   * Prompt Engineering umso wichtiger bei Base Models
-        %   * Fine-Tuning kann Prompt-Abhängigkeit reduzieren, aber nicht eliminieren
-        %   * Post-Fine-Tuning Prompts: Kürzer und direkter möglich
-        
-        % PROMPT ENGINEERING IM KONTEXT DIESER ARBEIT:
-        %
-        % - Einsatz in verschiedenen Phasen:
-        %   1. Pre-Fine-Tuning: Evaluation verschiedener Base Models (Kapitel~\ref{chap:4})
-        %   2. Training: Few-Shot Examples als Teil des Trainingsformats (Kapitel~\ref{chap:5})
-        %   3. Post-Fine-Tuning: Inference-Zeit-Prompts für Konsistenz (Kapitel~\ref{chap:6})
-        %
-        % - Spezifische Anwendungen:
-        %   * System Prompt: LVB-Stilrichtlinien, Zielgruppendefinition (Fahrgäste)
-        %   * Knowledge Integration: Linien-Fahrzeug-Zuordnungen als strukturierter Kontext
-        %   * Constraint Specification: Keine Halluzinationen, vollständige Informationswiedergabe
-        %   * Format Control: Einzelner Fließtext-Satz als Output
-        %
-        % - Synergieeffekt mit Fine-Tuning:
-        %   * Fine-Tuning lernt domänenspezifisches Vokabular und Muster
-        %   * Prompts steuern aufgabenspezifische Nuancen und Edge Cases
-        %   * Kombination robuster als jede Methode einzeln
-        %   * Reduziert Overfitting-Risiko (Abschnitt~\ref{sec:2.2.4}) durch flexible Steuerung
-        
-        % ÜBERLEITUNG ZU ABSCHNITT 2.2.3:
-        % - Prompt Engineering: Verhaltenssteuerung zur Inferenzzeit
-        % - Nächster Schritt: Datenqualität und -struktur für Fine-Tuning
-        % - Zusammenspiel: Prompts definieren Aufgabe, Daten trainieren Fähigkeiten
-        % - Von "Wie kommuniziere ich die Aufgabe?" zu "Wie bereite ich Trainingsdaten auf?"
+        Während Fine-Tuning in Abschnitt~\ref{sec:2.2.1} permanente Modellanpassung durch Parameteränderung bewirkt, ermöglicht Prompt Engineering Verhaltenssteuerung ohne Gewichtsänderungen. Der Synergieeffekt besteht darin, dass Fine-Tuning domänenspezifische Fähigkeiten vermittelt, während Prompts aufgabenspezifische Kontrolle ermöglichen. Die Relevanz für diese Arbeit manifestiert sich in Stilrichtlinien, Formatvorgaben und Konsistenzanforderungen.
+
+Zero-Shot Prompting liefert nur Instruktion ohne Beispiele. Das Modell erhält eine Aufgabenbeschreibung ohne Demonstrationen. Dies funktioniert bei großen, instruction-tuned Modellen wie GPT-4 oder Claude. Die Limitation besteht darin, dass Base Models wie LeoLM-7B schwache Zero-Shot-Performance aufweisen. Für komplexe Transformationsaufgaben ist dieser Ansatz nicht ausreichend. Ein Beispiel wie „Schreibe diese Verkehrsanweisung verständlich um." führt zu unpräzisen Ergebnissen.
+
+Few-Shot Learning kombiniert Aufgabe mit Beispielen im Prompt [SOURCE-MISSING]. In-Context Learning erfolgt durch Demonstration gewünschten Verhaltens. Der Mechanismus beruht darauf, dass das Modell Muster aus Input-Output-Paaren erkennt. Die Anzahl der Beispiele beträgt typisch 1 bis 10 Shots, da sie durch das Context-Window limitiert ist [SOURCE-MISSING]. Empirische Erkenntnisse zeigen dramatische Leistungssteigerung gegenüber Zero-Shot [SOURCE-MISSING]. Die Performance skaliert mit der Beispielanzahl bis zu einem Plateau-Effekt [SOURCE-MISSING].
+
+Der Vergleich zwischen Few-Shot und Fine-Tuning [SOURCE-MISSING] zeigt, dass Few-Shot keine permanenten Änderungen bewirkt und flexibel anpassbar ist. Fine-Tuning ändert Modellgewichte und vermittelt domänenspezifische Expertise. Der Trade-off besteht darin, dass Few-Shot längere Prompts benötigt und Kontext-Token-Kosten verursacht. Die Kombination ist optimal: Fine-Tuning für Grundfähigkeiten, Few-Shot für Nuancen.
+
+Das Few-Shot Prompt Design erfordert praktische Überlegungen. Bei der Beispielauswahl [SOURCE-MISSING] ist Diversität wichtig, um verschiedene Störungstypen wie Bauarbeiten, technische Störungen und Umleitungen abzudecken. Repräsentativität bedeutet, häufigste Fälle zuerst zu behandeln, Edge Cases später. Qualität übertrifft Quantität: 3 perfekte Beispiele sind besser als 10 durchschnittliche [SOURCE-MISSING]. Balancierung folgt der gleichen Verteilung wie im Datensatz (siehe Abschnitt~\ref{sec:2.2.3}).
+
+Die Beispielreihenfolge [SOURCE-MISSING] unterliegt Recency Bias, wobei letzte Beispiele den stärksten Einfluss haben. Die Strategie besteht darin, Komplexität aufsteigend anzuordnen, von einfach zu schwierig. Ähnlichkeitsbasierte Sortierung platziert relevanteste Beispiele zuerst.
+
+Formatierung und Struktur [SOURCE-MISSING] erfordern klare Trennung zwischen Input und Output, beispielsweise durch „Input:" und „Output:". Konsistente Formatierung über alle Beispiele hinweg ist essentiell. Delimiter zwischen Beispielen wie „---" oder doppelte Zeilenumbrüche strukturieren den Prompt. Template-Konsistenz bedeutet, dass die gleiche Struktur wie bei Inferenz verwendet wird.
+
+Instruction Prompting mittels Systemanweisungen definiert explizit die Aufgabenbeschreibung vor Beispielen. Komponenten effektiver Instructions [SOURCE-MISSING] umfassen Rollenspezifikation wie „Du bist ein Experte für Fahrgastinformation im ÖPNV", präzise Aufgabendefinition der Transformation, Constraints bezüglich dessen, was nicht getan werden darf wie keine Halluzinationen und keine Informationsweglassung, Stilrichtlinien für Tonalität, Formalität und Zielgruppe sowie Ausgabeformat für die erwartete Struktur des generierten Texts.
+
+Instruction-Länge und Spezifität [SOURCE-MISSING] beinhalten einen Trade-off zwischen Detailliertheit und Flexibilität. Zu vage Instruktionen wie „Schreibe verständlich" führen zu variierender Interpretation. Zu spezifische Vorgaben wie „Nutze genau 2 Sätze mit maximal 15 Wörtern" wirken unnatürlich. Optimal sind Prinzipien statt starre Regeln, wie „Bevorzuge aktive Formulierungen".
+
+Negativbeispiele und Abgrenzungen [SOURCE-MISSING] sind effektiver als nur positive Vorgaben. „Schreibe NICHT im Telegrammstil" und „Erfinde KEINE Details, die nicht in der Eingabe stehen" zur Anti-Halluzination zeigen, dass empirisch die Kombination aus positiven und negativen Constraints am effektivsten ist.
+
+Chain-of-Thought Prompting für komplexes Reasoning [SOURCE-MISSING] unterscheidet sich von Standard-Prompting durch direkte Input-Output-Zuordnung. Chain-of-Thought macht Zwischenschritte explizit. Der Mechanismus besteht darin, dass das Modell den Denkprozess zeigt mit „Lass uns Schritt für Schritt denken" [SOURCE-MISSING]. Dies ist besonders effektiv bei Multi-Hop-Reasoning und komplexen Transformationen [SOURCE-MISSING].
+
+Die Anwendung auf Verkehrsanweisungs-Transformation erfolgt schrittweise: Identifiziere Kernaussage bezüglich Linie und Störung, extrahiere Entitäten wie Liniennummern, Haltestellen und Zeitangaben, bestimme Fahrzeugtyp aus Knowledge Base, formuliere verständlichen Satz mit allen Informationen. Der Vorteil besteht in reduzierter Fehlerrate durch strukturierten Prozess.
+
+Zero-Shot-CoT versus Few-Shot-CoT [SOURCE-MISSING] zeigt, dass Zero-Shot-CoT „Lass uns Schritt für Schritt denken" als Trigger nutzt. Few-Shot-CoT verwendet Beispiele mit expliziten Reasoning-Schritten. Few-Shot-CoT ist überlegen bei domänenspezifischen Aufgaben und relevant für strukturierte Transformation mit Reasoning in dieser Arbeit.
+
+Limitierungen [SOURCE-MISSING] bestehen in erhöhtem Token-Verbrauch durch Zwischenschritte. Bei einfachen Transformationen ist dies nicht notwendig. In Produktionsumgebung entfernt Post-Processing Reasoning, sodass nur das Endergebnis ausgegeben wird.
+
+Prompt Template Design für Automatisierung unterscheidet manuelle Prompts für einzelne Anfragen von Templates für Batch-Verarbeitung [SOURCE-MISSING]. Die Template-Struktur [SOURCE-MISSING] umfasst System Prompt als statische Komponente mit Rollenspezifikation und Grundregeln, Few-Shot Examples als statisch oder dynamisch ausgewählt, User Prompt als variable Komponente mit konkreter Verkehrsanweisung sowie optional Knowledge Context mit Linien-Fahrzeug-Zuordnungen als JSON.
+
+Variablen-Substitution [SOURCE-MISSING] nutzt Platzhalter für dynamische Inhalte wie \{INPUT\_INSTRUCTION\} und \{KNOWLEDGE\_BASE\}. Formatierung umfasst JSON-Escaping und Whitespace-Normalisierung. Validierung prüft vollständige Substitution vor Inferenz.
+
+Template-Typen für verschiedene Störungskategorien differenzieren Typ A für Bauarbeiten mit Alternativrouten-Information, Typ B für technische Störungen mit Fahrzeugtyp-Präzision, Typ C für Umleitungen mit geografischer Klarheit. Adaptive Template-Auswahl basiert auf Input-Klassifizierung.
+
+Prompt Optimization erfolgt durch iterative Verbesserung. Systematische Optimierung [SOURCE-MISSING] erstellt eine Baseline mit einfachem Prompt als Ausgangspunkt, führt Fehleranalyse durch, um Fehlerarten zu identifizieren, fügt gezielte Constraints zur Adressierung spezifischer Fehlerklassen hinzu, vergleicht verschiedene Prompt-Varianten durch A/B-Testing und verbessert schrittweise durch iterative Refinement.
+
+Automatische Prompt Optimization [SOURCE-MISSING] mittels APE (Automatic Prompt Engineering) nutzt LLMs zur Generierung und Evaluation von Prompt-Varianten. Diese Methode wird in dieser Arbeit nicht verwendet, da sie zu ressourcenintensiv ist. Manuelle Optimierung ist praktikabler bei kleinem Anwendungsbereich.
+
+Metrik-gesteuerte Optimierung [SOURCE-MISSING] prüft Faktentreue gegen strukturierte Eingabedaten, überwacht Stilkonformität zur Einhaltung der Richtlinien (siehe Abschnitt~\ref{sec:3.2}), gewährleistet Konsistenz, sodass gleiche Eingaben identische Ausgaben bei deterministischer Temperatur erzeugen, und optimiert Effizienz durch Minimierung der Token-Länge bei gleichbleibender Qualität.
+
+Advanced Prompting Techniques umfassen Self-Consistency [SOURCE-MISSING] mit mehrfacher Generierung durch Sampling und anschließender Mehrheitsentscheidung. Dies reduziert Halluzinationen durch Konsensbildung, verursacht jedoch Trade-off durch mehrfache Inferenz-Kosten. Die Anwendung eignet sich bei kritischen Transformationen.
+
+Least-to-Most Prompting [SOURCE-MISSING] zerlegt komplexe Aufgaben in einfachere Teilschritte, wobei jeder Schritt auf vorherigem aufbaut. Dies ist ähnlich zu Chain-of-Thought, aber strukturierter.
+
+ReAct (Reasoning + Acting) [SOURCE-MISSING] kombiniert Reasoning mit Tool-Use. Das Modell entscheidet, wann externe Informationen benötigt werden. Dies ist nicht direkt relevant für diese Arbeit, da keine externen Tools verwendet werden.
+
+Prompting bei Base Models versus Instruction-Tuned Models zeigt Unterschiede. Base Models wie LeoLM-7B Base [SOURCE-MISSING] weisen schwache Instruktionsbefolgung ohne Fine-Tuning auf, tendieren zur Textkontinuation statt Aufgabenlösung, erfordern präzisere, strukturiertere Prompts, machen Few-Shot Examples essentiell und nicht optional und nutzen Completion-Framing wie „Text: ... Umschreibung:" statt „Schreibe um:".
+
+Instruction-Tuned Models wie LeoLM-7B-Instruct [SOURCE-MISSING] zeigen bessere Zero-Shot-Performance, verstehen imperative Formulierungen wie „Transformiere" oder „Schreibe", akzeptieren flexiblere Prompt-Formate, profitieren von Few-Shot zur weiteren Verbesserung, wobei dies weniger kritisch ist.
+
+Die Implikation für diese Arbeit [SOURCE-MISSING] besteht darin, dass das Base Model gewählt wurde (siehe Kapitel~\ref{chap:4}). Prompt Engineering ist umso wichtiger bei Base Models. Fine-Tuning kann Prompt-Abhängigkeit reduzieren, aber nicht eliminieren. Post-Fine-Tuning Prompts können kürzer und direkter sein.
+
+Prompt Engineering im Kontext dieser Arbeit findet Einsatz in verschiedenen Phasen: Pre-Fine-Tuning zur Evaluation verschiedener Base Models (Kapitel~\ref{chap:4}), Training mit Few-Shot Examples als Teil des Trainingsformats (Kapitel~\ref{chap:5}) und Post-Fine-Tuning mit Inference-Zeit-Prompts für Konsistenz (Kapitel~\ref{chap:6}).
+
+Spezifische Anwendungen umfassen System Prompt mit LVB-Stilrichtlinien und Zielgruppendefinition für Fahrgäste, Knowledge Integration mit Linien-Fahrzeug-Zuordnungen als strukturierter Kontext, Constraint Specification ohne Halluzinationen bei vollständiger Informationswiedergabe sowie Format Control für einzelnen Fließtext-Satz als Output.
+
+Der Synergieeffekt mit Fine-Tuning besteht darin, dass Fine-Tuning domänenspezifisches Vokabular und Muster lernt, während Prompts aufgabenspezifische Nuancen und Edge Cases steuern. Die Kombination ist robuster als jede Methode einzeln und reduziert Overfitting-Risiko (Abschnitt~\ref{sec:2.2.4}) durch flexible Steuerung.
+
+Die Überleitung zu Abschnitt~\ref{sec:2.2.3} verdeutlicht, dass Prompt Engineering Verhaltenssteuerung zur Inferenzzeit ermöglicht. Der nächste Schritt betrifft Datenqualität und -struktur für Fine-Tuning. Das Zusammenspiel besteht darin, dass Prompts die Aufgabe definieren, während Daten Fähigkeiten trainieren. Die Perspektive verschiebt sich von „Wie kommuniziere ich die Aufgabe?" zu „Wie bereite ich Trainingsdaten auf?".
         
         
         \subsubsection{Datensätze für Fine-Tuning}
@@ -490,105 +352,35 @@ Praktische Implikationen für diese Arbeit umfassen höhere Iterationsgeschwindi
         
         % Ziel: 2-2,5 Seiten
         
-        % EINLEITUNG
-        % - Qualität und Zusammenstellung von Trainingsdaten als kritischer Erfolgsfaktor
-        % - Besondere Herausforderungen bei kleinen domänenspezifischen Datensätzen
-        % - Transfer Learning reduziert Datenbedarf, aber ausreichende Qualität bleibt essentiell
-        
-        % 1. STRUKTUR VON TRAININGSDATEN
-        % - Input-Output-Paare für Supervised Fine-Tuning
-        % - Format-Anforderungen (JSON, JSONL, spezifische Modell-Formate)
-        % - Konsistenz in Struktur und Formatierung
-        % - Annotationsrichtlinien: Klare, eindeutige Richtlinien zur Qualitätssicherung
-        % - Inter-Annotator Agreement als Qualitätsmetrik
-        %
-        % Prompt-Template-basiertes Format-Design \cite{berryman2024prompt}:
-        % - Training-Daten sollten Inference-Format widerspiegeln
-        % - Instruction + Few-Shot Examples + Task als Trainingsstruktur
-        % - Konsistente Delimiter und Formatierung zwischen Training und Inferenz
-        % - Vorteil: Modell lernt nicht nur Inhalt, sondern auch Format-Erwartungen
-        % - Verweis auf Prompt Engineering-Prinzipien (siehe Abschnitt~\ref{sec:2.2.2})
-        
-        % 2. DATA AUGMENTATION STRATEGIEN
-        % - Definition und Motivation: Vergrößerung des Datensatzes ohne zusätzliche manuelle Annotation
-        % - Ziele: Generalisierung verbessern, Overfitting reduzieren, Robustheit erhöhen
-        %
-        % Methoden der Datenaugmentierung \cite{feng2021survey}:
-        % a) RULE-BASED AUGMENTATION:
-        %    - Synonym Replacement: Austausch von Wörtern durch Synonyme
-        %    - Random Insertion: Einfügen zusätzlicher Wörter
-        %    - Random Swap: Vertauschen von Wortpositionen
-        %    - Random Deletion: Entfernen einzelner Wörter
-        %    - EDA (Easy Data Augmentation) \cite{wei2019eda}: Kombination obiger Techniken
-        %    - Effektiv bei kleinen Datensätzen (50-500 Beispiele)
-        %
-        % b) MODEL-BASED AUGMENTATION:
-        %    - Back-Translation: Übersetzung in andere Sprache und zurück
-        %    - Paraphrasing mit vortrainierten Modellen
-        %    - Contextual Word Embeddings für Ersetzungen
-        %    - Template-basierte Generierung \cite{kumar2020data}
-        %    - Höhere Qualität, aber rechenintensiver
-        %
-        % c) SYNTHETIC DATA GENERATION:
-        %    - Generierung komplett neuer Beispiele durch LLMs
-        %    - Constraint-basierte Generation mit validierten Entitäten \cite{kumar2020data}
-        %    - Kontrolle über Diversität und Abdeckung
-        %    - Risiko: Halluzinationen und unrealistische Beispiele
-        %    - Best Practice: Kombination aus realen und synthetischen Daten (typisch 20-30% synthetisch)
-        %
-        % Empirische Erkenntnisse:
-        % - EDA zeigt 50% der Daten können gleiche Accuracy erreichen wie 100% ohne Augmentierung \cite{wei2019eda}
-        % - Effekt verstärkt sich bei kleineren Datensätzen
-        % - Qualität wichtiger als Quantität bei synthetischen Daten
-        
-        % 3. BALANCED DATASETS UND CLASS DISTRIBUTION
-        % - Problematik unbalancierter Datensätze:
-        %   * Modell tendiert zu häufigen Klassen
-        %   * Schlechtere Performance auf seltenen, aber wichtigen Fällen
-        %   * Bias in Vorhersagen
-        % - Strategien für Balance \cite{feng2021survey}:
-        %   * Oversampling unterrepräsentierter Kategorien
-        %   * Undersampling überrepräsentierter Kategorien (mit Vorsicht)
-        %   * Synthetic Minority Over-sampling (SMOTE-ähnliche Ansätze)
-        %   * Class-weighted Loss Functions
-        % - Empfohlene Verhältnisse:
-        %   * Ideale Balance: Gleiche Anzahl pro Kategorie
-        %   * Praxis: Max. 1:3 Verhältnis zwischen seltenster und häufigster Kategorie akzeptabel
-        %   * Bei stärkerer Imbalance: Gezielte Augmentierung erforderlich
-        
-        % 4. UMGANG MIT KLEINEN DATENSÄTZEN
-        % - Definition "klein": Typischerweise < 1000 Beispiele für Fine-Tuning
-        % - Few-Shot Learning als Alternative \cite{wei2021finetuned}
-        % - Data Efficiency Techniques:
-        %   * Aggressive Augmentierung (aber Qualität wahren)
-        %   * Parameter-effiziente Methoden (LoRA) reduzieren Overfitting-Risiko
-        %   * Niedrigere Learning Rates
-        %   * Early Stopping basierend auf Validation Loss
-        % - Mixed Task Training:
-        %   * Kombination domänenspezifischer und allgemeiner Daten
-        %   * Verhältnis typisch 85-90% spezifisch, 10-15% allgemein \cite{raffel2020exploring}
-        %   * Verhindert Catastrophic Forgetting (siehe Abschnitt~\ref{sec:2.2.4})
-        %   * Erhält Generalisierungsfähigkeit
-        
-        % 5. TRAIN-VALIDATION-TEST-SPLIT
-        % - Standard-Aufteilung: 70-80% Training, 10-15% Validation, 10-15% Test
-        % - Bei kleinen Datensätzen: 80-10-10 oder Cross-Validation
-        % - Wichtig: Stratified Split bei kategorischen Daten (erhält Balance)
-        % - Temporale Splits bei zeitabhängigen Daten
-        % - Vermeidung von Data Leakage zwischen Splits
-        
-        % 6. QUALITÄTSSICHERUNG
-        % - Automatisierte Validierung (siehe Abschnitt~\ref{sec:5.2.2} für praktische Umsetzung):
-        %   * Strukturprüfung (Format, Pflichtfelder)
-        %   * Konsistenzprüfung (Entitäten, Fakten)
-        %   * Duplikatserkennung
-        % - Manuelle Stichprobenprüfung
-        % - Iterative Verbesserung basierend auf Modellfehlern
-        
-        % ÜBERGANG zu Kapitel~\ref{chap:5}:
-        % - Diese theoretischen Grundlagen bilden Basis für praktische Datensatzerstellung
-        % - Konkrete Anwendung dieser Prinzipien in Abschnitt~\ref{sec:5.2} beschrieben
-        % - Anpassung an spezifische Anforderungen der Verkehrsanweisungstransformation
+        Die Qualität und Zusammenstellung von Trainingsdaten stellen einen kritischen Erfolgsfaktor für das Fine-Tuning dar. Besondere Herausforderungen ergeben sich bei kleinen domänenspezifischen Datensätzen. Transfer Learning reduziert den Datenbedarf, aber ausreichende Qualität bleibt essentiell.
+
+Trainingsdaten für Supervised Fine-Tuning bestehen aus Input-Output-Paaren. Format-Anforderungen umfassen JSON, JSONL oder spezifische Modell-Formate. Konsistenz in Struktur und Formatierung ist unabdingbar. Annotationsrichtlinien sichern durch klare, eindeutige Vorgaben die Qualität. Inter-Annotator Agreement dient als Qualitätsmetrik.
+
+Prompt-Template-basiertes Format-Design [SOURCE-MISSING] erfordert, dass Training-Daten das Inference-Format widerspiegeln. Instruction, Few-Shot Examples und Task bilden die Trainingsstruktur. Konsistente Delimiter und Formatierung zwischen Training und Inferenz sind erforderlich. Der Vorteil besteht darin, dass das Modell nicht nur Inhalt, sondern auch Format-Erwartungen lernt. Ein Verweis auf Prompt Engineering-Prinzipien erfolgt in Abschnitt~\ref{sec:2.2.2}.
+
+Data Augmentation vergrößert den Datensatz ohne zusätzliche manuelle Annotation. Die Ziele umfassen verbesserte Generalisierung, reduziertes Overfitting und erhöhte Robustheit.
+
+Rule-based Augmentation [SOURCE-MISSING] umfasst Synonym Replacement durch Austausch von Wörtern, Random Insertion durch Einfügen zusätzlicher Wörter, Random Swap durch Vertauschen von Wortpositionen, Random Deletion durch Entfernen einzelner Wörter sowie EDA (Easy Data Augmentation) [SOURCE-MISSING] als Kombination obiger Techniken. Dies ist effektiv bei kleinen Datensätzen mit 50 bis 500 Beispielen.
+
+Model-based Augmentation nutzt Back-Translation durch Übersetzung in andere Sprache und zurück, Paraphrasing mit vortrainierten Modellen, Contextual Word Embeddings für Ersetzungen sowie Template-basierte Generierung [SOURCE-MISSING]. Diese Methoden bieten höhere Qualität, sind aber rechenintensiver.
+
+Synthetic Data Generation erzeugt komplett neue Beispiele durch LLMs. Constraint-basierte Generation mit validierten Entitäten [SOURCE-MISSING] ermöglicht Kontrolle über Diversität und Abdeckung. Das Risiko besteht in Halluzinationen und unrealistischen Beispielen. Best Practice kombiniert reale und synthetische Daten, typisch 20 bis 30\,\% synthetisch.
+
+Empirische Erkenntnisse zeigen, dass EDA mit 50\,\% der Daten gleiche Accuracy erreichen kann wie 100\,\% ohne Augmentierung [SOURCE-MISSING]. Der Effekt verstärkt sich bei kleineren Datensätzen. Qualität ist wichtiger als Quantität bei synthetischen Daten.
+
+Unbalancierte Datensätze führen dazu, dass Modelle zu häufigen Klassen tendieren, schlechtere Performance auf seltenen aber wichtigen Fällen zeigen und Bias in Vorhersagen aufweisen. Strategien für Balance [SOURCE-MISSING] umfassen Oversampling unterrepräsentierter Kategorien, vorsichtiges Undersampling überrepräsentierter Kategorien, SMOTE-ähnliche Ansätze sowie Class-weighted Loss Functions.
+
+Empfohlene Verhältnisse beinhalten ideale Balance mit gleicher Anzahl pro Kategorie. In der Praxis ist ein maximales 1:3-Verhältnis zwischen seltenster und häufigster Kategorie akzeptabel. Bei stärkerer Imbalance ist gezielte Augmentierung erforderlich.
+
+Der Umgang mit kleinen Datensätzen definiert „klein" typischerweise als weniger als 1000 Beispiele für Fine-Tuning. Few-Shot Learning stellt eine Alternative dar [SOURCE-MISSING]. Data Efficiency Techniques umfassen aggressive Augmentierung bei Qualitätswahrung, parameter-effiziente Methoden wie LoRA zur Reduktion des Overfitting-Risikos, niedrigere Learning Rates sowie Early Stopping basierend auf Validation Loss.
+
+Mixed Task Training kombiniert domänenspezifische und allgemeine Daten. Das Verhältnis beträgt typisch 85 bis 90\,\% spezifisch und 10 bis 15\,\% allgemein [SOURCE-MISSING]. Dies verhindert Catastrophic Forgetting (siehe Abschnitt~\ref{sec:2.2.4}) und erhält Generalisierungsfähigkeit.
+
+Die Standard-Aufteilung für Train-Validation-Test-Split beträgt 70 bis 80\,\% Training, 10 bis 15\,\% Validation und 10 bis 15\,\% Test. Bei kleinen Datensätzen wird 80-10-10 oder Cross-Validation empfohlen. Stratified Split bei kategorischen Daten erhält Balance. Temporale Splits sind bei zeitabhängigen Daten wichtig. Vermeidung von Data Leakage zwischen Splits ist essentiell.
+
+Qualitätssicherung erfolgt durch automatisierte Validierung (siehe Abschnitt~\ref{sec:5.2.2} für praktische Umsetzung) mit Strukturprüfung von Format und Pflichtfeldern, Konsistenzprüfung von Entitäten und Fakten sowie Duplikatserkennung. Manuelle Stichprobenprüfung und iterative Verbesserung basierend auf Modellfehlern ergänzen dies.
+
+Der Übergang zu Kapitel~\ref{chap:5} zeigt, dass diese theoretischen Grundlagen die Basis für praktische Datensatzerstellung bilden. Die konkrete Anwendung dieser Prinzipien wird in Abschnitt~\ref{sec:5.2} beschrieben. Anpassung an spezifische Anforderungen der Verkehrsanweisungstransformation erfolgt dort.
         
         
         \subsubsection{Herausforderungen beim Fine-Tuning}
@@ -596,240 +388,75 @@ Praktische Implikationen für diese Arbeit umfassen höhere Iterationsgeschwindi
         
         % Ziel: 1,5-2 Seiten
         
-        % EINLEITUNG:
-        % - Fine-Tuning vortrainierter Modelle bringt spezifische Herausforderungen
-        % - Spannungsfeld: Spezialisierung auf neue Aufgabe vs. Erhalt allgemeiner Fähigkeiten
-        % - Besonders kritisch bei kleinen domänenspezifischen Datensätzen
-        % - Drei zentrale Problemfelder: Overfitting, Catastrophic Forgetting, Konvergenz
-        
-        % ============================================================================
-        % 1. OVERFITTING - ÜBERANPASSUNG AN TRAININGSDATEN
-        % ============================================================================
-        
-        % DEFINITION UND SYMPTOME:
-        % - Modell lernt Trainingsdaten auswendig statt Muster zu generalisieren
-        % - Charakteristisch: Hohe Training Accuracy, niedrige Validation/Test Accuracy
-        % - Divergenz zwischen Training und Validation Loss
-        % - Besonders ausgeprägt bei kleinen Datensätzen (< 1000 Beispiele)
-        % - LoRA reduziert Overfitting-Risiko gegenüber Full Fine-Tuning, eliminiert es aber nicht
-        %
-        % URSACHEN:
-        % - Modellkomplexität übersteigt Informationsgehalt der Trainingsdaten
-        % - Zu hohe Anzahl trainierbarer Parameter relativ zur Datensatzgröße
-        % - Zu viele Trainings-Epochen: Modell memoriert statt zu lernen
-        % - Unbalancierte Datensätze: Bias zu überrepräsentierten Kategorien
-        % - Zu hohe Learning Rate: Instabile, zu schnelle Anpassung an Trainingsdaten
-        %
-        % Bei LoRA-Fine-Tuning spezifisch:
-        % - Höherer Rank (r) → mehr trainierbare Parameter → höheres Overfitting-Risiko
-        % - Mehr Target Modules → größere Angriffsfläche für Überanpassung
-        % - Trade-off: Expressivität vs. Generalisierung
-        %
-        % VERMEIDUNGSSTRATEGIEN:
-        %
-        % a) Regularisierung [SOURCE-MISSING: Goodfellow et al., 2016]:
-        %    - L2-Regularisierung (Weight Decay): Bestraft große Gewichtswerte
-        %      * Mathematisch: Zusätzlicher Term λ||w||² zur Loss-Funktion
-        %      * Fördert kleinere, gleichmäßiger verteilte Gewichte
-        %    - L1-Regularisierung: Fördert Sparsity (weniger relevant für LoRA)
-        %    - Dropout [SOURCE-MISSING: Srivastava et al., 2014]:
-        %      * Zufälliges Deaktivieren von Neuronen während Training
-        %      * Bei LoRA: Nur für lange Trainings-Episoden geeignet (siehe Abschnitt~\ref{sec:2.2.1})
-        %      * Verhindert Co-Adaptationen zwischen Neuronen
-        %
-        % b) Early Stopping [SOURCE-MISSING: Prechelt, 1998]:
-        %    - Kontinuierliches Monitoring von Validation Loss während Training
-        %    - Training stoppen, wenn Validation Loss nicht mehr sinkt oder ansteigt
-        %    - Typische Patience-Strategie: 3-5 Epochen ohne Verbesserung
-        %    - Verhindert Überanpassung in späten Trainingsphasen
-        %    - Erfordert separates Validation Set (nicht Teil der Trainingsdaten)
-        %
-        % c) Datenaugmentierung (siehe Abschnitt~\ref{sec:2.2.3}):
-        %    - Künstliche Vergrößerung des effektiven Datensatzes
-        %    - Reduziert Overfitting durch erhöhte Variabilität
-        %    - Methoden: EDA, Back-Translation, Synthetic Data Generation
-        %    - Erhöht Robustheit gegenüber Formulierungsvariationen
-        %
-        % d) Cross-Validation:
-        %    - K-Fold Cross-Validation bei sehr kleinen Datensätzen
-        %    - Robustere Schätzung der Generalisierungsfähigkeit
-        %    - Rechenintensiv, aber aussagekräftiger bei limitierten Daten
-        %
-        % e) PEFT-spezifische Strategien:
-        %    - Niedrigerer LoRA-Rank: Reduziert trainierbare Parameter
-        %    - Selektive Target Modules: Nur kritische Layer anpassen
-        %    - Trade-off: Geringere Expressivität vs. bessere Generalisierung
-        %
-        % UNDERFITTING VS. OVERFITTING - BALANCIERUNG:
-        % - Underfitting: Modell zu einfach, erfasst Muster nicht (zu niedriger Rank, zu wenig Training)
-        % - Overfitting: Modell zu komplex, memoriert Daten (zu hoher Rank, zu viel Training)
-        % - Optimaler Arbeitspunkt liegt zwischen beiden Extremen
-        % - Empirische Bestimmung durch Validation-Set-Performance notwendig
-        % - Bias-Variance Trade-off [SOURCE-MISSING: Geman et al., 1992]
-        
-        % ============================================================================
-        % 2. CATASTROPHIC FORGETTING - VERLUST VORTRAINIERTER FÄHIGKEITEN
-        % ============================================================================
-        
-        % DEFINITION:
-        % - Phänomen: Modell verliert während Fine-Tuning Fähigkeiten aus Pretraining-Phase
-        % - Spezialisierung auf neue Aufgabe geht zu Lasten allgemeiner Kompetenzen
-        % - Graduelle oder abrupte Verschlechterung auf Pretraining-Tasks
-        % - Erstmals dokumentiert in neuronalen Netzen [SOURCE-MISSING: McCloskey & Cohen, 1989]
-        % - Bei LoRA: Weniger ausgeprägt als bei Full Fine-Tuning, aber vorhanden [SOURCE-MISSING: Luo et al., 2025; Yang et al., 2024]
-        %
-        % MANIFESTATIONEN:
-        % - Wissensverlust: Fakten aus Pretraining-Korpora nicht mehr abrufbar
-        % - Sprachkompetenz-Degradation: Verschlechterung grammatikalischer Fähigkeiten
-        % - Task Interference: Neue Aufgabe überschreibt Wissen über alte Aufgaben
-        % - Safety Alignment Degradation [SOURCE-MISSING: Qi et al., 2023; Hsu et al., 2024]:
-        %   * Fine-Tuning kann Safety Guardrails schwächen
-        %   * Betrifft alle PEFT-Methoden (LoRA, Adapter, Prefix Tuning)
-        %   * Selbst bei benign Training Data möglich (nicht nur adversarial)
-        %
-        % THEORETISCHE URSACHEN:
-        % - Weight Interference: Neue Gewichtsanpassungen überschreiben alte Repräsentationen
-        % - Gradient Descent Bias: Optimierung favorisiert aktuelle Task über vorherige
-        % - Representation Overlap: Shared Weights müssen beide Tasks gleichzeitig kodieren
-        % - Distribution Shift: Trainingsverteilung unterscheidet sich stark von Pretraining-Daten
-        %
-        % LoRA-spezifische Faktoren:
-        % - Zero-Initialisierung der B-Matrix kann Konvergenz verlangsamen [SOURCE-MISSING: Luo et al., 2025]
-        % - Low-Rank Updates können wichtige Pretraining-Repräsentationen nicht vollständig bewahren
-        % - Trotz eingefrorener Basisgewichte: Adapter-Outputs können Aktivierungen verzerren
-        %
-        % GEGENMAÄSSNAHMEN:
-        %
-        % a) Niedrigere Learning Rates [SOURCE-MISSING: Howard & Ruder, 2018]:
-        %    - Typisch: 1e-4 bis 5e-5 für LoRA (vs. 1e-3 für Full Fine-Tuning)
-        %    - Sanftere Anpassung erhält mehr Pretraining-Wissen
-        %    - Trade-off: Langsamere Konvergenz
-        %
-        % b) LoRA als sanftere Alternative zu Full Fine-Tuning:
-        %    - Originalgewichte bleiben eingefroren (siehe Abschnitt~\ref{sec:2.2.1})
-        %    - Nur Low-Rank-Adapter werden trainiert
-        %    - Reduziert Catastrophic Forgetting im Vergleich zu Full Fine-Tuning
-        %    - Aber: Nicht vollständig eliminiert [SOURCE-MISSING: Luo et al., 2025]
-        %
-        % c) Mixed Task Training:
-        %    - Kombination domänenspezifischer und allgemeiner Daten
-        %    - Typisches Verhältnis: 85-90% spezifisch, 10-15% allgemein \cite{raffel2020exploring}
-        %    - Erhält Generalisierungsfähigkeit während Spezialisierung
-        %    - Beispiel: LVB-Verkehrsanweisungen + allgemeine deutsche Texte
-        %
-        % d) Regularisierungstechniken:
-        %    - Elastic Weight Consolidation (EWC) [SOURCE-MISSING: Kirkpatrick et al., 2017]
-        %    - Knowledge Distillation vom Pretraining-Modell
-        %    - Bei LoRA: Weniger kritisch aufgrund gefrorener Basisgewichte
-        %
-        % e) Early Stopping basierend auf Generalisierungsmetriken:
-        %    - Monitoring nicht nur Task-Accuracy, sondern auch allgemeine Sprachfähigkeiten
-        %    - Perplexity auf Out-of-Domain-Daten als Indikator
-        %    - Training stoppen bei signifikantem Anstieg
-        
-        % ============================================================================
-        % 3. KONVERGENZ-HERAUSFORDERUNGEN BEI LORA
-        % ============================================================================
-        
-        % LANGSAME KONVERGENZ:
-        % - LoRA konvergiert signifikant langsamer als Full Fine-Tuning [SOURCE-MISSING: Wang et al., 2024]
-        % - Empirisch dokumentiert: 5-6x mehr Iterationen und FLOPs für gleiche Performance
-        % - Paradoxe Situation: Pro-Iteration effizienter, aber Gesamt-Trainingskosten höher
-        % - Kann zu schlechterer finaler Test-Performance führen
-        % - Nicht nur Geschwindigkeitsproblem, sondern fundamentale Optimierungsschwierigkeit
-        %
-        % ARCHITEKTONISCHE URSACHEN:
-        %
-        % a) Zero-Initialisierung der B-Matrix [SOURCE-MISSING: Wang et al., 2024]:
-        %    - Bei Training-Start: ΔW = BA = 0 (keine initiale Störung)
-        %    - Langsame Trainingsdynamik zwischen A und B in frühen Epochen
-        %    - "Kurzsichtige" Inter-Layer-Interaktionen
-        %    - Verzögert Entwicklung komplexer Feature-Transformationen
-        %
-        % b) Low-Rank Constraint [SOURCE-MISSING: Shen et al., 2025; Xia et al., 2024]:
-        %    - Gewichtsupdates auf niedrigdimensionalen Unterraum beschränkt
-        %    - Kann komplexe Adaptionen nicht vollständig abbilden
-        %    - Limitiert Expressivität der Weight Updates
-        %    - Performance-Gap zu Full Fine-Tuning bei komplexen Datensätzen [SOURCE-MISSING: Wang et al., 2025]
-        %
-        % c) Imbalancierte Weight Updates [SOURCE-MISSING: Zhang et al., 2025; Yen et al., 2024]:
-        %    - Low-Rank-Faktorisierung ist nicht eindeutig (non-unique)
-        %    - Verschiedene A-B-Kombinationen ergeben gleiches ΔW
-        %    - Führt zu inkonsistenten und imbalancierten Updates
-        %    - Suboptimale Konvergenzpfade im Optimierungsraum
-        %
-        % RANK-AUSWAHL-DILEMMA - "LOW-RANK BOTTLENECK":
-        %
-        % - Fundamentales Trade-off [SOURCE-MISSING: Dong et al., 2025; Biderman et al., 2024]:
-        %   * Niedriger Rank (r=4-8): 
-        %     - Hohe Parameter-Effizienz
-        %     - Schnelles Training pro Iteration
-        %     - ABER: Signifikanter Performance-Gap zu Full Fine-Tuning
-        %     - Expressivität zu gering für komplexe Aufgaben
-        %   
-        %   * Hoher Rank (r=64-128):
-        %     - Bessere Performance, nähert sich Full Fine-Tuning an
-        %     - Höhere Expressivität der Weight Updates
-        %     - ABER: Parameter-Kosten wachsen linear mit Rank
-        %     - Schwächt fundamentalen Vorteil der Parameter-Effizienz
-        %
-        % - Empirische Beobachtungen:
-        %   * Performance verbessert sich monoton mit steigendem Rank [SOURCE-MISSING: Dong et al., 2025]
-        %   * Aber: Diminishing Returns ab bestimmtem Rank (task-abhängig)
-        %   * Optimaler Rank variiert nach Modellgröße, Task-Komplexität, Datensatzgröße
-        %   * Keine universelle Heuristik: Empirische Bestimmung erforderlich [SOURCE-MISSING: Rajabzadeh et al., 2024]
-        %
-        % - "Low-Rank Bottleneck":
-        %   * Narrowing Performance-Gap erfordert Rank-Erhöhung
-        %   * Bei sehr hohem Rank: Annäherung an Full Fine-Tuning-Kosten
-        %   * Fundamentale Limitation der Low-Rank-Annahme
-        %   * Theoretische Grenze der PEFT-Effizienz
-        %
-        % PERFORMANCE-GAP ZU FULL FINE-TUNING:
-        % - Konsistent dokumentiert über verschiedene Benchmarks [SOURCE-MISSING: Tastan et al., 2025; Biderman et al., 2024]
-        % - Besonders ausgeprägt bei:
-        %   * Komplexen Datensätzen mit diversen Sub-Domänen
-        %   * Tasks mit hoher semantischer Variabilität
-        %   * Kleinen Modellen (< 7B Parameter) [SOURCE-MISSING: Wang et al., 2025]
-        % - Gap verringert sich mit:
-        %   * Größeren Basismodellen
-        %   * Höherem LoRA-Rank
-        %   * Längeren Trainings-Episoden
-        %
-        % OVERFITTING BEI LORA-TRAINING:
-        % - Widersprüchliche Phänomene [SOURCE-MISSING: Mao et al., 2024]:
-        %   * Höherer Rank bringt nicht zwingend bessere Performance
-        %   * Kann zu Overfitting führen, besonders bei kleinen Datensätzen
-        %   * Non-monotones Verhalten: Optimum liegt oft bei mittlerem Rank
-        % - Initialization Bottleneck [SOURCE-MISSING: Xue, 2025]:
-        %   * Zero-Initialisierung limitiert Aktivierung der Originalgewichte
-        %   * Kann optimale Performance-Pfade blockieren
-        
-        % ============================================================================
-        % ZUSAMMENFASSUNG & INTERAKTIONEN
-        % ============================================================================
-        
-        % WECHSELWIRKUNGEN ZWISCHEN HERAUSFORDERUNGEN:
-        % - Overfitting und Catastrophic Forgetting:
-        %   * Beide profitieren von Regularisierung und Early Stopping
-        %   * Gegenläufig: Overfitting will Spezialisierung, CF will Generalisierung
-        %   * Balance erforderlich: Weder zu spezialisiert noch zu generisch
-        %
-        % - Konvergenz und Overfitting:
-        %   * Langsame Konvergenz kann Overfitting verzögern (implizite Regularisierung)
-        %   * Zu viele Epochen: Langsame Konvergenz führt trotzdem zu Overfitting
-        %   * Early Stopping muss beide Faktoren berücksichtigen
-        %
-        % - Learning Rate als zentraler Hebel:
-        %   * Zu hoch: Schnelle Konvergenz, aber Overfitting und CF-Risiko
-        %   * Zu niedrig: Langsame Konvergenz, paradoxerweise auch Overfitting möglich
-        %   * Optimal: Task- und datensatzabhängig, empirisch zu bestimmen
-        %
-        % THEORETISCHE PERSPEKTIVE:
-        % - Fine-Tuning als Optimierungsproblem mit multiplen Constraints
-        % - Keine universelle Lösung: Trade-offs zwischen verschiedenen Zielen
-        % - PEFT-Methoden wie LoRA: Verschieben Trade-offs, eliminieren sie nicht
-        % - Empirische Validierung unerlässlich für praktische Anwendungen
+        Fine-Tuning vortrainierter Modelle bringt spezifische Herausforderungen mit sich. Das Spannungsfeld zwischen Spezialisierung auf neue Aufgaben und Erhalt allgemeiner Fähigkeiten ist besonders kritisch bei kleinen domänenspezifischen Datensätzen. Drei zentrale Problemfelder sind Overfitting, Catastrophic Forgetting und Konvergenz.
+
+\paragraph{Overfitting -- Überanpassung an Trainingsdaten}
+
+Overfitting tritt auf, wenn das Modell Trainingsdaten auswendig lernt, statt Muster zu generalisieren. Charakteristisch sind hohe Training Accuracy bei niedriger Validation/Test Accuracy sowie Divergenz zwischen Training und Validation Loss. Besonders ausgeprägt ist dies bei kleinen Datensätzen mit weniger als 1000 Beispielen. LoRA reduziert das Overfitting-Risiko gegenüber Full Fine-Tuning, eliminiert es aber nicht.
+
+Ursachen umfassen Modellkomplexität, die den Informationsgehalt der Trainingsdaten übersteigt, zu hohe Anzahl trainierbarer Parameter relativ zur Datensatzgröße, zu viele Trainings-Epochen, wodurch das Modell memoriert statt zu lernen, unbalancierte Datensätze mit Bias zu überrepräsentierten Kategorien sowie zu hohe Learning Rate, die instabile, zu schnelle Anpassung an Trainingsdaten verursacht.
+
+Bei LoRA-Fine-Tuning spezifisch führt höherer Rank zu mehr trainierbaren Parametern und höherem Overfitting-Risiko. Mehr Target Modules vergrößern die Angriffsfläche für Überanpassung. Der Trade-off besteht zwischen Expressivität und Generalisierung.
+
+Vermeidungsstrategien umfassen mehrere Ansätze. Regularisierung [SOURCE-MISSING] nutzt L2-Regularisierung (Weight Decay) zur Bestrafung großer Gewichtswerte. Mathematisch wird ein zusätzlicher Term $\lambda||w||^2$ zur Loss-Funktion hinzugefügt, was kleinere, gleichmäßiger verteilte Gewichte fördert. L1-Regularisierung fördert Sparsity, ist aber weniger relevant für LoRA. Dropout [SOURCE-MISSING] deaktiviert zufällig Neuronen während des Trainings, ist bei LoRA jedoch nur für lange Trainings-Episoden geeignet (siehe Abschnitt~\ref{sec:2.2.1}) und verhindert Co-Adaptationen zwischen Neuronen.
+
+Early Stopping [SOURCE-MISSING] erfordert kontinuierliches Monitoring von Validation Loss während des Trainings. Das Training wird gestoppt, wenn Validation Loss nicht mehr sinkt oder ansteigt. Typische Patience-Strategie umfasst 3 bis 5 Epochen ohne Verbesserung. Dies verhindert Überanpassung in späten Trainingsphasen und erfordert ein separates Validation Set.
+
+Datenaugmentierung (siehe Abschnitt~\ref{sec:2.2.3}) vergrößert künstlich den effektiven Datensatz und reduziert Overfitting durch erhöhte Variabilität. Methoden umfassen EDA, Back-Translation und Synthetic Data Generation, was Robustheit gegenüber Formulierungsvariationen erhöht.
+
+Cross-Validation mittels K-Fold Cross-Validation bei sehr kleinen Datensätzen ermöglicht robustere Schätzung der Generalisierungsfähigkeit. Dies ist rechenintensiv, aber aussagekräftiger bei limitierten Daten.
+
+PEFT-spezifische Strategien nutzen niedrigeren LoRA-Rank zur Reduktion trainierbarer Parameter sowie selektive Target Modules, um nur kritische Layer anzupassen. Der Trade-off besteht zwischen geringerer Expressivität und besserer Generalisierung.
+
+Die Balancierung zwischen Underfitting und Overfitting zeigt, dass Underfitting bei zu einfachem Modell auftritt, das Muster nicht erfasst (zu niedriger Rank, zu wenig Training). Overfitting tritt bei zu komplexem Modell auf, das Daten memoriert (zu hoher Rank, zu viel Training). Der optimale Arbeitspunkt liegt zwischen beiden Extremen. Empirische Bestimmung durch Validation-Set-Performance ist notwendig. Der Bias-Variance Trade-off [SOURCE-MISSING] verdeutlicht dieses Dilemma.
+
+\paragraph{Catastrophic Forgetting -- Verlust vortrainierter Fähigkeiten}
+
+Catastrophic Forgetting bezeichnet das Phänomen, dass Modelle während des Fine-Tunings Fähigkeiten aus der Pretraining-Phase verlieren. Spezialisierung auf neue Aufgaben geht zu Lasten allgemeiner Kompetenzen. Graduelle oder abrupte Verschlechterung auf Pretraining-Tasks tritt auf. Erstmals dokumentiert in neuronalen Netzen [SOURCE-MISSING], ist es bei LoRA weniger ausgeprägt als bei Full Fine-Tuning, aber dennoch vorhanden [SOURCE-MISSING].
+
+Manifestationen umfassen Wissensverlust, wobei Fakten aus Pretraining-Korpora nicht mehr abrufbar sind, Sprachkompetenz-Degradation durch Verschlechterung grammatikalischer Fähigkeiten sowie Task Interference, bei der neue Aufgaben Wissen über alte Aufgaben überschreiben. Safety Alignment Degradation [SOURCE-MISSING] zeigt, dass Fine-Tuning Safety Guardrails schwächen kann, was alle PEFT-Methoden betrifft und selbst bei benign Training Data möglich ist.
+
+Theoretische Ursachen liegen in Weight Interference, wobei neue Gewichtsanpassungen alte Repräsentationen überschreiben. Gradient Descent Bias favorisiert aktuelle Task über vorherige. Representation Overlap erfordert, dass Shared Weights beide Tasks gleichzeitig kodieren. Distribution Shift entsteht, wenn Trainingsverteilung sich stark von Pretraining-Daten unterscheidet.
+
+LoRA-spezifische Faktoren umfassen Zero-Initialisierung der B-Matrix, die Konvergenz verlangsamen kann [SOURCE-MISSING]. Low-Rank Updates können wichtige Pretraining-Repräsentationen nicht vollständig bewahren. Trotz eingefrorener Basisgewichte können Adapter-Outputs Aktivierungen verzerren.
+
+Gegenmaßnahmen umfassen niedrigere Learning Rates [SOURCE-MISSING], typisch 1e-4 bis 5e-5 für LoRA gegenüber 1e-3 für Full Fine-Tuning. Sanftere Anpassung erhält mehr Pretraining-Wissen, mit Trade-off in langsamerer Konvergenz.
+
+LoRA als sanftere Alternative zu Full Fine-Tuning friert Originalgewichte ein (siehe Abschnitt~\ref{sec:2.2.1}). Nur Low-Rank-Adapter werden trainiert, was Catastrophic Forgetting im Vergleich zu Full Fine-Tuning reduziert, aber nicht vollständig eliminiert [SOURCE-MISSING].
+
+Mixed Task Training kombiniert domänenspezifische und allgemeine Daten. Typisches Verhältnis beträgt 85 bis 90\,\% spezifisch und 10 bis 15\,\% allgemein [SOURCE-MISSING]. Dies erhält Generalisierungsfähigkeit während Spezialisierung, beispielsweise LVB-Verkehrsanweisungen kombiniert mit allgemeinen deutschen Texten.
+
+Regularisierungstechniken umfassen Elastic Weight Consolidation (EWC) [SOURCE-MISSING] sowie Knowledge Distillation vom Pretraining-Modell. Bei LoRA ist dies weniger kritisch aufgrund gefrorener Basisgewichte.
+
+Early Stopping basierend auf Generalisierungsmetriken monitort nicht nur Task-Accuracy, sondern auch allgemeine Sprachfähigkeiten. Perplexity auf Out-of-Domain-Daten dient als Indikator. Training wird bei signifikantem Anstieg gestoppt.
+
+\paragraph{Konvergenz-Herausforderungen bei LoRA}
+
+LoRA konvergiert signifikant langsamer als Full Fine-Tuning [SOURCE-MISSING]. Empirisch dokumentiert sind 5 bis 6-fach mehr Iterationen und FLOPs für gleiche Performance. Dies führt zu einer paradoxen Situation: Pro-Iteration effizienter, aber Gesamt-Trainingskosten höher. Dies kann zu schlechterer finaler Test-Performance führen und ist nicht nur ein Geschwindigkeitsproblem, sondern eine fundamentale Optimierungsschwierigkeit.
+
+Architektonische Ursachen liegen in Zero-Initialisierung der B-Matrix [SOURCE-MISSING]. Bei Training-Start gilt $\Delta W = BA = 0$ (keine initiale Störung), was langsame Trainingsdynamik zwischen A und B in frühen Epochen verursacht. Kurzsichtige Inter-Layer-Interaktionen verzögern Entwicklung komplexer Feature-Transformationen.
+
+Der Low-Rank Constraint [SOURCE-MISSING] beschränkt Gewichtsupdates auf niedrigdimensionalen Unterraum, kann komplexe Adaptionen nicht vollständig abbilden, limitiert Expressivität der Weight Updates und führt zum Performance-Gap zu Full Fine-Tuning bei komplexen Datensätzen [SOURCE-MISSING].
+
+Imbalancierte Weight Updates [SOURCE-MISSING] entstehen, weil Low-Rank-Faktorisierung nicht eindeutig ist (non-unique). Verschiedene A-B-Kombinationen ergeben gleiches $\Delta W$, was zu inkonsistenten und imbalancierten Updates führt und suboptimale Konvergenzpfade im Optimierungsraum verursacht.
+
+Das Rank-Auswahl-Dilemma zeigt ein fundamentales Trade-off [SOURCE-MISSING]. Niedriger Rank (r=4-8) bietet hohe Parameter-Effizienz und schnelles Training pro Iteration, aber signifikanten Performance-Gap zu Full Fine-Tuning bei zu geringer Expressivität für komplexe Aufgaben. Hoher Rank (r=64-128) bietet bessere Performance, die sich Full Fine-Tuning nähert, und höhere Expressivität der Weight Updates, aber Parameter-Kosten wachsen linear mit Rank, was den fundamentalen Vorteil der Parameter-Effizienz schwächt.
+
+Empirische Beobachtungen zeigen, dass Performance sich monoton mit steigendem Rank verbessert [SOURCE-MISSING], aber Diminishing Returns ab bestimmtem Rank (task-abhängig) eintreten. Optimaler Rank variiert nach Modellgröße, Task-Komplexität und Datensatzgröße. Keine universelle Heuristik existiert: Empirische Bestimmung ist erforderlich [SOURCE-MISSING].
+
+Der „Low-Rank Bottleneck" zeigt, dass Narrowing Performance-Gap Rank-Erhöhung erfordert. Bei sehr hohem Rank nähert man sich Full Fine-Tuning-Kosten an. Dies ist eine fundamentale Limitation der Low-Rank-Annahme und theoretische Grenze der PEFT-Effizienz.
+
+Der Performance-Gap zu Full Fine-Tuning ist konsistent über verschiedene Benchmarks dokumentiert [SOURCE-MISSING]. Besonders ausgeprägt bei komplexen Datensätzen mit diversen Sub-Domänen, Tasks mit hoher semantischer Variabilität sowie kleinen Modellen mit weniger als 7 Milliarden Parametern [SOURCE-MISSING]. Der Gap verringert sich mit größeren Basismodellen, höherem LoRA-Rank und längeren Trainings-Episoden.
+
+Overfitting bei LoRA-Training zeigt widersprüchliche Phänomene [SOURCE-MISSING]. Höherer Rank bringt nicht zwingend bessere Performance und kann zu Overfitting führen, besonders bei kleinen Datensätzen. Non-monotones Verhalten tritt auf: Optimum liegt oft bei mittlerem Rank. Initialization Bottleneck [SOURCE-MISSING] zeigt, dass Zero-Initialisierung Aktivierung der Originalgewichte limitiert und optimale Performance-Pfade blockieren kann.
+
+Die Wechselwirkungen zwischen Herausforderungen zeigen, dass Overfitting und Catastrophic Forgetting beide von Regularisierung und Early Stopping profitieren. Gegenläufig ist, dass Overfitting Spezialisierung will, CF Generalisierung. Balance ist erforderlich: weder zu spezialisiert noch zu generisch.
+
+Konvergenz und Overfitting interagieren dahingehend, dass langsame Konvergenz Overfitting verzögern kann (implizite Regularisierung). Zu viele Epochen führen trotz langsamer Konvergenz zu Overfitting. Early Stopping muss beide Faktoren berücksichtigen.
+
+Learning Rate als zentraler Hebel zeigt: zu hoch führt zu schneller Konvergenz, aber Overfitting und CF-Risiko. Zu niedrig verursacht langsame Konvergenz und paradoxerweise auch Overfitting. Optimal ist task- und datensatzabhängig und empirisch zu bestimmen.
+
+Die theoretische Perspektive betrachtet Fine-Tuning als Optimierungsproblem mit multiplen Constraints. Keine universelle Lösung existiert: Trade-offs zwischen verschiedenen Zielen sind unvermeidbar. PEFT-Methoden wie LoRA verschieben Trade-offs, eliminieren sie aber nicht. Empirische Validierung ist unerlässlich für praktische Anwendungen.
 
 
     \subsection{Ressourceneffizienz und Modelloptimierung}
