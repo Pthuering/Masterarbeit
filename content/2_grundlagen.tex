@@ -163,394 +163,122 @@ Die Überleitung zu Abschnitt~\ref{sec:2.2} verdeutlicht, dass die theoretische 
     
     % Ziel: 4-5 Seiten
     
-% ABSCHNITT-EINLEITUNG - STICHPUNKTE:
-%
-% Problemstellung der Modellanpassung
-% - Vortrainierte Sprachmodelle verfügen über umfassendes allgemeines Sprachverständnis
-% - Spezialisierung auf domänenspezifische Aufgaben erfordert gezielte Anpassung
-% - LeoLM: Deutschsprachige Kompetenz vorhanden, Verkehrsdomäne nicht abgedeckt
-% - Transfer von allgemeinem zu spezialisiertem Wissen als zentrale Herausforderung
-%
-% Ressourcenbeschränkungen beim Fine-Tuning
-% - Full Fine-Tuning: Anpassung sämtlicher Modellparameter (7 Milliarden bei Mistral-7B)
-% - Rechenaufwand: Training auf Multi-GPU-Clustern über mehrere Wochen
-% - Speicherbedarf: Über 100 GB VRAM für Gradientenberechnung und Optimizer-States
-% - Kostenstruktur: Cloud-Computing-Ressourcen im vier- bis fünfstelligen Bereich
-% - Constraint dieser Arbeit: Consumer-Hardware mit begrenzten Ressourcen
-% - Konsequenz: Parameter-effiziente Fine-Tuning-Methoden erforderlich
-%
-% Herausforderung begrenzter Trainingsdaten
-% - LVB-Datensatz: Geschätzte Größenordnung 100-500 Trainingsbeispiele
-% - Vergleich: ImageNet mit über 1 Million annotierten Bildern, LAION mit 5 Milliarden Text-Bild-Paaren
-% - Risiko: Overfitting bei vollständiger Parameteranpassung mit kleinem Datensatz
-% - Vorteil parameter-effizienter Verfahren: Reduzierter Datenbedarf durch gezielte Adaption
-%
-% Methodische Ansätze
-% - Parameter-effiziente Fine-Tuning-Verfahren reduzieren Anzahl trainierbarer Parameter
-% - Prompt Engineering als komplementärer Ansatz zur Leistungssteigerung
-% - Datenaufbereitung und Augmentation bei limitierter Datenverfügbarkeit
-% - Gegenmaßnahmen zu Overfitting und Catastrophic Forgetting
-%
-% Bezug zur praktischen Implementierung
-% - Theoretische Konzepte dieses Abschnitts finden Anwendung in der Implementierung
-% - Fundierte Entscheidungsfindung durch Verständnis methodischer Trade-offs
-% - Wissenschaftlich fundierte Vorgehensweise statt empirischem Trial-and-Error-Ansatz
+Vortrainierte Sprachmodelle verfügen über umfassendes allgemeines Sprachverständnis, das sie während des Pretrainings auf großen Textkorpora erworben haben. Die Spezialisierung auf domänenspezifische Aufgaben erfordert jedoch gezielte Anpassung. LeoLM besitzt deutschsprachige Kompetenz, deckt die Verkehrsdomäne jedoch nicht ab. Der Transfer von allgemeinem zu spezialisiertem Wissen stellt folglich eine zentrale Herausforderung dar.
+
+Full Fine-Tuning, bei dem sämtliche Modellparameter angepasst werden, ist bei modernen Large Language Models mit Milliarden von Parametern ressourcenintensiv. Bei einem 7-Milliarden-Parameter-Modell wie Mistral-7B müssen alle Parameter aktualisiert werden, was Training auf Multi-GPU-Clustern über mehrere Wochen erfordert. Der Speicherbedarf übersteigt 100\,GB VRAM für Gradientenberechnung und Optimizer-States, während die Kostenstruktur für Cloud-Computing-Ressourcen in den vier- bis fünfstelligen Bereich reicht. Die Constraints dieser Arbeit beschränken sich auf Consumer-Hardware mit begrenzten Ressourcen, sodass parameter-effiziente Fine-Tuning-Methoden erforderlich werden.
+
+Die Herausforderung begrenzter Trainingsdaten verschärft die Situation. Der LVB-Datensatz umfasst eine geschätzte Größenordnung von 100 bis 500 Trainingsbeispielen. Im Vergleich dazu verfügt ImageNet über mehr als eine Million annotierte Bilder, während LAION 5 Milliarden Text-Bild-Paare enthält. Das Risiko des Overfittings bei vollständiger Parameteranpassung mit einem kleinen Datensatz ist erheblich. Parameter-effiziente Verfahren bieten den Vorteil eines reduzierten Datenbedarfs durch gezielte Adaption.
+
+Methodisch kommen verschiedene Ansätze zum Einsatz. Parameter-effiziente Fine-Tuning-Verfahren reduzieren die Anzahl trainierbarer Parameter erheblich. Prompt Engineering dient als komplementärer Ansatz zur Leistungssteigerung. Datenaufbereitung und Augmentation kompensieren limitierte Datenverfügbarkeit. Gegenmaßnahmen zu Overfitting und Catastrophic Forgetting sichern die Qualität des trainierten Modells.
+
+Der Bezug zur praktischen Implementierung verdeutlicht, dass die theoretischen Konzepte dieses Abschnitts direkte Anwendung in der Implementierung finden. Eine fundierte Entscheidungsfindung basiert auf dem Verständnis methodischer Trade-offs. Diese wissenschaftlich fundierte Vorgehensweise ersetzt empirisches Trial-and-Error durch systematische Planung.
     
         \subsubsection{Fine-Tuning-Methoden}
         \label{sec:2.2.1}
         
         % Ziel: 2,5-3 Seiten
         
-        % VON FULL FINE-TUNING ZU PEFT:
-        % - Herausforderung großer vortrainierter Modelle \cite{smith2023,hua2023}
-        %   * Training aller Modellparameter für jede Downstream-Aufgabe
-        %   * Mit wachsenden Modellgrößen zunehmend unpraktikabel
-        %   * Rechenressourcen und Speicherbedarf steigen exponentiell \cite{hua2023}
-        % - Full Fine-Tuning bei 7B-Modellen:
-        %   * 7 Milliarden Parameter müssen angepasst werden
-        %   * Über 100 GB VRAM für Gradienten und Optimizer-States
-        %   * Multi-GPU-Cluster über mehrere Wochen erforderlich
-        %   * Kostenstruktur: Vier- bis fünfstelliger Bereich für Cloud-Computing
-        % - Konsequenz: Parameter-effiziente Transferlernmethoden erforderlich
+        Die Anpassung großer vortrainierter Sprachmodelle an spezifische Downstream-Aufgaben stellt erhebliche Herausforderungen dar [SOURCE-MISSING]. Das Training aller Modellparameter für jede neue Aufgabe wird mit wachsenden Modellgrößen zunehmend unpraktikabel, da Rechenressourcen und Speicherbedarf exponentiell steigen [SOURCE-MISSING]. Bei einem 7-Milliarden-Parameter-Modell müssen sämtliche Parameter angepasst werden, was über 100\,GB VRAM für Gradienten und Optimizer-States erfordert. Multi-GPU-Cluster über mehrere Wochen hinweg sind notwendig, und die Kostenstruktur bewegt sich im vier- bis fünfstelligen Bereich für Cloud-Computing. Diese Situation macht parameter-effiziente Transferlernmethoden unerlässlich.
+
+Parameter-effiziente Fine-Tuning-Verfahren (PEFT) lassen sich in drei Hauptkategorien einteilen [SOURCE-MISSING]. Additive Fine-Tuning-Ansätze fügen zusätzliche trainierbare Module zum gefrorenen Basismodell hinzu, wobei die Originalgewichte unverändert bleiben. Beispiele hierfür sind Adapter, Prefix Tuning und Prompt Tuning. Der Trade-off besteht zwischen geringer Parameteranzahl und potenzieller Inferenz-Latenz. Reparameterized Fine-Tuning zerlegt Gewichtsupdates in niedrigrangige Matrizen und modifiziert indirekt die Originalgewichte. Der Hauptvertreter dieser Kategorie ist LoRA (Low-Rank Adaptation), das durch Weight Merging keine Inferenz-Latenz verursacht. Selective Fine-Tuning trainiert nur ausgewählte Teilmengen existierender Parameter und friert den Großteil des Modells ein, wird jedoch weniger verbreitet eingesetzt und findet in dieser Arbeit keine Verwendung.
+
+\paragraph{LoRA (Low-Rank Adaptation)}
+
+LoRA basiert auf der theoretischen Hypothese [SOURCE-MISSING], dass Gewichtsänderungen während der Adaptation einen niedrigen intrinsischen Rang aufweisen. Die Gewichtsmatrix-Änderung $\Delta W$ lässt sich effizient durch Low-Rank-Dekomposition approximieren, was eine indirekte Optimierung dichter Layer via Rank-Decomposition ermöglicht. Gewichtsupdates werden als niedrigrangige Dekomposition $\Delta W = BA$ dargestellt, wobei $W_0$ die eingefrorenen Originalgewichte bezeichnet und $W = W_0 + \Delta W = W_0 + BA$ gilt. Die Matrizen $B \in \mathbb{R}^{d \times r}$ und $A \in \mathbb{R}^{r \times k}$ erfüllen $r \ll d, k$, wobei der Rang $r$ als Hyperparameter die Expressivität gegenüber der Effizienz kontrolliert. Direkte Änderungen an vortrainierten Gewichten finden nicht statt; stattdessen werden Low-Rank-Matrizen separat trainiert [SOURCE-MISSING]. Der Bedarf an Hyperparameter-Retuning wird bei Variation des Rangs minimiert [SOURCE-MISSING].
+
+Die Effizienzgewinne von LoRA sind erheblich. Die Parameter-Reduktion erreicht bis zu 10.000-fache Reduktion trainierbarer Parameter bei vergleichbarer Performance zu Full Fine-Tuning [SOURCE-MISSING]. Typischerweise sind weniger als 1\,\% der Gesamtparameter trainierbar. Speichereffizienz manifestiert sich in 3-fach geringerem GPU-Memory-Bedarf als traditionelles Fine-Tuning [SOURCE-MISSING], wobei empirisch eine 35\,\%-ige Reduktion der Memory Usage bei GPT-2 dokumentiert ist [SOURCE-MISSING]. Dies prädestiniert LoRA für ressourcenbeschränkte Umgebungen und ermöglicht Training auf Consumer-Hardware. Bei Verwendung des Adam-Optimizers reduziert sich der VRAM-Bedarf um bis zu zwei Drittel [SOURCE-MISSING].
+
+Die Trainingszeit-Reduktion beträgt 30\,\% im Vergleich zu Full Fine-Tuning [SOURCE-MISSING]. Benchmarks auf GPT-2 mit Tesla T4 zeigen 5,1 Minuten für LoRA gegenüber 7,4 Minuten für Full Fine-Tuning. Dieser Effizienzgewinn besteht trotz erhöhter Iterationszahl aufgrund der Konvergenzproblematik.
+
+Deployment-Vorteile ergeben sich aus der modularen Architektur [SOURCE-MISSING]. Ein Basismodell kann mit vielen Task-Adaptern kombiniert werden, wobei nur Adapter-Parameter pro Aufgabe gespeichert werden müssen [SOURCE-MISSING]. Dies löst das „One-Domain-One-Model"-Problem. Kostengünstiges Task-Switching erfordert lediglich den Austausch der LoRA-Gewichte statt aller Parameter, was Storage- und Switching-Overhead im Multi-Task-Deployment reduziert [SOURCE-MISSING].
+
+Bezüglich der Inferenz-Eigenschaften verursacht LoRA keinen zusätzlichen Overhead [SOURCE-MISSING]. Weight Merging nach dem Training integriert die Adapter in die Originalgewichte: $W_{\text{final}} = W_0 + BA$ [SOURCE-MISSING]. Diese Post-Training-Integration in Originalgewichte stellt einen entscheidenden Vorteil gegenüber Adapter- und Prompt-Methoden dar.
+
+Limitierungen und Herausforderungen bestehen dennoch. Die Konvergenzproblematik zeigt sich in signifikant langsamerer Konvergenz als Full Fine-Tuning [SOURCE-MISSING]. Empirisch werden 5 bis 6-fach mehr Iterationen und FLOPs für gleiche Performance benötigt, was die Gesamt-Trainingskosten trotz Pro-Iteration-Effizienz erhöht und zu schlechterer Testperformance führen kann.
+
+Architektonische Ursachen liegen in der Initialisierung von B mit Nullen [SOURCE-MISSING], was langsame Trainingsdynamik zwischen A und B in frühen Epochen verursacht. Der Skalierungsfaktor erzeugt kurzsichtige Inter-Layer-Interaktionen. Dropout erweist sich nur für lange Trainings-Episoden als geeignet.
+
+Weitere Training-Herausforderungen umfassen potenzielle Catastrophic Forgetting-Probleme, Beeinträchtigung von Weltwissen in vortrainierten Modellen sowie Degradierung von Safety Alignment in fein-justierten Modellen. Die Rank-Sensitivität manifestiert sich darin, dass der Fixed-Rank-Constraint Flexibilität limitiert [SOURCE-MISSING]. Hohe Sensitivität gegenüber Rank-Auswahl erfordert, dass der optimale Rang im Voraus identifiziert werden muss, wobei suboptimale Wahl kostspieliges Retraining nach sich zieht.
+
+Skalierungs-Limitierungen zeigen sich in sinkender Performance bei kleineren Modellen mit weniger als 7 Milliarden Parametern, besonders in Vision-Language-Pre-Training-Kontexten. Der Performance-Gap zu Full Fine-Tuning wächst bei komplexen Datensätzen [SOURCE-MISSING], wobei diverse Sub-Domänen und Task-Typen das Problem verschärfen. Der Gap wächst mit zunehmender Szenario-Komplexität.
+
+Batching-Limitierungen entstehen durch die Herausforderung [SOURCE-MISSING], Inputs verschiedener Tasks mit unterschiedlichen A/B-Matrizen in einem single Forward Pass zu batchen. Dies reduziert Parallelisierungspotenzial bei Multi-Task-Inferenz und beeinträchtigt den Durchsatz in produktiven Multi-Tenant-Systemen.
+
+QLoRA kombiniert LoRA mit Quantisierung [SOURCE-MISSING] und stellt eine optimierte Implementation dar. LoRA-Adapter werden mit 4-bit Quantisierung der Basisgewichte kombiniert, was weitere Speicherreduktion von etwa 70\,\% ohne Qualitätsverlust ermöglicht. Dies erlaubt 7-Milliarden-Parameter-Modelle auf GPUs mit weniger als 24\,GB VRAM. Die Vertiefung erfolgt in Abschnitt~\ref{sec:2.3.2}.
+
+Konfigurationsparameter umfassen den Rank $r$ als Dimensionalität der Low-Rank-Matrizen, typischerweise 4, 8, 16, 32 oder 64, mit Trade-off zwischen Expressivität und Speicherbedarf. Alpha fungiert als Skalierungsfaktor für LoRA-Updates und beeinflusst die Lernrate der Adapter-Gewichte. Target Modules bestimmen, welche Transformer-Layer angepasst werden, darunter Query, Key, Value und Output Projections sowie bei Mistral-Architektur Gate, Up und Down Projections.
         
-        % PEFT-TAXONOMIE:
-        % Drei Hauptkategorien \cite{liu2025up}:
-        %
-        % 1. ADDITIVE FINE-TUNING:
-        %    - Fügt zusätzliche trainierbare Module zum gefrorenen Basismodell hinzu
-        %    - Originalgewichte bleiben unverändert
-        %    - Beispiele: Adapter, Prefix Tuning, Prompt Tuning
-        %    - Trade-off: Geringe Parameteranzahl vs. potenzielle Inferenz-Latenz
-        %
-        % 2. REPARAMETERIZED FINE-TUNING:
-        %    - Zerlegt Gewichtsupdates in niedrigrangige Matrizen
-        %    - Modifiziert indirekt die Originalgewichte
-        %    - Hauptvertreter: LoRA (Low-Rank Adaptation)
-        %    - Vorteil: Keine Inferenz-Latenz durch Weight Merging
-        %
-        % 3. SELECTIVE FINE-TUNING:
-        %    - Trainiert nur ausgewählte Teilmengen existierender Parameter
-        %    - Friert Großteil des Modells ein
-        %    - Weniger verbreitet, nicht in dieser Arbeit verwendet
+        \paragraph{Adapter}
+
+Adapter gehören zu den frühesten PEFT-Frameworks [SOURCE-MISSING] und fügen kleine aufgabenspezifische Module mit Feedforward-Layers hinzu. Skip-Connections integrieren den Adapter-Output, während die Originalgewichte eingefroren bleiben.
+
+Die Architektur folgt einem Bottleneck-Design mit Down-Projektion, Aktivierung und Up-Projektion. Die Einfügung erfolgt zwischen Transformer-Schichten, wobei modularer Austausch für verschiedene Tasks möglich ist.
+
+Bezüglich der Effizienz fügen Adapter nur 3,6\,\% zusätzliche Parameter pro Task hinzu [SOURCE-MISSING], während die Performance innerhalb von 0,4\,\% des Full Fine-Tunings liegt. Dies ermöglicht kompakte, erweiterbare Modelle. Die Parameteranzahl beträgt $O(r(d_{\text{in}} + d_{\text{out}}))$ pro Layer [SOURCE-MISSING], was weniger effizient ist als LoRAs Low-Rank-Dekomposition.
+
+Beim Deployment profitieren Adapter von hohem Parameter-Sharing durch das gefrorene Basismodell [SOURCE-MISSING]. Neue Tasks können ohne Revisitation vorheriger hinzugefügt werden, wobei task-spezifische Adapter-Parameter gespeichert werden müssen.
+
+Die Limitierung besteht in Inferenz-Latenz, da die Modelltiefe durch zusätzliche Layer erhöht wird [SOURCE-MISSING]. Dies verursacht zusätzliche Latenz während der Inferenz und macht Adapter weniger geeignet für latenz-sensitive Anwendungen [SOURCE-MISSING]. Der strukturelle Nachteil gegenüber LoRA besteht darin, dass Weight Merging nicht möglich ist.
+
+\paragraph{Prefix Tuning}
+
+Prefix Tuning optimiert kontinuierliche aufgabenspezifische Vektoren [SOURCE-MISSING]. Prefix-Vektoren werden vor Input-Embeddings platziert, sodass nachfolgende Tokens auf Prefixes attenden können. Dies modifiziert Attention-Keys und -Values.
+
+Die Effizienz zeigt sich darin, dass nur 0,1\,\% der Originalparameter gelernt werden [SOURCE-MISSING]. Dies stellt die extremste Parameter-Effizienz aller PEFT-Methoden dar, wobei vergleichbare Performance bei ausreichender Modellgröße erreicht wird. Input-Repräsentationen werden modifiziert statt Modellgewichte.
+
+Stärken zeigen sich in spezifischen Kontexten, insbesondere bei multilingualer Adaptation [SOURCE-MISSING]. Prefix Tuning ist LoRA in mehrsprachigen Tasks überlegen, mit bis zu 28\,\% höherer Accuracy auf XNLI, 13\,\% höherer F1 auf XQUAD und 18\,\% höherer Accuracy auf Belebele im Vergleich zu Base Models. Zusätzliche 4 bis 6\,\% Verbesserung gegenüber LoRA sind dokumentiert.
+
+Limitierungen bestehen in der Reduktion der effektiven Sequenzlänge durch Prefix-Tokens sowie Inferenz-Overhead durch zusätzliche Kontext-Tokens [SOURCE-MISSING]. Dies erhöht den Computational Cost während der Inferenz. Sensitivität gegenüber Initialisierung [SOURCE-MISSING] und challenging Training bei reduzierter verfügbarer Sequenzlänge [SOURCE-MISSING] kommen hinzu.
+
+\paragraph{Prompt Tuning}
+
+Prompt Tuning verwendet lernbare „Soft Prompts" [SOURCE-MISSING]. Dies sind kontinuierliche Embeddings statt diskreter Tokens, die via Backpropagation trainiert werden. Nur Prompt-Embeddings sind trainierbar.
+
+Das Skalierungsverhalten zeigt, dass Prompt Tuning mit steigender Modellgröße kompetitiver wird [SOURCE-MISSING]. Ab mehreren Milliarden Parametern matcht es Full Fine-Tuning. Bei kleineren Modellen mit weniger als 11 Milliarden Parametern zeigt sich geringere Performance.
+
+Die Effizienz manifestiert sich in extremer Parameter-Effizienz durch diskrete Token-Level-Optimierung [SOURCE-MISSING] mit minimalen Speicheranforderungen. Input-Repräsentationen werden modifiziert wie bei Prefix Tuning.
+
+Limitierungen umfassen Inferenz-Overhead durch Prepending task-spezifischer Tokens [SOURCE-MISSING], zusätzlichen Computational Cost durch Prefix-Tokens sowie erhöhte Latenz gegenüber gefrorenen Backbone-Modellen [SOURCE-MISSING]. Sensitive Initialisierung [SOURCE-MISSING] stellt eine weitere Herausforderung dar.
+
+\paragraph{Vergleichende Bewertung}
+
+Die Parameter-Effizienz ordnet sich aufsteigend wie folgt: Prompt Tuning mit circa 0,01\,\% stellt die extremste Reduktion dar, Prefix Tuning mit circa 0,1\,\% ist sehr gering, LoRA mit 0,1 bis 1\,\% je nach Rank ist stark reduziert, während Adapter mit circa 3,6\,\% moderat reduziert sind.
+
+Bezüglich Inferenz-Overhead in aufsteigender Reihenfolge: LoRA verursacht annähernd null Overhead durch Weight Merging und ist optimal. Prefix Tuning und Prompt Tuning verursachen geringen Overhead durch zusätzliche Tokens. Adapter verursachen hohen Overhead durch zusätzliche Layer und sind problematisch.
+
+Die Performance-Charakteristika zeigen für LoRA [SOURCE-MISSING] Performance auf gleichem Niveau oder besser als Full Fine-Tuning bei RoBERTa, DeBERTa, GPT-2 und GPT-3. LoRA übertrifft Prompt Tuning in Gesamtperformance, Memory und Flexibilität, wobei ein Performance-Gap bei komplexen, heterogenen Datensätzen besteht [SOURCE-MISSING].
+
+Adapter [SOURCE-MISSING] zeigen konsistent starke Performance auf Benchmarks, wobei GLUE innerhalb von 0,4\,\% des Full Fine-Tunings liegt. Zuverlässige Performance über verschiedene Tasks hinweg ist dokumentiert.
+
+Prefix Tuning [SOURCE-MISSING] ist superior in multilingualen Adaptation-Tasks und besser in zeit-beschränkten Szenarien mit 3 bis 5 Minuten Training. Es outperformt LoRA in spezifischen Kontexten.
+
+Prompt Tuning zeigt sich schwächer bei kleinen Modellen, ist jedoch konkurrenzfähig ab mehr als 11 Milliarden Parametern.
+
+Die Training-Dynamik zeigt für LoRA langsame Konvergenz mit 5 bis 6-fach mehr Iterationen [SOURCE-MISSING]. Prompt und Prefix Tuning sind initialisierungs-sensitiv [SOURCE-MISSING]. Adapter zeigen stabile Konvergenz, sind aber speicher-intensiv.
+
+Die Wahl von LoRA für diese Arbeit begründet sich durch mehrere Faktoren. Kein Inferenz-Overhead ist kritisch für die Produktionsumgebung. Gute Balance zwischen Parameter-Effizienz und Performance wird erreicht. Modularität ermöglicht mehrere Task-Adapter. Hardware-Feasibility durch Kombination mit QLoRA für Consumer-GPUs ist gegeben. Bewährte Performance in ähnlichen Domänen-Adaptionen ist dokumentiert. Community-Support bietet umfangreiche Implementierungen und Best Practices.
+
+Die Konvergenz-Limitierung ist akzeptabel, da der kleine Datensatz kurze Trainings-Episoden weniger kritisch macht. Unsloth-Optimierungen kompensieren teilweise, und Quality over Speed macht finale Performance wichtiger als Trainingszeit.
         
-        % ============================================================================
-        % LORA (LOW-RANK ADAPTATION) - AUSFÜHRLICH
-        % ============================================================================
-        
-        % GRUNDPRINZIP & FUNKTIONSWEISE:
-        % - Reparameterized Fine-Tuning-Ansatz \cite{liu2025up,he2025rasa}
-        % - Theoretische Hypothese \cite{adegoke2024lora}:
-        %   * Gewichtsänderungen während Adaptation haben niedrigen "intrinsic rank"
-        %   * ΔW lässt sich effizient durch Low-Rank-Dekomposition approximieren
-        %   * Ermöglicht indirekte Optimierung denser Layers via Rank-Decomposition
-        % - Gewichtsupdates als niedrigrangige Dekomposition: ΔW = BA
-        %   * W₀: Originalgewichte (eingefroren)
-        %   * W = W₀ + ΔW = W₀ + BA
-        %   * B ∈ ℝ^(d×r), A ∈ ℝ^(r×k), wobei r << d,k
-        %   * Rank r als Hyperparameter kontrolliert Expressivität vs. Effizienz
-        % - Keine direkten Änderungen an vortrainierten Gewichten
-        % - Low-Rank-Matrizen werden separat trainiert \cite{gao2023,he2025rasa}
-        % - Minimiert Bedarf an Hyperparameter-Retuning bei Rank-Variation \cite{adegoke2024lora}
-        
-        % EFFIZIENZGEWINNE:
-        % Parameter-Reduktion \cite{hu2021lora}:
-        %   * Bis zu 10.000-fache Reduktion trainierbarer Parameter
-        %   * Vergleichbare Performance zu Full Fine-Tuning
-        %   * Typisch: < 1% der Gesamtparameter trainierbar
-        %
-        % Speichereffizienz \cite{hu2021lora,adegoke2024lora}:
-        %   * 3x weniger GPU-Memory-Bedarf als traditionelles Fine-Tuning \cite{hu2021lora}
-        %   * Empirisch: 35% Reduktion der Memory Usage bei GPT-2 \cite{adegoke2024lora}
-        %   * Besonders geeignet für ressourcenbeschränkte Umgebungen
-        %   * Ermöglicht Training auf Consumer-Hardware
-        %   * Bei Adam-Optimizer: VRAM-Reduktion bis zu 2/3 \cite{adegoke2024lora}
-        %
-        % Trainingszeit-Reduktion \cite{adegoke2024lora}:
-        %   * 30% kürzere Trainingszeit im Vergleich zu Full Fine-Tuning
-        %   * Benchmark (GPT-2 auf Tesla T4): 5,1 min (LoRA) vs. 7,4 min (Full FT)
-        %   * Effizienzgewinn trotz erhöhter Iterationszahl (siehe Konvergenzproblematik)
-        %
-        % Deployment-Vorteile \cite{hu2021lora,adegoke2024lora}:
-        %   * Modulare Architektur: Ein Basismodell, viele Task-Adapter
-        %   * Nur Adapter-Parameter müssen pro Aufgabe gespeichert werden \cite{adegoke2024lora}
-        %   * Löst "One-Domain-One-Model"-Problem
-        %   * Kostengünstiges Task-Switching: Nur LoRA-Gewichte austauschen statt aller Parameter
-        %   * Reduziert Storage- und Switching-Overhead im Multi-Task-Deployment \cite{adegoke2024lora}
-        
-        % INFERENZ-EIGENSCHAFTEN:
-        % - Kein zusätzlicher Inferenz-Overhead \cite{hua2023,hu2021lora}
-        % - Weight Merging nach Training: W_final = W₀ + BA
-        % - Post-Training Integration in Originalgewichte \cite{hu2021lora}
-        % - Entscheidender Vorteil gegenüber Adapter- und Prompt-Methoden
-        
-        % LIMITIERUNGEN & HERAUSFORDERUNGEN:
-        %
-        % 1. Konvergenzproblematik \cite{wang2025floe}:
-        %    * Signifikant langsamere Konvergenz als Full Fine-Tuning
-        %    * 5-6x mehr Iterationen und FLOPs für gleiche Performance
-        %    * Erhöht Gesamt-Trainingskosten trotz Pro-Iteration-Effizienz
-        %    * Kann zu schlechterer Testperformance führen
-        %
-        % 2. Architektonische Ursachen \cite{hu2021lora}:
-        %    * Initialisierung von B mit Nullen: Langsame Trainingsdynamik zwischen A und B
-        %    * Dropout nur für lange Trainings-Episoden geeignet
-        %    * Skalierungsfaktor verursacht "kurzsichtige" Inter-Layer-Interaktionen
-        %
-        % 3. Weitere Training-Herausforderungen:
-        %    * Potenzielle Catastrophic Forgetting-Probleme
-        %    * Beeinträchtigung von Weltwissen in vortrainierten Modellen
-        %    * Degradierung von Safety Alignment in fein-justierten Modellen
-        %
-        % 4. Rank-Sensitivität \cite{wang2025floe}:
-        %    * Fixed-Rank-Constraint limitiert Flexibilität
-        %    * Hohe Sensitivität gegenüber Rank-Auswahl
-        %    * Optimaler Rank muss im Voraus identifiziert werden
-        %    * Kostspieliges Retraining bei suboptimaler Wahl
-        %
-        % 5. Skalierungs-Limitierungen:
-        %    * Performance sinkt bei kleineren Modellen (< 7B Parameter)
-        %    * Besonders in Vision-Language-Pre-Training-Kontexten
-        %
-        % 6. Performance-Gap bei Komplexität \cite{wang2025floe}:
-        %    * Lücke zu Full Fine-Tuning bei komplexen Datensätzen
-        %    * Diverse Sub-Domänen und Task-Typen verschärfen Problem
-        %    * Gap wächst mit zunehmender Szenario-Komplexität
-        %
-        % 7. Batching-Limitierungen \cite{adegoke2024lora}:
-        %    * Herausforderung: Inputs verschiedener Tasks mit unterschiedlichen A/B-Matrizen
-        %    * Schwierig in einem single Forward Pass zu batchen
-        %    * Reduziert Parallelisierungspotenzial bei Multi-Task-Inferenz
-        %    * Beeinträchtigt Durchsatz in produktiven Multi-Tenant-Systemen
-        
-        % QLORA - KOMBINATION MIT QUANTISIERUNG:
-        % - Optimierte Implementation \cite{dettmers2023}
-        % - LoRA-Adapter + 4-bit Quantisierung der Basisgewichte
-        % - Weitere Speicherreduktion (~70%) ohne Qualitätsverlust
-        % - Ermöglicht 7B-Modelle auf GPUs mit < 24 GB VRAM
-        % - Wird in Abschnitt~\ref{sec:2.3.2} (Quantisierung) vertieft
-        
-        % KONFIGURATIONSPARAMETER:
-        % - Rank (r): Dimensionalität der Low-Rank-Matrizen
-        %   * Typisch: 4, 8, 16, 32, 64
-        %   * Trade-off: Expressivität vs. Speicherbedarf
-        % - Alpha: Skalierungsfaktor für LoRA-Updates
-        %   * Beeinflusst Lernrate der Adapter-Gewichte
-        % - Target Modules: Welche Transformer-Layer angepasst werden
-        %   * Query, Key, Value, Output Projections
-        %   * Gate, Up, Down Projections (bei Mistral-Architektur)
-        
-        % ============================================================================
-        % ADAPTER - ADDITIVE FINE-TUNING
-        % ============================================================================
-        
-        % GRUNDKONZEPT \cite{houlsby2019,gao2023}:
-        % - Eines der frühesten PEFT-Frameworks
-        % - Fügt kleine aufgabenspezifische Module mit Feedforward-Layers hinzu
-        % - Skip-Connections integrieren Adapter-Output
-        % - Originalgewichte bleiben eingefroren
-        
-        % ARCHITEKTUR:
-        % - Bottleneck-Design: Down-Projektion → Aktivierung → Up-Projektion
-        % - Einfügung zwischen Transformer-Schichten
-        % - Modularer Austausch für verschiedene Tasks
-        
-        % EFFIZIENZ [SOURCE-MISSING: Houlsby et al., 2019; Shen et al., 2025; Deng et al., 2025]:
-        % - Nur 3,6% zusätzliche Parameter pro Task
-        % - Performance innerhalb 0,4% von Full Fine-Tuning
-        % - Kompakte, erweiterbare Modelle
-        % - Parameteranzahl: O(r(d_in + d_out)) pro Layer [SOURCE-MISSING: Shen, 2025]
-        % - Weniger effizient als LoRAs Low-Rank-Dekomposition
-        
-        % DEPLOYMENT:
-        % - Hohe Parameter-Sharing durch gefrorenes Basismodell [SOURCE-MISSING: Houlsby et al., 2019]
-        % - Neue Tasks ohne Revisitation vorheriger
-        % - Task-spezifische Adapter-Parameter müssen gespeichert werden
-        
-        % LIMITIERUNG - INFERENZ-LATENZ:
-        % - Erhöht Modelltiefe durch zusätzliche Layer [SOURCE-MISSING: Ding et al., 2024; Li et al., 2021; Hu et al., 2021]
-        % - Zusätzliche Latenz während Inferenz
-        % - Weniger geeignet für latenz-sensitive Anwendungen [SOURCE-MISSING: Li et al., 2025]
-        % - Struktureller Nachteil gegenüber LoRA (Weight Merging nicht möglich)
-        
-        % ============================================================================
-        % PREFIX TUNING - ATTENTION-BASIERTES PEFT
-        % ============================================================================
-        
-        % GRUNDKONZEPT [SOURCE-MISSING: Li et al., 2021]:
-        % - Optimiert kontinuierliche aufgabenspezifische Vektoren
-        % - Prefix-Vektoren vor Input-Embeddings
-        % - Nachfolgende Tokens können auf Prefixes "attenden"
-        % - Modifiziert Attention-Keys und -Values
-        
-        % EFFIZIENZ [SOURCE-MISSING: Li et al., 2021; Eyuboglu et al., 2025; Shen, 2025]:
-        % - Lernt nur 0,1% der Originalparameter
-        % - Extremste Parameter-Effizienz aller PEFT-Methoden
-        % - Vergleichbare Performance bei ausreichender Modellgröße
-        % - Modifiziert Input-Repräsentationen statt Modellgewichte
-        
-        % STÄRKEN IN SPEZIFISCHEN KONTEXTEN:
-        % Multilingual Adaptation [SOURCE-MISSING: Snegha et al., 2025]:
-        % - Überlegen gegenüber LoRA in mehrsprachigen Tasks
-        % - Bis zu 28% höhere Accuracy auf XNLI
-        % - 13% höhere F1 auf XQUAD
-        % - 18% höhere Accuracy auf Belebele vs. Base Models
-        % - Zusätzliche 4-6% Verbesserung gegenüber LoRA
-        
-        % LIMITIERUNGEN:
-        % - Reduziert effektive Sequenzlänge durch Prefix-Tokens
-        % - Inferenz-Overhead durch zusätzliche Kontext-Tokens [SOURCE-MISSING: Li et al., 2025; Diep et al., 2025]
-        % - Erhöhter Computational Cost während Inferenz
-        % - Sensitiv gegenüber Initialisierung [SOURCE-MISSING: Huang et al., 2024]
-        % - Challenging to train, reduziert verfügbare Sequenzlänge [SOURCE-MISSING: Ding et al., 2024]
-        
-        % ============================================================================
-        % PROMPT TUNING - SOFT PROMPTS
-        % ============================================================================
-        
-        % GRUNDKONZEPT [SOURCE-MISSING: Lester et al., 2021]:
-        % - Verwendet lernbare "Soft Prompts"
-        % - Kontinuierliche Embeddings statt diskreter Tokens
-        % - Training via Backpropagation
-        % - Nur Prompt-Embeddings trainierbar
-        
-        % SKALIERUNGSVERHALTEN [SOURCE-MISSING: Lester et al., 2021]:
-        % - Wird kompetitiver mit steigender Modellgröße
-        % - Matched Full Fine-Tuning ab mehreren Milliarden Parametern
-        % - Bei kleineren Modellen (<11B): Geringere Performance
-        
-        % EFFIZIENZ [SOURCE-MISSING: Lester et al., 2021; Eyuboglu et al., 2025]:
-        % - Extreme Parameter-Effizienz durch diskrete Token-Level-Optimierung
-        % - Minimale Speicheranforderungen
-        % - Modifiziert Input-Repräsentationen wie Prefix Tuning
-        
-        % LIMITIERUNGEN:
-        % - Inferenz-Overhead durch Prepending task-spezifischer Tokens [SOURCE-MISSING: Li et al., 2025]
-        % - Zusätzlicher Computational Cost durch Prefix-Tokens
-        % - Erhöhte Latenz vs. gefrorene Backbone-Modelle [SOURCE-MISSING: Diep et al., 2025; Lester et al., 2021]
-        % - Sensitive Initialisierung [SOURCE-MISSING: Huang et al., 2024]
-        
-        % ============================================================================
-        % VERGLEICHENDE BEWERTUNG DER PEFT-METHODEN
-        % ============================================================================
-        
-        % PARAMETER-EFFIZIENZ (aufsteigend):
-        % 1. Prompt Tuning: ~0,01% - Extremste Reduktion
-        % 2. Prefix Tuning: ~0,1% - Sehr gering
-        % 3. LoRA: ~0,1-1% (je nach Rank) - Stark reduziert
-        % 4. Adapter: ~3,6% - Moderat reduziert
-        
-        % INFERENZ-OVERHEAD (aufsteigend):
-        % 1. LoRA: ≈0 (Weight Merging möglich) - OPTIMAL
-        % 2. Prefix Tuning: Gering (zusätzliche Tokens)
-        % 3. Prompt Tuning: Gering (zusätzliche Tokens)
-        % 4. Adapter: Hoch (zusätzliche Layer) - PROBLEMATISCH
-        
-        % PERFORMANCE-CHARAKTERISTIKA:
-        % - LoRA [SOURCE-MISSING: Hu et al., 2021; Moghadas et al., 2024]:
-        %   * On-par oder besser als Full Fine-Tuning (RoBERTa, DeBERTa, GPT-2, GPT-3)
-        %   * Übertrifft Prompt Tuning in Gesamtperformance, Memory, Flexibilität
-        %   * Performance-Gap bei komplexen, heterogenen Datensätzen [SOURCE-MISSING: Wang et al., 2025]
-        %
-        % - Adapter [SOURCE-MISSING: Houlsby et al., 2019]:
-        %   * Konsistent stark auf Benchmarks (GLUE: innerhalb 0,4% von Full FT)
-        %   * Zuverlässige Performance über verschiedene Tasks
-        %
-        % - Prefix Tuning [SOURCE-MISSING: Snegha et al., 2025; Kim et al., 2023]:
-        %   * Superior in multilingualen Adaptation-Tasks
-        %   * Besser in zeit-beschränkten Szenarien (3-5 Minuten Training)
-        %   * Outperforms LoRA in spezifischen Kontexten
-        %
-        % - Prompt Tuning:
-        %   * Schwächer bei kleinen Modellen
-        %   * Konkurrenzfähig ab >11B Parametern
-        
-        % TRAINING-DYNAMIK:
-        % - LoRA: Langsame Konvergenz (5-6x mehr Iterationen) [SOURCE-MISSING: Wang et al., 2024]
-        % - Prompt/Prefix: Initialisierungs-sensitiv [SOURCE-MISSING: Huang et al., 2024]
-        % - Adapter: Stabile Konvergenz, aber Speicher-intensiv
-        
-        % WARUM LORA FÜR DIESE ARBEIT:
-        % 1. Kein Inferenz-Overhead: Kritisch für Produktionsumgebung
-        % 2. Gute Balance: Parameter-Effizienz vs. Performance
-        % 3. Modularität: Mehrere Task-Adapter möglich
-        % 4. Hardware-Feasibility: Kombination mit QLoRA für Consumer-GPUs
-        % 5. Bewährte Performance: Erfolgreich in ähnlichen Domänen-Adaptionen
-        % 6. Community-Support: Umfangreiche Implementierungen und Best Practices
-        
-        % Konvergenz-Limitierung akzeptabel, da:
-        % - Kleiner Datensatz (kurze Trainings-Episoden weniger kritisch)
-        % - Unsloth-Optimierungen kompensieren teilweise (siehe unten)
-        % - Quality over Speed: Finale Performance wichtiger als Trainingszeit
-        
-        % ============================================================================
-        % UNSLOTH - OPTIMIERUNGSFRAMEWORK FÜR EFFIZIENTES TRAINING
-        % ============================================================================
-        %
-        % - UNSLOTH: Optimierungsframework für effizientes Training
-        %   
-        %   PROBLEMSTELLUNG & MOTIVATION:
-        %   * Herausforderung: Auch PEFT-Methoden wie LoRA erfordern bei 7B-Modellen erhebliche Ressourcen
-        %   * Traditionelle Frameworks (Hugging Face Transformers, PyTorch): Hardware-Limitierungen
-        %   * Instabilitäten bei LoRA-Training: Gradient Explosion, numerische Instabilität \cite{zhong2025}
-        %   * Zugangshürde: Enterprise-Grade GPUs oder Multi-GPU-Setups erforderlich
-        %   * Relevanz für diese Arbeit: Consumer-Hardware-Constraints (siehe Abschnitt~\ref{sec:6.1})
-        %   
-        %   TECHNISCHE OPTIMIERUNGEN:
-        %   
-        %   1. Speichereffizienz (50-80% Reduktion des VRAM-Bedarfs) \cite{hasan2025,pingua2025,lu2025}:
-        %      * 4-bit Quantization der Base-Model-Weights (~70% Memory-Reduktion) \cite{zhong2025}
-        %      * Optimierte QLoRA-Implementation: LoRA-Adapter + 4-bit Quantization \cite{dettmers2023}
-        %      * Gradient Checkpointing für reduzierte Aktivierungs-Speicherung
-        %      * Ermöglicht 7B-Modelle auf Consumer-GPUs (RTX 3090, Tesla T4) \cite{tahir2024,phan2025,bandara2025}
-        %      * Praktisch: Training ohne Qualitätsverlust bei drastisch reduziertem VRAM
-        %   
-        %   2. Training-Beschleunigung (2-5x schneller) \cite{hasan2025,lu2025,pingua2025}:
-        %      * Flash Attention 2: IO-optimierte Attention-Berechnung \cite{dao2022}
-        %        - Reduzierte Transfers zwischen GPU-Memory-Komponenten \cite{lea2025}
-        %        - Effizientere Key-Value-Query-Matrix-Operationen
-        %      * Custom Kernel Implementations (OpenAI Triton) \cite{lea2025}:
-        %        - Fused Operations: Weniger Speicherzugriffe
-        %        - Optimierte Matrix-Multiplikationen für LoRA
-        %        - Custom PyTorch Autograd-Funktionen
-        %      * Praktisch: Training-Epochen in 26 Minuten (statt Stunden) \cite{mohammadi2025}
-        %   
-        %   3. Numerische Stabilität:
-        %      * Gradient Clipping gegen Gradient Explosion \cite{zhong2025}
-        %      * Layer Normalization Calibration für LoRA-spezifische Instabilitäten \cite{zhong2025}
-        %      * Multi-Precision Support (8-bit, bfloat16) für Hardware-Flexibilität \cite{upadhyay2025,pourcel2025}
-        %      * Verhindert Training-Abbrüche durch Overflow
-        %   
-        %   4. PEFT-Integration:
-        %      * Unterstützung für LoRA-Target-Modules: q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj \cite{upadhyay2025,rao2025}
-        %      * Vollständig kompatibel mit Hugging Face PEFT
-        %      * Nahtlose Integration in bestehende Workflows
-        %   
-        %   DEMOKRATISIERUNG & ZUGÄNGLICHKEIT:
-        %   * Hardware-Accessibility: Single-GPU statt Multi-GPU \cite{lea2025}
-        %   * Consumer-Grade Hardware: RTX 3090, NVIDIA A40, Tesla T4 \cite{tahir2024,bandara2025,phan2025}
-        %   * Free Cloud Platforms: Google Colab (T4, TPU), Kaggle (P100) \cite{phan2025,bandara2025}
-        %   * Strukturierte Templates: Guided Notebooks für niedrige Einstiegshürde \cite{jimenez2025}
-        %   * Relevanz: Ermöglicht Forschung ohne Enterprise-Budget \cite{huang2025,machlovi2025}
-        %   
-        %   SYNERGIEEFFEKTE:
-        %   * LoRA: Reduziert trainierbare Parameter → weniger Rechenaufwand
-        %   * Unsloth: Optimiert verbleibende Operationen → schnellere Ausführung
-        %   * QLoRA + Unsloth: Memory-Effizienz + Speed-Optimierung \cite{dettmers2023}
-        %   * Keine Qualitätseinbußen gegenüber Standard-Fine-Tuning
-        %   
-        %   ABGRENZUNG:
-        %   * DeepSpeed: Multi-GPU-Verteiltes Training
-        %   * Unsloth: Single-GPU-Optimierung
-        %   * Komplementär zu PEFT, nicht alternatives Verfahren
-        %   * Fokus: Accessibility statt Scale
-        %   
-        %   PRAKTISCHE IMPLIKATIONEN FÜR DIESE ARBEIT:
-        %   * Iterationsgeschwindigkeit: Mehr Experimente in gleicher Zeit
-        %   * Hardware-Feasibility: Training auf verfügbarer Hardware möglich
-        %   * Energieeffizienz: Reduzierte Trainingszeit → geringerer Energieverbrauch
-        %   * Stabilität: Zuverlässigere Training-Runs in Constrained Environments \cite{mansha2025}
-        %   
-        %   Verweis: Konkrete Anwendung, Konfiguration und Trainings-Logs in Abschnitt~\ref{sec:6.2.1}
+        \paragraph{Unsloth -- Optimierungsframework für effizientes Training}
+
+Unsloth stellt ein Optimierungsframework für effizientes Training dar, das spezifische Problemstellungen adressiert. Auch PEFT-Methoden wie LoRA erfordern bei 7-Milliarden-Parameter-Modellen erhebliche Ressourcen. Traditionelle Frameworks wie Hugging Face Transformers und PyTorch stoßen an Hardware-Limitierungen. Instabilitäten bei LoRA-Training manifestieren sich in Gradient Explosion und numerischer Instabilität [SOURCE-MISSING]. Die Zugangshürde besteht in der Notwendigkeit von Enterprise-Grade GPUs oder Multi-GPU-Setups. Die Relevanz für diese Arbeit ergibt sich aus Consumer-Hardware-Constraints, wie in Abschnitt~\ref{sec:6.1} dargestellt.
+
+Die technischen Optimierungen umfassen mehrere Komponenten. Speichereffizienz mit 50 bis 80\,\% Reduktion des VRAM-Bedarfs [SOURCE-MISSING] wird durch 4-bit Quantization der Base-Model-Weights mit circa 70\,\% Memory-Reduktion erreicht [SOURCE-MISSING]. Die optimierte QLoRA-Implementation kombiniert LoRA-Adapter mit 4-bit Quantization [SOURCE-MISSING]. Gradient Checkpointing reduziert die Aktivierungs-Speicherung. Dies ermöglicht 7-Milliarden-Parameter-Modelle auf Consumer-GPUs wie RTX 3090 und Tesla T4 [SOURCE-MISSING]. Praktisch bedeutet dies Training ohne Qualitätsverlust bei drastisch reduziertem VRAM.
+
+Training-Beschleunigung um das 2 bis 5-fache [SOURCE-MISSING] wird durch Flash Attention 2 für IO-optimierte Attention-Berechnung [SOURCE-MISSING] erreicht. Dies reduziert Transfers zwischen GPU-Memory-Komponenten [SOURCE-MISSING] und ermöglicht effizientere Key-Value-Query-Matrix-Operationen. Custom Kernel Implementations mittels OpenAI Triton [SOURCE-MISSING] nutzen Fused Operations mit weniger Speicherzugriffen, optimierte Matrix-Multiplikationen für LoRA sowie Custom PyTorch Autograd-Funktionen. Praktisch bedeutet dies Training-Epochen in 26 Minuten statt Stunden [SOURCE-MISSING].
+
+Numerische Stabilität wird durch Gradient Clipping gegen Gradient Explosion [SOURCE-MISSING], Layer Normalization Calibration für LoRA-spezifische Instabilitäten [SOURCE-MISSING] sowie Multi-Precision Support für 8-bit und bfloat16 zur Hardware-Flexibilität [SOURCE-MISSING] gewährleistet. Dies verhindert Training-Abbrüche durch Overflow.
+
+Die PEFT-Integration unterstützt LoRA-Target-Modules wie q\_proj, k\_proj, v\_proj, o\_proj, gate\_proj, up\_proj und down\_proj [SOURCE-MISSING]. Vollständige Kompatibilität mit Hugging Face PEFT sowie nahtlose Integration in bestehende Workflows ist gegeben.
+
+Demokratisierung und Zugänglichkeit manifestieren sich in Hardware-Accessibility durch Single-GPU statt Multi-GPU [SOURCE-MISSING]. Consumer-Grade Hardware wie RTX 3090, NVIDIA A40 und Tesla T4 [SOURCE-MISSING] sowie Free Cloud Platforms wie Google Colab mit T4 und TPU sowie Kaggle mit P100 [SOURCE-MISSING] werden unterstützt. Strukturierte Templates in Form von Guided Notebooks senken die Einstiegshürde [SOURCE-MISSING]. Die Relevanz besteht darin, dass Forschung ohne Enterprise-Budget ermöglicht wird [SOURCE-MISSING].
+
+Synergieeffekte entstehen durch die Kombination mehrerer Ansätze. LoRA reduziert trainierbare Parameter und damit den Rechenaufwand. Unsloth optimiert verbleibende Operationen für schnellere Ausführung. QLoRA kombiniert mit Unsloth Memory-Effizienz mit Speed-Optimierung [SOURCE-MISSING], ohne Qualitätseinbußen gegenüber Standard-Fine-Tuning.
+
+Die Abgrenzung zu anderen Frameworks besteht darin, dass DeepSpeed für Multi-GPU-Verteiltes Training konzipiert ist, während Unsloth auf Single-GPU-Optimierung fokussiert. Unsloth ist komplementär zu PEFT und kein alternatives Verfahren. Der Fokus liegt auf Accessibility statt Scale.
+
+Praktische Implikationen für diese Arbeit umfassen höhere Iterationsgeschwindigkeit, die mehr Experimente in gleicher Zeit ermöglicht. Hardware-Feasibility macht Training auf verfügbarer Hardware möglich. Energieeffizienz durch reduzierte Trainingszeit führt zu geringerem Energieverbrauch. Stabilität gewährleistet zuverlässigere Training-Runs in Constrained Environments [SOURCE-MISSING]. Die konkrete Anwendung, Konfiguration und Trainings-Logs werden in Abschnitt~\ref{sec:6.2.1} dargestellt.
         
         
         \subsubsection{Prompt Engineering}
