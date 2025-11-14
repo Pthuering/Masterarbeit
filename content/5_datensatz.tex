@@ -1,229 +1,219 @@
-\section{Datensatzerstellung und -aufbereitung} \label{chap:5}
+\section{Datensatzerstellung und -aufbereitung}
+\label{chap:5}
 
-% Ziel: 8-10 Seiten
+\subsection{Datenerhebung}
+\label{sec:5.1}
 
-    \subsection{Datenerhebung}
-    \label{sec:5.1}
-    
-    % Ziel: 2-3 Seiten
-    % - Sammlung bestehender Verkehrsanweisungen bei LVB
-    % - Charakterisierung des Rohdatenbestands
+Die Grundlage für die Erstellung des Trainingsdatensatzes bilden technische Verkehrsanweisungen der Leipziger Verkehrsbetriebe, die über einen Zeitraum von mehreren Jahren im operativen Betrieb erstellt wurden. Diese Verkehrsanweisungen dokumentieren verschiedene Betriebsänderungen, Baumaßnahmen und Umleitungen und dienen primär der internen Koordination zwischen verschiedenen Abteilungen. Die Sammlung umfasst sowohl aktuelle als auch archivierte Anweisungen, um eine breite Abdeckung verschiedener Verkehrssituationen zu gewährleisten.
 
+Die Auswahl der Verkehrsanweisungen für die Datensatzerstellung erfolgte anhand mehrerer Kriterien. Zunächst wurden Anweisungen priorisiert, die bereits manuell erstellte Fahrgastinformationen aufweisen, da diese als Referenz für die korrekte Transformation dienen. Zusätzlich wurden Anweisungen ausgewählt, die verschiedene Komplexitätsdimensionen gemäß Abschnitt~\ref{sec:3.1.1} abdecken, um eine ausgewogene Repräsentation unterschiedlicher Verkehrssituationen zu gewährleisten. Die Aktualität der Anweisungen spielte ebenfalls eine Rolle, wobei sowohl zeitnahe als auch historische Beispiele einbezogen wurden, um die Generalisierungsfähigkeit des Modells zu fördern.
 
-    \subsection{Datensatzentwicklung für Fine-Tuning}
-    \label{sec:5.2}
-    
-    % Ziel: 6-7 Seiten
-    % KERNKAPITEL - hier entsteht die Basis für das Fine-Tuning
-    
-        \subsubsection{Annotationsstrategie}
-        \label{sec:5.2.1}
-        
-        % - Input-Output-Paare erstellen
-        % - Verschiedene Zielformate
-        % - Qualitätssicherung der Annotationen
-        
-        
-        \subsubsection{Qualitätssicherung und Validierung}
-        \label{sec:5.2.2}
-        
-        % AUTOMATISIERTE VALIDIERUNG MITTELS PYTHON-SKRIPTEN
-        % Um die Qualität und Konsistenz des Trainingsdatensatzes sicherzustellen, wurde eine 
-        % mehrstufige automatisierte Validierung mittels Python-Skripten durchgeführt.
-        %
-        % 1. STRUKTURVALIDIERUNG
-        % - Prüfung der korrekten Textstruktur gemäß den in Abschnitt~\ref{sec:3.2} definierten Regeln:
-        %   * Zeitrahmen/Zeitangaben am Anfang der Meldung
-        %   * Grund/Ursache am Ende der Meldung
-        % - Identifikation struktureller Inkonsistenzen
-        % - Flagging von Abweichungen für manuelle Überprüfung
-        %
-        % 2. LINIEN- UND FAHRZEUGTYP-VALIDIERUNG
-        % - Abgleich der Liniennummern mit LVB-Linienverzeichnis
-        % - Zuordnung der korrekten Fahrzeugtypen (Straßenbahn, Bus, etc.) zu Liniennummern
-        % - Erkennung ungültiger oder veralteter Linienbezeichnungen
-        % - Konsistenzprüfung zwischen Input und Output
-        %
-        % 3. ENTITÄTEN-KONSISTENZPRÜFUNG
-        % - Extraktion von Named Entities (Haltestellen, Straßennamen) aus Input und Output
-        % - Abgleich der genannten Entitäten zwischen Input und Output
-        % - Erkennung von:
-        %   * Fehlenden Haltestellen im Output (Informationsverlust)
-        %   * Zusätzlichen/halluzinierten Haltestellen im Output
-        %   * Abweichenden Schreibweisen von Straßennamen
-        %   * Inkonsistenten Ortsangaben
-        % - Berechnung von Entity-Overlap-Metriken
-        %
-        % 3a. MASSNAHMENTYP-VALIDIERUNG
-        % - Automatische Erkennung der Maßnahmentypen in Input und Output:
-        %   * Haltestelle entfällt
-        %   * Umleitung über alternative Strecke
-        %   * Verkürzung der Linie
-        %   * Ersatzverkehr
-        %   * Kombinationen mehrerer Maßnahmen
-        % - Prüfung auf korrekte Übertragung der Maßnahmeninformation
-        % - Monitoring der Verteilung der Maßnahmentypen im Datensatz
-        % - Identifikation unterrepräsentierter Maßnahmentypen für gezielte Augmentierung
-        %
-        % 3b. RICHTUNGSSPEZIFISCHE ANGABEN-VALIDIERUNG
-        % - Prüfung korrekter Formatierung richtungsspezifischer Informationen
-        % - Pattern-Matching für Richtungsangaben: "Richtung [ZIELORT]:"
-        %   * Regex-basierte Erkennung: "Richtung\s+\w+:"
-        %   * Validierung der Reihenfolge: Schlüsselwort → Richtungsangabe → Doppelpunkt
-        %   * Beispiele: "Richtung Hauptbahnhof:", "Richtung Connewitz:", "Richtung Gohlis:"
-        % - Identifikation fehlerhafter Formate:
-        %   * Fehlendes Doppelpunkt: "Richtung Hauptbahnhof"
-        %   * Falsche Reihenfolge: ": Richtung Hauptbahnhof"
-        %   * Fehlende Richtungsangabe: "Richtung:"
-        % - Konsistenzprüfung bei mehreren Richtungsangaben im selben Text
-        % - Validierung, dass bei richtungsspezifischen Maßnahmen die Formatierung eingehalten wird
-        %
-        % 4. ZUSÄTZLICHE VALIDIERUNGSPRÜFUNGEN
-        % - Duplikatsprüfung: Identifikation identischer oder nahezu identischer Trainingsbeispiele
-        % - Zeichensatzvalidierung: Prüfung auf korrekte UTF-8-Kodierung, Sonderzeichen, Umlaute
-        % - Längenvalidierung: Überprüfung von Min/Max-Tokenlängen für Input und Output
-        % - Vollständigkeitsprüfung: Sicherstellung, dass alle Pflichtfelder vorhanden sind
-        % - Format-Konsistenz: Einheitliche Struktur aller Trainingsbeispiele (JSON-Schema)
-        %
-        % ERGEBNISSE UND KORREKTURPROZESS
-        % - Anzahl identifizierter Fehler pro Kategorie
-        % - Manuelle Nachbearbeitung bei kritischen Inkonsistenzen
-        % - Iterative Verbesserung des Datensatzes
-        % - Finale Validierungsstatistiken
-        %
-        % BEDEUTUNG FÜR MODELLQUALITÄT
-        % - Verhindert Training auf fehlerhaften Daten
-        % - Reduziert Halluzinationen bei Ortsnamen
-        % - Sichert Konsistenz mit LVB-Vorgaben (Abschnitt~\ref{sec:3.2})
-        % - Erhöht Vertrauen in Trainingsdaten
-        
-        
-        \subsubsection{Datenaugmentierung}
-        \label{sec:5.2.3}
-        
-        % EINLEITUNG MIT VERWEIS AUF THEORIE
-        % Die Datenaugmentierung für den LVB-Trainingsdatensatz basiert auf den in Abschnitt~\ref{sec:2.2.3}
-        % vorgestellten theoretischen Grundlagen zu Data Augmentation und Balanced Datasets.
-        % Die folgenden Strategien wurden implementiert, um einen ausgewogenen und qualitativ
-        % hochwertigen Datensatz zu schaffen.
-        %
-        % DATENVARIATIONEN NACH KOMPLEXITÄTSKATEGORIEN
-        % Der Trainingsdatensatz wurde bewusst so zusammengestellt, dass er alle in Abschnitt~\ref{sec:3.2.1}
-        % definierten Komplexitätskategorien von Verkehrsmeldungen abdeckt:
-        %
-        % VERTEILUNG DER KATEGORIEN IM DATENSATZ:
-        % - Kategorie 1 (Einzellinie, eine Richtung): X Beispiele
-        % - Kategorie 2 (Einzellinie, mehrere Richtungen unterschiedlich): X Beispiele
-        % - Kategorie 3 (Einzellinie, beide Richtungen gleich): X Beispiele
-        % - Kategorie 4 (Mehrere Linien, gleiche Maßnahmen): X Beispiele
-        % - Kategorie 5 (Mehrere Linien, unterschiedliche Maßnahmen): X Beispiele
-        % - Kategorie 6 (Mehrere Zeiträume/Bauphasen): X Beispiele
-        % - Kategorie 7 (Kombination Zeiträume + mehrere Linien): X Beispiele
-        %
-        % RATIONALE FÜR VERTEILUNG:
-        % - Einfache Kategorien (1-3) bilden Grundlage, häufiger vertreten
-        % - Komplexe Kategorien (5-7) in geringerem Maße, aber ausreichend für Generalisierung
-        % - Kategorie 4 (mehrere Linien gleich) wichtig für Effizienz der Darstellung
-        %
-        % AUGMENTIERUNGSSTRATEGIEN:
-        %
-        % 1. DISAGGREGATION GEBÜNDELTER VERKEHRSANWEISUNGEN
-        % - Aus einer Quell-Verkehrsanweisung wurden nicht nur die standardmäßig vorgesehenen Texte erzeugt
-        % - Gebündelte Texte (z.B. mehrere Linien in einem Text) wurden zusätzlich in separate Einzelansagen aufgeteilt
-        % - Richtungsspezifische Meldungen wurden sowohl gebündelt als auch getrennt erstellt
-        % - Systematisches Vorgehen durch alle Komplexitätskategorien:
-        %   * Kategorie 4-7 (gebündelte Meldungen) → Zerlegung in Kategorie 1-3 (Einzelmeldungen)
-        %   * Beispiel: "Linien 1 und 2 umgeleitet" → "Linie 1 umgeleitet" + "Linie 2 umgeleitet"
-        % - Ziel: Ausgewogene Verteilung über alle Komplexitätsstufen
-        % - Rationale: Balanced datasets verbessern Generalisierung \cite{feng2021survey}
-        % - Verteilungsstrategie: Empirisch basierend auf Häufigkeit in Produktivdaten mit gezieltem Oversampling seltener Kategorien
-        % - Vermeidung extremer Imbalance (Verhältnis max. 1:3 zwischen häufigster und seltenster Kategorie)
-        %
-        % 2. SYNTHETISCHE BEISPIELE MIT REALEN ENTITÄTEN
-        % - Generierung synthetischer Trainingsbeispiele für unterrepräsentierte Kategorien
-        % - Ansatz basiert auf Template-basierter Augmentierung mit Constraint-Enforcement \cite{kumar2020data}
-        % - Strikte Einhaltung der Realitätstreue:
-        %   * Nur real existierende Liniennummern des LVB-Netzes
-        %   * Korrekte Zuordnung von Fahrzeugtypen zu Liniennummern
-        %   * Ausschließlich existierende Haltestellen und Straßennamen
-        % - Einhaltung der vorgegebenen Textstruktur (siehe Abschnitt~\ref{sec:3.2})
-        % - Vermeidung von Halluzinationen durch Verwendung einer validierten Entitätsdatenbank
-        % - Synthetic data generation für NLP nachweislich effektiv \cite{feng2021survey}
-        % - Anteil synthetischer Daten: Ca. 20-30% des domänenspezifischen Datensatzes
-        % - Orientierung an EDA-Empfehlungen für kleine Datensätze \cite{wei2019eda}
-        % - Balance zwischen realen Daten (höhere Validität) und synthetischen (größere Abdeckung)
-        %
-        % 3. BALANCE DER MASSNAHMENTYPEN
-        % - Gleichmäßige Verteilung verschiedener Maßnahmentypen im Datensatz:
-        %   * Haltestelle entfällt
-        %   * Umleitung über alternative Strecke
-        %   * Verkürzung der Linie
-        %   * Ersatzverkehr
-        %   * Kombinationen mehrerer Maßnahmen
-        % - Monitoring der Verteilung durch dediziertes Validierungsskript (siehe Abschnitt~\ref{sec:5.2.2})
-        % - Gezielte Augmentierung unterrepräsentierter Maßnahmentypen
-        % - Class imbalance problematisch für Modellperformance \cite{wei2019eda}
-        % - Balanced sampling empfohlen für kleine Datensätze \cite{feng2021survey}
-        %
-        % 4. ANSAGETEXTE
-        % - Separate Behandlung von Ansagetexten für Fahrgastinformation
-        % - Anzahl basierend auf Häufigkeit in Quelldaten
-        % - Anpassung an neue Strukturvorgaben
-        % - Keine weitere Disaggregation, da entscheidende Faktoren:
-        %   * Kompaktheit der Information
-        %   * Streckenabschnittsbezogenheit
-        % - Fokus auf:
-        %   * Korrekte Abgrenzung von Streckenabschnitten
-        %   * Priorisierung fahrgastrelevanter Informationen
-        %   * Vermeidung redundanter Details
-        %
-        % 5. SPEZIALTRAINING: LINIEN-FAHRZEUGTYP-ZUORDNUNG
-        % - 200 dedizierte Trainingsbeispiele zur korrekten Zuordnung
-        % - Explizites Training der Beziehung: Liniennummer ↔ Fahrzeugtyp (Straßenbahn/Bus)
-        % - Abdeckung aller Linien im LVB-Netz
-        % - Integration mit Validierungsskript (siehe Abschnitt~\ref{sec:5.2.2}, Punkt 2)
-        %
-        % 6. ALLGEMEINE DEUTSCHSPRACHIGE DATEN (CATASTROPHIC FORGETTING)
-        % - XXX Trainingsbeispiele aus öffentlichen deutschen NLP-Datensätzen
-        % - Zweck: Verhinderung von Catastrophic Forgetting (siehe Abschnitt~\ref{sec:2.2.4})
-        % - Erhalt allgemeiner deutscher Sprachfähigkeiten während domänenspezifischem Fine-Tuning
-        % - Vermeidung von Overfitting auf LVB-spezifische Formulierungen
-        % - Strategie entspricht "continual learning" approach \cite{raffel2020exploring}
-        % - Mixing-Ratio: Ca. 10-15% allgemeine Daten zu domänenspezifischen Daten
-        % - Verhältnis balanciert Spezialisierung vs. Erhalt allgemeiner Fähigkeiten
-        % - Höherer Anteil domänenspezifischer Daten priorisiert, da Aufgabe stark spezialisiert
-        %
-        % 7. MEHRSPRACHIGKEIT: ENGLISCHE DATEN (OPTIONAL)
-        % - Erwägung: Integration englischer Trainingsbeispiele zur Erhaltung der Zweisprachigkeit
-        % - LeoLM-Basismodell wurde auf mehrsprachigen Daten trainiert (inkl. Englisch)
-        % - Empfehlung: Ca. 500-800 englische general-purpose Beispiele
-        % - Verhältnis: ~5-10% des Gesamtdatensatzes
-        % - Vorteil: Erhalt der englischen Sprachfähigkeiten für zukünftige Erweiterungen
-        % - Nachteil: Ressourcen für domänenfremde Daten
-        % - Entscheidung: [Je nach Projektanforderungen - noch festzulegen]
-        % - Multilingual training data erhält cross-lingual capabilities \cite{raffel2020exploring}
-        % - Empfohlenes Verhältnis: 5-10% englische Daten bei monolingualer deutscher Anwendung
-        % - T5-Studie zeigt: Geringe Beimischung anderer Sprachen ausreichend für Erhalt \cite{raffel2020exploring}
-        % - Trade-off: Mehr englische Daten → bessere Mehrsprachigkeit, aber weniger Fokus auf deutsche Domäne
-        %
-        % HERAUSFORDERUNGEN:
-        % - Balance zwischen einfachen und komplexen Beispielen
-        % - Vermeidung von Überanpassung auf häufige Muster
-        % - Sicherstellung korrekter Darstellungskonventionen bei Augmentierung
-        % - Trade-off zwischen Domänenspezialisierung und allgemeiner Sprachfähigkeit
-        
-        
-        \subsubsection{Datensatzstruktur}
-        \label{sec:5.2.4}
-        
-        % - Train-Validation-Test-Split
-        % - Größe und Verteilung
-        
-        
-        \subsubsection{Herausforderungen bei kleinem Datensatz}
-        \label{sec:5.2.5}
-        
-        % - Strategien aus der Literatur (multimodale Integration, stufenweise Optimierung)
-        % - Übertragung auf diese Arbeit
-        % - Training verschiedener Parameterebenen
+Die Rohdaten liegen in verschiedenen Formaten vor, primär als PDF-Dokumente und teilweise als strukturierte Textdateien. Die technischen Verkehrsanweisungen folgen der in Abschnitt~\ref{sec:3.1.2} beschriebenen Standardstruktur, weisen jedoch Variationen in Detailgrad und Formulierung auf. Diese Heterogenität im Rohdatenbestand erfordert eine systematische Aufbereitung und Annotation, die in den folgenden Abschnitten beschrieben wird.
 
+Es ist wichtig zu betonen, dass die in Abschnitt~\ref{sec:3.1.3} analysierten 185 Beispiele von Fahrgastinformationen verschiedener deutscher Verkehrsbetriebe nicht Teil des Trainingsdatensatzes sind. Diese Beispiele stammen aus einer separaten Analyse-Datenbank und dienten ausschließlich der Entwicklung des Regelwerks zur Formulierung von Fahrgastinformationen. Die Trainingsbeispiele wurden hingegen vollständig neu erstellt, indem technische Verkehrsanweisungen der LVB unter Anwendung der entwickelten Regeln manuell in Fahrgastinformationen transformiert wurden. Diese klare Trennung zwischen Regelentwicklung und Datensatzerstellung gewährleistet, dass der Trainingsdatensatz spezifisch auf die LVB-Anforderungen zugeschnitten ist und nicht durch externe Formulierungskonventionen verzerrt wird.
+
+Die Charakterisierung des Rohdatenbestands zeigt eine natürliche Verteilung verschiedener Maßnahmentypen. Sperrungen und Umleitungen bilden die häufigsten Kategorien, gefolgt von Ersatzverkehren und Verkürzungen. Halteausfälle und Komplettausfälle von Linien treten seltener auf, sind jedoch für eine vollständige Abdeckung der Domäne essentiell. Die zeitliche Verteilung der Verkehrsanweisungen umfasst sowohl kurzfristige Baumaßnahmen von wenigen Tagen als auch langfristige Projekte über mehrere Monate. Diese Diversität im Rohdatenbestand bildet die Grundlage für einen ausgewogenen Trainingsdatensatz, der die praktischen Anforderungen im operativen Betrieb der Leipziger Verkehrsbetriebe widerspiegelt.
+
+\subsection{Datensatzentwicklung für Fine-Tuning}
+\label{sec:5.2}
+
+Die Entwicklung eines spezialisierten Trainingsdatensatzes bildet die Grundlage für das Fine-Tuning des Sprachmodells. Dieses Kapitel beschreibt die methodische Vorgehensweise bei der Erstellung der Input-Output-Paare, die Strukturierung des Datensatzes sowie die angewendeten Strategien zur Optimierung der Trainingsqualität trotz begrenzter Datenmenge. Die praktische Umsetzung orientiert sich dabei an den in Kapitel~\ref{chap:2} dargelegten theoretischen Grundlagen des Transfer Learning und der parameter-effizienten Fine-Tuning-Methoden.
+
+\subsubsection{Annotationsstrategie}
+\label{sec:5.2.1}
+
+Die Transformation technischer Verkehrsanweisungen in nutzergerechte Fahrgastinformationen erfordert ein systematisches Regelwerk, das die sprachlichen und strukturellen Anforderungen der Zielformate abbildet. Die in Abschnitt~\ref{sec:3.1.2} identifizierten Konventionen wurden hierzu in operationalisierbare Transformationsregeln überführt, die als Grundlage für die manuelle Annotation der Trainingsdaten dienen. Diese Annotationsstrategie gewährleistet die Konsistenz und Qualität der Input-Output-Paare, die für das Fine-Tuning des Sprachmodells verwendet werden.
+
+Das entwickelte Regelwerk gliedert sich in drei Hauptkategorien, die verschiedene Aspekte der Texttransformation adressieren. Strukturregeln definieren den grundlegenden Aufbau der Fahrgastinformationen, insbesondere die Reihenfolge der Informationselemente sowie Ausnahmen für Sonderfälle wie Events oder Endmeldungen. Die Grundstruktur folgt einem konsistenten Schema, bei dem zunächst der Gültigkeitszeitraum genannt wird, gefolgt von den betroffenen Linien und den konkreten Maßnahmen. Den Abschluss bildet die Begründung für die Änderung. Diese Struktur priorisiert die für die unmittelbare Reiseplanung relevanten Informationen, während der Grund als kontextuelle Information nachgestellt wird.
+
+Formulierungsregeln legen fest, wie spezifische Maßnahmen sprachlich umgesetzt werden. Hierzu zählen unter anderem die Formulierung von Umleitungen, Halteausfällen oder Ersatzverkehren. Eine zentrale Transformationsregel stellt die Fahrzeugtyp-Spezifikation dar. Während technische Verkehrsanweisungen häufig die generische Formulierung wie beispielsweise "Linie 15" verwenden, erfordert die Fahrgastinformation die explizite Nennung des Fahrzeugtyps als "TRAM 15". Diese Regel erhöht die Eindeutigkeit, insbesondere in städtischen Verkehrsnetzen, in denen Bus- und Straßenbahnlinien mit identischen oder ähnlichen Nummern parallel verkehren.
+
+Die Pluralisierungsregel optimiert die Lesbarkeit bei mehreren betroffenen Linien desselben Fahrzeugtyps. Anstelle der redundanten Aufzählung wird der Fahrzeugtyp nur einmal vorangestellt, beispielsweise "BUS 71, 73 und 90" anstelle von "BUS 71, BUS 73 und BUS 90". Diese Regel reduziert nicht nur die Zeichenzahl, sondern verbessert auch die Scannbarkeit der Information für Fahrgäste, die schnell erfassen müssen, ob ihre Linie betroffen ist.
+
+Formatierungsregeln betreffen Details wie die Ausschreibung von Abkürzungen, die Verwendung von Anführungszeichen bei Haltestellennamen oder die Pluralisierung bei mehreren Linien desselben Fahrzeugtyps. Die Ausschreibung fachspezifischer Abkürzungen trägt zur Verständlichkeit für alle Fahrgäste bei. Während Abkürzungen wie "Hst." für Haltestelle, "Strbhf." für Straßenbahnhof oder "örtl." für örtlicher in technischen Dokumenten üblich sind, werden sie in Fahrgastinformationen konsequent ausgeschrieben. Allgemein bekannte Straßenabkürzungen wie "-str." bleiben hingegen erhalten, da sie auch außerhalb des Verkehrskontextes gebräuchlich sind.
+
+Für Ansagetexte gelten modifizierte Regeln, die der auditiven Rezeption und der begrenzten Aufmerksamkeitsspanne während der Fahrt Rechnung tragen. Die Struktur beginnt stets mit der Begrüßung "Sehr geehrte Fahrgäste", gefolgt von der unmittelbar integrierten Begründung "wegen [Grund]" und den Maßnahmen. Zeitangaben und Liniennummern werden weggelassen, da sich die Ansage bereits an Fahrgäste in einem bestimmten Fahrzeug richtet. Der Fahrzeugbezug erfolgt über "dieser Bus" oder "diese Straßenbahn". Diese Kompaktheit ist notwendig, da Ansagetexte in kurzer Zeit verständlich sein müssen und die kognitive Verarbeitung auditiver Informationen eine Reduktion auf die unmittelbar relevanten Fakten erfordert.
+
+Die Entwicklung der Satzbausteine erfolgte durch systematische Kategorisierung nach ihrer Funktion innerhalb der Fahrgastinformation. Einleitungselemente umfassen Zeitangaben und Event-Anlässe. Problemdefinitionen beschreiben die Art der Beeinträchtigung, beispielsweise Verkürzungen, Umleitungen oder Halteausfälle. Lösungselemente kommunizieren verfügbare Alternativen wie Ersatzverkehre oder Ersatzhaltestellen. Begründungen erläutern den Anlass der Maßnahme. Diese funktionale Kategorisierung ermöglicht eine flexible Kombination der Bausteine je nach konkreter Verkehrssituation, wobei die Grundstruktur gewahrt bleibt.
+
+Für verschiedene Maßnahmentypen wurden spezifische Templates entwickelt, die als strukturelles Grundgerüst dienen. Ein Template für Verkürzungen lautet beispielsweise: "[Linie mit Fahrzeugtyp] fährt verkürzt bis und ab [Endstelle]". Für Umleitungen wird das Template "[Linie mit Fahrzeugtyp] fährt mit Umleitung über [Straße1], [Straße2] und [Straße3]" verwendet. Bei Halteausfällen kommt das Template "Die [Haltestelle/Halt] '[Name]' entfällt ersatzlos. Grund dafür ist [Beschreibung]" zum Einsatz. Diese Templates werden im konkreten Anwendungsfall mit den spezifischen Informationen aus der Verkehrsanweisung gefüllt.
+
+Die Validierung der Regeln erfolgte iterativ durch Abgleich mit bestehenden Fahrgastinformationen auf der Plattform him.l.de sowie durch Rückmeldungen der LVB-Mitarbeitenden. Dabei wurden die Regeln anhand realer Verkehrsanweisungen getestet und bei Bedarf präzisiert, um eine konsistente und praxistaugliche Anwendung sicherzustellen. Die resultierenden Regeln bilden die Grundlage für die manuelle Erstellung der Trainingsbeispiele, deren Qualität durch die in Abschnitt~\ref{sec:5.2.2} beschriebenen automatisierten Validierungsprozesse sichergestellt wird.
+
+\subsubsection{Qualitätssicherung und Validierung}
+\label{sec:5.2.2}
+
+Um die Qualität und Konsistenz des Trainingsdatensatzes sicherzustellen, wurde eine mehrstufige automatisierte Validierung mittels Python-Skripten durchgeführt. Diese Validierungsprozesse prüfen strukturelle, inhaltliche und semantische Aspekte der annotierten Input-Output-Paare und identifizieren potenzielle Inkonsistenzen, die die Qualität des Fine-Tunings beeinträchtigen könnten. Die Implementierung der Validierungslogik erfolgte in modularer Form, sodass einzelne Prüfungen sowohl isoliert als auch als Gesamtprozess ausgeführt werden können.
+
+\paragraph{Strukturvalidierung}
+
+Die Strukturvalidierung prüft die Einhaltung der in Abschnitt~\ref{sec:3.1.2} definierten Strukturregeln für Fahrgastinformationen und Ansagetexte. Für Fahrgastinformationen wird überprüft, ob die Zeitangaben am Anfang der Meldung stehen und die Begründung mit der Formulierung "Grund dafür" am Ende positioniert ist. Bei Ansagetexten erfolgt die Validierung der einleitenden Begrüßungsformel "Sehr geehrte Fahrgäste" am Textbeginn.
+
+Die Strukturvalidierung ergab für beide Datentypen eine vollständige Regelkonformität. Alle 450 Einträge der Fahrgastinformationen wiesen die korrekte Positionierung der Zeitangaben am Anfang sowie der Begründung am Ende auf. Ebenso begannen alle 350 Ansagetexte mit der vorgeschriebenen Begrüßungsformel. Diese konsistente Struktureinhaltung bildet die Grundlage für das spätere Lernen der strukturellen Muster durch das Sprachmodell.
+
+\paragraph{Linien- und Fahrzeugtyp-Validierung}
+
+Die Linienvalidierung gleicht alle im Datensatz genannten Liniennummern mit dem aktuellen Linienverzeichnis der Leipziger Verkehrsbetriebe ab. Zusätzlich wird die korrekte Zuordnung der Fahrzeugtypen zu den Liniennummern überprüft, da die eindeutige Spezifikation als "TRAM" oder "BUS" eine zentrale Anforderung der Fahrgastinformation darstellt. Diese Validierung verhindert das Training auf veralteten oder ungültigen Linienbezeichnungen sowie auf fehlerhaften Zuordnungen zwischen Liniennummer und Fahrzeugtyp.
+
+Von den 450 Fahrgastinformationen enthielten 434 Einträge Linienbezeichnungen, was insgesamt 658 Linienerwähnungen entspricht. Die Validierung bestätigte die Gültigkeit aller 658 Linienerwähnungen, sodass keine veralteten oder fehlerhaften Linienbezeichnungen im Trainingsdatensatz vorhanden sind. Diese vollständige Validität ist essentiell, da fehlerhafte Linienbezeichnungen zu falschen Ausgaben in der späteren Modellanwendung führen würden.
+
+\paragraph{Entitäten-Konsistenzprüfung}
+
+Die Entitäten-Konsistenzprüfung extrahiert Named Entities wie Haltestellennamen und Straßenbezeichnungen aus Input und Output und gleicht diese ab. Das Ziel besteht darin, Informationsverluste durch fehlende Entitäten im Output sowie Halluzinationen durch zusätzliche, im Input nicht genannte Entitäten zu identifizieren. Die Prüfung berücksichtigt, dass Inputs mehr Informationen als Outputs enthalten dürfen, da nicht alle technischen Details für Fahrgäste relevant sind. Outputs dürfen jedoch keine Entitäten enthalten, die nicht im Input vorkommen.
+
+Die Konsistenzprüfung ergab für 419 der 450 Fahrgastinformationen eine vollständige Übereinstimmung der Entitäten zwischen Input und Output, was einer Quote von 93,1 Prozent entspricht. Bei 31 Einträgen wurden mögliche Inkonsistenzen identifiziert, die in einer manuellen Nachprüfung evaluiert wurden. Diese Inkonsistenzen betrafen überwiegend unterschiedliche Schreibweisen von Straßennamen sowie Fälle, in denen im Output zusätzliche Kontextinformationen gegeben wurden, die nicht explizit im strukturierten Input aufgeführt waren, jedoch aus der ursprünglichen Verkehrsanweisung stammten.
+
+\paragraph{Maßnahmentyp-Validierung}
+
+Die Maßnahmentyp-Validierung erkennt automatisch die Art der verkehrlichen Maßnahme sowohl im Input als auch im Output. Unterschieden werden dabei die Maßnahmentypen Sperrung, Umleitung, Verkürzung, Ersatzverkehr, Halteausfall sowie Komplettausfall einer Linie. Die Validierung prüft, ob die Maßnahmeninformation korrekt vom Input in den Output übertragen wurde, und erstellt eine Verteilungsstatistik über alle Maßnahmentypen im Datensatz.
+
+Bei den Fahrgastinformationen zeigt sich eine charakteristische Transformation zwischen Input und Output. Während im Input Sperrungen mit 343 Erwähnungen (76,2 Prozent) den häufigsten Maßnahmentyp darstellen, sind im Output Umleitungen mit 335 Erwähnungen (74,4 Prozent) dominant. Diese Verschiebung ist erwünscht und entspricht der fahrgastorientierten Kommunikation, die nicht die technische Ursache, sondern die resultierende Maßnahme in den Vordergrund stellt. Eine Sperrung führt häufig zu einer Umleitung, weshalb die Umleitung für Fahrgäste die relevante Information darstellt.
+
+Die Konsistenz der Maßnahmenübertragung liegt bei 79,6 Prozent für Fahrgastinformationen und 85,7 Prozent für Ansagetexte. Diese Werte reflektieren die bewusste Transformation von technischen Ursachenbeschreibungen in handlungsorientierte Maßnahmenbeschreibungen. In 92 Fällen bei Fahrgastinformationen und 50 Fällen bei Ansagetexten wurden Diskrepanzen zwischen Input- und Output-Maßnahmen identifiziert. Die manuelle Überprüfung dieser Fälle bestätigte, dass die meisten Diskrepanzen auf legitime Transformationen zurückzuführen sind, bei denen beispielsweise eine Sperrung im Input korrekt zu einer Umleitung im Output führt.
+
+Die Verteilung der Maßnahmentypen im Datensatz zeigt eine ausgewogene Abdeckung verschiedener Verkehrssituationen. Neben den häufigen Umleitungen und Sperrungen sind auch Ersatzverkehre mit 186 Erwähnungen (41,3 Prozent im Input) sowie Verkürzungen mit 140 Erwähnungen (31,1 Prozent im Input) substantiell vertreten. Halteausfälle mit 66 Erwähnungen (14,7 Prozent) und Komplettausfälle mit 10 Erwähnungen (2,2 Prozent) bilden die selteneren, aber dennoch wichtigen Kategorien ab.
+
+\paragraph{Richtungsspezifische Angaben-Validierung}
+
+Die Validierung richtungsspezifischer Angaben prüft die korrekte Formatierung von Richtungsinformationen, die bei vielen Verkehrsmaßnahmen nur eine Fahrtrichtung betreffen. Das erwartete Format folgt dem Schema "Richtung [Zielort]:", wobei die Einhaltung der Reihenfolge sowie die Verwendung des Doppelpunkts überprüft werden. Zusätzlich wird die Konsistenz bei mehreren Richtungsangaben im selben Text validiert.
+
+Von den 450 Fahrgastinformationen enthalten 350 Einträge (77,8 Prozent) Richtungsangaben, wobei 204 Einträge (45,3 Prozent) mehrere Richtungen adressieren. Die Verteilung der Richtungsanzahl zeigt, dass die meisten Meldungen eine oder zwei Richtungen behandeln: 146 Einträge enthalten eine Richtung (32,4 Prozent) und 118 Einträge zwei Richtungen (26,2 Prozent). Komplexere Fälle mit drei bis elf Richtungen sind mit insgesamt 86 Einträgen (19,1 Prozent) seltener, bilden jedoch wichtige Szenarien ab, in denen mehrere Linien mit unterschiedlichen Richtungsverläufen betroffen sind.
+
+Bei Ansagetexten liegt der Anteil richtungsspezifischer Angaben mit 183 von 350 Einträgen (52,3 Prozent) niedriger. Dies entspricht dem Kommunikationsziel von Ansagetexten, die sich an bereits im Fahrzeug befindliche Fahrgäste richten und daher häufig auf die konkrete Fahrtrichtung fokussieren. Der Anteil von Einträgen mit mehreren Richtungen beträgt bei Ansagetexten 92 (26,3 Prozent), was die stärkere Fokussierung auf einzelne Richtungen unterstreicht.
+
+\paragraph{Zusätzliche Validierungsprüfungen}
+
+Ergänzend zu den inhaltlichen Validierungen wurden technische Prüfungen implementiert, die die Datenintegrität sicherstellen. Die Duplikatsprüfung identifiziert identische oder nahezu identische Trainingsbeispiele, die zu einer ineffizienten Nutzung der Trainingsressourcen führen würden. Die Zeichensatzvalidierung stellt die korrekte UTF-8-Kodierung sowie die fehlerfreie Verarbeitung von Sonderzeichen und Umlauten sicher. Die Längenvalidierung überprüft, dass alle Input- und Output-Sequenzen innerhalb der zulässigen Token-Grenzen liegen. Die Vollständigkeitsprüfung gewährleistet, dass alle Pflichtfelder der Trainingsbeispiele vorhanden sind, und die Format-Konsistenzprüfung validiert die einheitliche Struktur aller Einträge gemäß dem definierten JSON-Schema.
+
+\paragraph{Iterativer Korrekturprozess}
+
+Die identifizierten Inkonsistenzen wurden in einem iterativen Prozess manuell nachbearbeitet. Dabei wurden die 31 Entitäten-Inkonsistenzen sowie die 92 Maßnahmentyp-Diskrepanzen bei Fahrgastinformationen überprüft und gegebenenfalls korrigiert. In vielen Fällen handelte es sich nicht um tatsächliche Fehler, sondern um legitime Transformationen, die von den automatischen Prüfungen als potenzielle Inkonsistenzen markiert wurden. Die finale Validierung nach dem Korrekturprozess bestätigte die Datenqualität für das Fine-Tuning.
+
+Die mehrstufige Validierung verhindert das Training auf fehlerhaften Daten, reduziert Halluzinationen bei Ortsnamen und Linienbezeichnungen und sichert die Konsistenz mit den LVB-Vorgaben. Das systematische Validierungsverfahren erhöht das Vertrauen in die Trainingsdaten und bildet eine wichtige Qualitätssicherungsmaßnahme im Gesamtprozess der Datensatzerstellung.
+
+\subsubsection{Datenaugmentierung}
+\label{sec:5.2.3}
+
+Die Datenaugmentierung für den Trainingsdatensatz basiert auf den in Abschnitt~\ref{sec:2.2.3} vorgestellten theoretischen Grundlagen zu Data Augmentation und Balanced Datasets. Die implementierten Strategien zielen darauf ab, einen ausgewogenen und qualitativ hochwertigen Datensatz zu schaffen, der trotz begrenzter Ausgangsdaten eine breite Abdeckung verschiedener Verkehrssituationen ermöglicht. Die Augmentierungsstrategien wurden so konzipiert, dass sie die Realitätstreue der Daten wahren und gleichzeitig die Generalisierungsfähigkeit des Modells fördern.
+
+Ein zentrales Element der Augmentierungsstrategie bestand darin, aus einer einzelnen Verkehrsanweisung nicht nur die erwarteten Standardformate als Trainingsbeispiele zu generieren, sondern darüber hinaus weitere Varianten zu erstellen. Insbesondere wurden verschiedene Kombinationen mehrerer Linien aus einer Anweisung abgeleitet, um den Datensatz ausgeglichener zu gestalten und zu verhindern, dass das Modell sich auf die Extraktion von nur einer Linie pro Anweisung spezialisiert. Da die Mehrheit der Rohdaten Einzellinien-Meldungen umfasst, wurde durch diese gezielte Erweiterung eine stärkere Repräsentation komplexerer Szenarien erreicht. Bei der Generierung dieser zusätzlichen Beispiele wurde konsequent darauf geachtet, dass sämtliche zuvor entwickelten Regeln zur Erstellung und Formatierung der Trainingsbeispiele eingehalten werden. Dadurch ist sichergestellt, dass die synthetisch erzeugten Beispiele die gleiche Qualität und Konsistenz wie die natürlichen, manuell annotierten Daten aufweisen.
+
+\paragraph{Datenvariationen nach Komplexitätskategorien}
+
+Der Trainingsdatensatz wurde bewusst so zusammengestellt, dass er alle in Abschnitt~\ref{sec:3.1.1} definierten Komplexitätsdimensionen von Verkehrsmeldungen abdeckt. Diese Dimensionen umfassen die Anzahl betroffener Linien, die Richtungsspezifität der Maßnahmen, zeitliche Staffelungen, die Art der verkehrlichen Maßnahmen sowie räumliche Ausdehnung und Interdependenzen zwischen verschiedenen Maßnahmen. Die Verteilung dieser Dimensionen im Datensatz orientiert sich an der empirischen Häufigkeit in den Produktivdaten der Leipziger Verkehrsbetriebe, wobei gezielt unterrepräsentierte Komplexitätsgrade durch Augmentierung verstärkt wurden.
+
+Verkehrsanweisungen mit geringerer Komplexität, die beispielsweise nur eine einzelne Linie in einer Fahrtrichtung betreffen, bilden die Grundlage des Datensatzes und sind entsprechend ihrer Häufigkeit im operativen Betrieb stärker vertreten. Verkehrsanweisungen mit höherer Komplexität, die mehrere Linien mit unterschiedlichen Maßnahmen oder mehrere Zeiträume kombinieren, sind in geringerem Maße vertreten, jedoch in ausreichender Anzahl vorhanden, um eine Generalisierung auf diese anspruchsvolleren Fälle zu ermöglichen. Verkehrsanweisungen mittlerer Komplexität, bei denen mehrere Linien identische Maßnahmen erfahren, nehmen eine wichtige Rolle ein, da sie die effiziente Darstellung gebündelter Informationen trainieren, die für die praktische Anwendung relevant ist.
+
+Die Verteilungsstrategie folgt dem Prinzip des Balanced Sampling für kleine Datensätze und vermeidet extreme Imbalancen zwischen den Komplexitätsgraden. Das Verhältnis zwischen den am häufigsten und am seltensten vertretenen Komplexitätsdimensionen wurde auf maximal 1:3 begrenzt, um eine ausgewogene Lernverteilung zu gewährleisten. Diese Balance zwischen natürlicher Häufigkeit und künstlicher Augmentierung seltener Fälle entspricht den Empfehlungen der Fachliteratur zur Vermeidung von Class Imbalance bei der Modellperformance.
+
+\paragraph{Disaggregation gebündelter Verkehrsanweisungen}
+
+Eine zentrale Augmentierungsstrategie besteht in der systematischen Disaggregation gebündelter Verkehrsanweisungen. Aus einer Quell-Verkehrsanweisung wurden nicht nur die standardmäßig vorgesehenen Texte erzeugt, sondern gebündelte Meldungen zusätzlich in separate Einzelansagen aufgeteilt. Verkehrsanweisungen, die mehrere Linien oder richtungsspezifische Maßnahmen in einem Text zusammenfassen, wurden sowohl in der gebündelten Form als auch als separate Einzelmeldungen in den Datensatz aufgenommen.
+
+Das systematische Vorgehen durchläuft alle Komplexitätsdimensionen, wie sie in Abschnitt~\ref{sec:3.1.1} definiert wurden. Meldungen mit höherer Komplexität, die gebündelte Informationen zu mehreren Linien oder Richtungen enthalten, wurden in ihre Bestandteile zerlegt und als separate Einzelmeldungen ergänzt. Eine Meldung der Form "Linien 1 und 2 werden umgeleitet" wird beispielsweise zusätzlich als "Linie 1 wird umgeleitet" und "Linie 2 wird umgeleitet" in den Datensatz aufgenommen. Diese Strategie verfolgt das Ziel einer ausgewogenen Verteilung über alle Komplexitätsstufen und entspricht dem Konzept der Balanced Datasets, das nachweislich die Generalisierung verbessert.
+
+Die Disaggregation ermöglicht es dem Modell, sowohl kompakte gebündelte Darstellungen als auch detaillierte Einzeldarstellungen zu erlernen. In der späteren Anwendung kann das Modell flexibel zwischen beiden Darstellungsformen wählen, abhängig vom Kontext der Anfrage. Diese Flexibilität ist für die praktische Nutzung essentiell, da sowohl Szenarien existieren, in denen gebündelte Informationen bevorzugt werden, als auch solche, in denen separate Einzelmeldungen angemessener sind.
+
+\paragraph{Synthetische Beispiele mit realen Entitäten}
+
+Für unterrepräsentierte Kategorien wurden synthetische Trainingsbeispiele generiert, die auf einem Template-basierten Ansatz mit strikter Constraint-Enforcement basieren. Diese Strategie orientiert sich an den Empfehlungen zur synthetischen Datengenerierung für Natural Language Processing und gewährleistet gleichzeitig die Realitätstreue der erzeugten Beispiele.
+
+Die synthetische Generierung unterliegt strengen Einschränkungen zur Wahrung der Realitätstreue. Es werden ausschließlich real existierende Liniennummern des LVB-Netzes verwendet, wobei die korrekte Zuordnung von Fahrzeugtypen zu Liniennummern gewährleistet wird. Alle Haltestellennamen und Straßenbezeichnungen stammen aus einer validierten Entitätsdatenbank, die auf den aktuellen Netzplänen der Leipziger Verkehrsbetriebe basiert. Die generierten Texte halten die in Abschnitt~\ref{sec:3.2.2} definierten Strukturregeln ein, um Konsistenz mit den manuell annotierten Beispielen zu gewährleisten.
+
+Die Verwendung einer validierten Entitätsdatenbank verhindert Halluzinationen durch nicht existierende Orte oder Linien. Jede synthetisch erzeugte Verkehrssituation ist prinzipiell im realen Betrieb umsetzbar, auch wenn sie möglicherweise noch nicht aufgetreten ist. Diese Realitätstreue unterscheidet die implementierte Augmentierungsstrategie von rein stochastischen Ansätzen, die beliebige Textvariationen erzeugen könnten. Der Anteil synthetischer Daten im domänenspezifischen Datensatz beträgt etwa 20 bis 30 Prozent, was den Empfehlungen für kleine Datensätze entspricht und eine Balance zwischen realen Daten mit höherer Validität und synthetischen Daten mit größerer Abdeckung herstellt.
+
+\paragraph{Balance der Maßnahmentypen}
+
+Die gleichmäßige Verteilung verschiedener Maßnahmentypen im Datensatz wurde durch gezieltes Monitoring und Augmentierung sichergestellt. Die in Abschnitt~\ref{sec:5.2.2} beschriebene Maßnahmentyp-Validierung identifiziert die Verteilung von Sperrungen, Umleitungen, Verkürzungen, Ersatzverkehren, Halteausfällen sowie Kombinationen mehrerer Maßnahmen. Unterrepräsentierte Maßnahmentypen wurden durch synthetische Beispiele ergänzt, um Class Imbalance zu vermeiden, der nachweislich die Modellperformance beeinträchtigt.
+
+Die finale Verteilung zeigt eine substantielle Abdeckung aller relevanten Maßnahmentypen. Umleitungen und Sperrungen bilden mit jeweils über 300 Erwähnungen die häufigsten Kategorien ab. Ersatzverkehre sind mit 186 Erwähnungen (41,3 Prozent) und Verkürzungen mit 140 Erwähnungen (31,1 Prozent) im Input der Fahrgastinformationen substantiell vertreten. Selbst die selteneren Kategorien Halteausfälle mit 66 Erwähnungen (14,7 Prozent) und Komplettausfälle mit 10 Erwähnungen (2,2 Prozent) sind in ausreichender Anzahl vorhanden, um eine Generalisierung auf diese Fälle zu ermöglichen.
+
+\paragraph{Ansagetexte}
+
+Ansagetexte wurden als separate Kategorie behandelt und entsprechend ihrer Häufigkeit in den Quelldaten in den Datensatz aufgenommen. Die Anzahl von 350 Ansagetexten resultiert aus der Anpassung an die neuen Strukturvorgaben sowie der Disaggregation gebündelter Anweisungen. Im Gegensatz zu Fahrgastinformationen erfolgte bei Ansagetexten keine weitere Disaggregation nach Linien, da die entscheidenden Faktoren Kompaktheit der Information und Streckenabschnittsbezogenheit dies nicht erfordern.
+
+Der Fokus bei Ansagetexten liegt auf der korrekten Abgrenzung von Streckenabschnitten, der Priorisierung fahrgastrelevanter Informationen sowie der Vermeidung redundanter Details. Diese Anforderungen unterscheiden sich von denen der Fahrgastinformationen und rechtfertigen die separate Behandlung als eigener Datentyp. Die Verteilung der Maßnahmentypen bei Ansagetexten zeigt mit 73,7 Prozent Umleitungen im Output eine noch stärkere Fokussierung auf handlungsorientierte Informationen als bei Fahrgastinformationen.
+
+\paragraph{Spezialtraining: Linien-Fahrzeugtyp-Zuordnung}
+
+Zur Sicherstellung der korrekten Zuordnung von Liniennummern zu Fahrzeugtypen wurden 150 dedizierte Trainingsbeispiele erstellt, die explizit die Beziehung zwischen Liniennummer und Fahrzeugtyp trainieren. Diese Beispiele adressieren alle Linien im LVB-Netz und wurden mit dem in Abschnitt~\ref{sec:5.2.2} beschriebenen Validierungsskript auf Korrektheit geprüft.
+
+Die explizite Aufnahme dieser Zuordnungen als eigenständige Trainingsbeispiele verstärkt das Lernen dieser kritischen Information, die für die korrekte Ausgabe von Fahrgastinformationen essentiell ist. Die 150 Beispiele umfassen sowohl einfache Zuordnungen einzelner Linien als auch Beispiele mit mehreren Linien, um verschiedene Kontexte abzudecken. Diese fokussierte Trainingskomponente ergänzt die allgemeinen Verkehrsmeldungen und stellt sicher, dass die Fahrzeugtyp-Spezifikation konsistent angewendet wird.
+
+\paragraph{Verzicht auf allgemeine deutschsprachige und englische Daten}
+
+Ursprünglich war die Integration allgemeiner deutschsprachiger Trainingsbeispiele aus öffentlichen NLP-Datensätzen geplant, um Catastrophic Forgetting während des domänenspezifischen Fine-Tunings zu verhindern. Ebenso wurde erwogen, englische Trainingsbeispiele zur Erhaltung der mehrsprachigen Fähigkeiten des Basismodells LeoLM einzubeziehen. Diese Strategien entsprechen dem Continual Learning Approach und sind in der Fachliteratur für domänenspezifisches Fine-Tuning empfohlen.
+
+In der praktischen Umsetzung führte die Integration allgemeiner Daten jedoch zu erheblichen Schwierigkeiten bei der Balance zwischen Domänenspezialisierung und Erhalt allgemeiner Sprachfähigkeiten. Erste Trainingsversuche mit einem gemischten Datensatz zeigten Overfitting-Tendenzen, wobei das Modell Schwierigkeiten hatte, die spezifischen Anforderungen der Verkehrsinformations-Transformation zu erlernen, während gleichzeitig die allgemeinen Fähigkeiten erhalten blieben. Die Versuche, diesen Trade-off durch Anpassung der Mixing-Ratio zu optimieren, führten nicht zu zufriedenstellenden Ergebnissen.
+
+Als Konsequenz wurde die Trainingsstrategie auf ausschließlich spezialisierte Daten fokussiert, wobei die Learning Rate auf 0,0001 reduziert wurde, um sanfteres Lernen zu ermöglichen. Der finale Trainingsdatensatz umfasst daher 950 rein domänenspezifische Samples ohne Integration allgemeiner deutscher oder englischer Daten. Diese Entscheidung priorisiert die Qualität der Domänenspezialisierung gegenüber dem Erhalt allgemeiner Sprachfähigkeiten, was für die fokussierte Anwendung im LVB-Kontext angemessen ist. Die Implikationen dieser Entscheidung sowie alternative Ansätze werden in Abschnitt~\ref{sec:5.2.5} diskutiert.
+
+\paragraph{Herausforderungen der Augmentierung}
+
+Die Implementierung der Augmentierungsstrategien erforderte die Balance zwischen einfachen und komplexen Beispielen, die Vermeidung von Überanpassung auf häufige Muster sowie die Sicherstellung korrekter Darstellungskonventionen bei der synthetischen Generierung. Der Trade-off zwischen Domänenspezialisierung und allgemeiner Sprachfähigkeit stellte sich als zentrale Herausforderung heraus, die letztlich zur Fokussierung auf ausschließlich spezialisierte Daten führte. Diese Herausforderungen und die gewählten Lösungsansätze prägen den finalen Datensatz und beeinflussen die Trainingsstrategie, wie in den folgenden Abschnitten dargelegt wird.
+
+\subsubsection{Datensatzstruktur}
+\label{sec:5.2.4}
+
+Der finale Trainingsdatensatz umfasst 950 spezialisierte Trainingsbeispiele, die auf drei Datentypen verteilt sind. Die Fahrgastinformationen bilden mit 450 Samples (47,4 Prozent) die größte Kategorie und decken die vollständige Bandbreite an Verkehrssituationen ab, die in schriftlichen Fahrgastinformationen kommuniziert werden. Die Ansagetexte umfassen 350 Samples (36,8 Prozent) und adressieren die spezifischen Anforderungen auditiver Kommunikation in Fahrzeugen. Die Linien-Fahrzeugtyp-Zuordnungen stellen mit 150 Samples (15,8 Prozent) einen fokussierten Trainingsanteil dar, der die korrekte Zuordnung von Liniennummern zu Fahrzeugtypen verstärkt.
+
+Die Aufteilung des Datensatzes in Trainings-, Validierungs- und Testdaten erfolgte stratifiziert, um in allen Splits eine repräsentative Verteilung der drei Datentypen zu gewährleisten. Für die Trainings- und Validierungsaufteilung wurde ein Verhältnis von 92:8 gewählt, was angesichts des begrenzten Gesamtumfangs des Datensatzes einen Kompromiss zwischen ausreichender Trainingsdatenmenge und aussagekräftiger Validierung darstellt. Der Trainingssplit umfasst 874 Samples, die sich auf 414 Fahrgastinformationen, 322 Ansagetexte und 138 Linien-Fahrzeugtyp-Zuordnungen verteilen. Der Validierungssplit enthält 76 Samples mit 36 Fahrgastinformationen, 28 Ansagetexten und 12 Linien-Fahrzeugtyp-Zuordnungen.
+
+Zusätzlich wurde ein separater Testdatensatz mit 38 Samples erstellt, der zu keinem Zeitpunkt während des Trainings oder der Validierung verwendet wurde. Dieser Testdatensatz verteilt sich gleichmäßig auf 19 Fahrgastinformationen und 19 Ansagetexte und dient der finalen Evaluation des trainierten Modells. Die bewusste Gleichverteilung zwischen den beiden Hauptdatentypen im Testdatensatz ermöglicht einen ausgewogenen Vergleich der Modellperformance für beide Ausgabeformate. Die Linien-Fahrzeugtyp-Zuordnungen wurden nicht in den Testdatensatz aufgenommen, da ihre korrekte Anwendung implizit durch die Evaluation der Fahrgastinformationen und Ansagetexte überprüft wird.
+
+Die stratifizierte Aufteilung gewährleistet, dass alle drei Splits eine proportionale Verteilung der Datentypen aufweisen, was einer zufälligen Auswahl mit Erhaltung der Kategorienverhältnisse entspricht. Diese Strategie verhindert, dass bestimmte Datentypen überproportional in einem der Splits konzentriert sind, was zu verzerrten Trainings- oder Evaluationsergebnissen führen könnte. Die Shuffling-Strategie vor der Aufteilung stellt sicher, dass keine systematischen Ordnungseffekte die Split-Erstellung beeinflussen.
+
+Der relativ kleine Validierungssplit von 76 Samples reflektiert die begrenzte Datenverfügbarkeit und die Notwendigkeit, möglichst viele Daten für das eigentliche Training zu reservieren. Die gewählte 92:8-Aufteilung liegt im Bereich üblicher Splits für kleine Datensätze und ermöglicht dennoch eine statistisch aussagekräftige Validierung des Trainingsverlaufs. Die Early-Stopping-Strategie, die in Abschnitt~\ref{sec:6.1} beschrieben wird, nutzt den Validierungssplit zur Überwachung des Generalisierungsverhaltens und zur Vermeidung von Overfitting.
+
+Die Größe des Testdatensatzes mit 38 Samples wurde so gewählt, dass eine ausreichende Anzahl von Beispielen für die finale Evaluation zur Verfügung steht, ohne die Trainings- und Validierungsdaten übermäßig zu reduzieren. Die Testbeispiele wurden manuell so ausgewählt, dass sie verschiedene Komplexitätskategorien und Maßnahmentypen abdecken und somit eine repräsentative Stichprobe des Gesamtdatensatzes darstellen. Diese Repräsentativität ist essentiell für die Aussagekraft der in Kapitel~\ref{chap:7} dargestellten Evaluationsergebnisse.
+
+Die Gesamtgröße des Datensatzes von 988 Samples (950 für Training und Validierung, 38 für Test) liegt im typischen Bereich für domänenspezifisches Fine-Tuning mit parameter-effizienten Methoden. Während diese Größenordnung deutlich unter den Anforderungen für das Training von Sprachmodellen von Grund auf liegt, die üblicherweise Millionen bis Milliarden von Beispielen erfordern, ist sie für die Spezialisierung eines bereits vortrainierten Modells auf eine fokussierte Domäne angemessen. Die in Abschnitt~\ref{sec:2.2.3} diskutierten theoretischen Grundlagen zum Transfer Learning und zu parameter-effizienten Fine-Tuning-Methoden legitimieren diese Datensatzgröße für die spezifische Aufgabenstellung.
+
+\subsubsection{Herausforderungen bei kleinem Datensatz}
+\label{sec:5.2.5}
+
+Die Arbeit mit einem Datensatz von unter 1000 Trainingsbeispielen stellt besondere Herausforderungen für das Fine-Tuning eines Sprachmodells dar. Während große Sprachmodelle typischerweise auf Milliarden von Tokens trainiert werden und selbst domänenspezifisches Fine-Tuning häufig zehntausende Beispiele umfasst, operiert diese Arbeit mit deutlich begrenzteren Datenressourcen. Diese Limitation erfordert spezifische Strategien, die sowohl aus der Fachliteratur als auch aus den praktischen Erfahrungen im Projekt abgeleitet wurden.
+
+\paragraph{Theoretische Grundlagen für Small-Data-Scenarios}
+
+Die Fachliteratur zum Training neuronaler Netze mit begrenzten Daten identifiziert mehrere Ansätze zur Kompensation kleiner Datensätze. Transfer Learning ermöglicht die Nutzung von Vorwissen aus großen Datensätzen und reduziert dadurch den Bedarf an domänenspezifischen Daten erheblich. Parameter-effiziente Fine-Tuning-Methoden wie Low-Rank Adaptation minimieren die Anzahl zu trainierender Parameter und verringern somit das Risiko von Overfitting. Data Augmentation vergrößert den effektiven Datensatz durch systematische Variation bestehender Beispiele. Regularisierungstechniken wie Dropout und Weight Decay beschränken die Modellkomplexität und fördern Generalisierung. Early Stopping verhindert Überanpassung durch Überwachung der Validierungsperformance.
+
+Die in Abschnitt~\ref{sec:2.2.3} diskutierten theoretischen Grundlagen bilden das Fundament für die in dieser Arbeit implementierten Strategien. Die Kombination dieser Ansätze zielt darauf ab, trotz der begrenzten Datenmenge eine effektive Domänenspezialisierung zu erreichen, ohne die Generalisierungsfähigkeit des Modells zu beeinträchtigen.
+
+\paragraph{Implementierte Strategien}
+
+Die praktische Umsetzung der theoretischen Ansätze manifestiert sich in mehreren konkreten Strategien. Die Verwendung des vortrainierten Modells LeoLM als Ausgangsbasis nutzt Transfer Learning, indem umfangreiches Vorwissen über deutsche Sprache und allgemeine Textverarbeitung bereits im Modell verankert ist. Die Spezialisierung erfolgt nicht durch Training von Grund auf, sondern durch Anpassung der bereits gelernten Repräsentationen an die spezifische Domäne der Verkehrsinformations-Transformation.
+
+Die Anwendung von Low-Rank Adaptation mit einem Rank von 8 und Alpha von 16 reduziert die Anzahl trainierbarer Parameter erheblich und fokussiert das Training auf die für die Domänenspezialisierung essentiellen Anpassungen. Die LoRA-Dropout-Rate von 0,3 wirkt als zusätzliche Regularisierung und verhindert Überanpassung an spezifische Trainingsbeispiele. Diese parameter-effiziente Methode ist besonders für Small-Data-Scenarios geeignet, da sie die effektive Modellkomplexität begrenzt, ohne die Expressivität zu stark einzuschränken.
+
+Die in Abschnitt~\ref{sec:5.2.3} beschriebenen Augmentierungsstrategien erweitern den effektiven Datensatz systematisch. Die Disaggregation gebündelter Verkehrsanweisungen, die Generierung synthetischer Beispiele mit realen Entitäten sowie das Spezialtraining für Linien-Fahrzeugtyp-Zuordnungen erhöhen die Datenvielfalt, ohne die Qualität der Beispiele zu kompromittieren. Diese Strategien folgen dem Prinzip der qualitätserhaltenden Augmentation, bei dem neue Beispiele den gleichen Regeln und Constraints unterliegen wie die originalen Daten.
+
+Die Trainingskonfiguration implementiert mehrere Regularisierungsmaßnahmen. Ein Weight Decay von 0,05 verhindert übermäßige Gewichtswerte und fördert einfachere Lösungen. Die Gradient Norm Clipping mit einem Maximum von 0,5 stabilisiert das Training und verhindert explodierendes Gradienten-Problem. Die Kombination aus einer moderaten Batch Size von 8 mit Gradient Accumulation über 2 Steps ermöglicht effektives Training trotz begrenzter GPU-Ressourcen und wirkt gleichzeitig regularisierend durch das häufigere Updaten der Gewichte.
+
+Die Learning Rate von 0,0001 wurde bewusst niedrig gewählt, um sanftes Lernen zu ermöglichen und abrupte Anpassungen zu vermeiden. Die Warmup-Phase über 30 Steps erlaubt dem Modell, sich graduell an die neue Aufgabe anzupassen. Diese konservative Lernstrategie ist für kleine Datensätze essentiell, da aggressive Lernraten schnell zu Overfitting führen können.
+
+Das Early Stopping mit einer Patience von 3 überwacht kontinuierlich die Validierungsperformance und stoppt das Training, sobald keine Verbesserung mehr eintritt. Diese Strategie verhindert Überanpassung an die Trainingsdaten und gewährleistet, dass das Modell im optimalen Punkt zwischen Spezialisierung und Generalisierung gestoppt wird. Die konkrete Anwendung dieser Strategie sowie die resultierenden Trainingskurven werden in Kapitel~\ref{chap:6} detailliert beschrieben.
+
+\paragraph{Entscheidung gegen Integration allgemeiner Daten}
+
+Die ursprüngliche Planung sah die Integration allgemeiner deutschsprachiger Trainingsbeispiele sowie potenziell englischer Daten vor, um Catastrophic Forgetting zu vermeiden und die mehrsprachigen Fähigkeiten des Basismodells zu erhalten. Diese Strategie entspricht dem Continual Learning Approach und wird in der Fachliteratur für domänenspezifisches Fine-Tuning empfohlen. Ein typisches Mixing-Ratio von 10 bis 15 Prozent allgemeiner Daten zu domänenspezifischen Daten sollte die Balance zwischen Spezialisierung und Erhalt allgemeiner Fähigkeiten gewährleisten.
+
+In der praktischen Umsetzung führte die Integration allgemeiner Daten jedoch zu erheblichen Schwierigkeiten. Erste Trainingsversuche mit einem gemischten Datensatz zeigten, dass das Modell Schwierigkeiten hatte, die hochspezifischen Konventionen der Verkehrsinformations-Transformation zu erlernen, während gleichzeitig die allgemeinen Sprachfähigkeiten erhalten blieben. Die Versuche, durch Variation des Mixing-Ratios einen optimalen Trade-off zu finden, führten entweder zu unzureichender Domänenspezialisierung bei hohem Anteil allgemeiner Daten oder zu Overfitting bei niedrigem Anteil.
+
+Die Ursache dieser Schwierigkeit liegt in der fundamentalen Diskrepanz zwischen den Zielen. Allgemeine Sprachfähigkeiten erfordern ein breites, aber flaches Verständnis vielfältiger Textsorten und Kommunikationskontexte. Domänenspezialisierung hingegen erfordert ein tiefes, aber enges Verständnis hochspezifischer Konventionen und Transformationsregeln. Bei einem Datensatz von unter 1000 domänenspezifischen Beispielen reicht die Datenmenge nicht aus, um beide Ziele simultan zu verfolgen, ohne eines davon zu kompromittieren.
+
+Die finale Strategie fokussiert daher ausschließlich auf domänenspezifische Daten und akzeptiert einen potenziellen Verlust allgemeiner Sprachfähigkeiten zugunsten hoher Qualität in der Zieldomäne. Diese Entscheidung ist für die fokussierte Anwendung im LVB-Kontext angemessen, da das System ausschließlich für die Transformation von Verkehrsanweisungen eingesetzt wird und keine allgemeinen Sprachverarbeitungsaufgaben erfüllen muss. Die reduzierte Learning Rate von 0,0001 kompensiert teilweise den Verzicht auf allgemeine Daten, indem sie sanftere Anpassungen ermöglicht und das Risiko von Catastrophic Forgetting reduziert.
+
+\paragraph{Alternative Ansätze für zukünftige Arbeiten}
+
+Für zukünftige Arbeiten mit größeren Datensätzen oder erweiterten Anwendungsbereichen bieten sich alternative Strategien an. Eine stufenweise Optimierung, bei der zunächst mit allgemeinen Daten und anschließend mit domänenspezifischen Daten trainiert wird, könnte einen graduelleren Übergang ermöglichen. Die Verwendung von Adapter-basierten Ansätzen, bei denen separate Adapter für allgemeine und domänenspezifische Fähigkeiten trainiert werden, könnte beide Ziele besser balancieren. Multimodale Integration, bei der zusätzliche Informationsquellen wie Netzpläne oder strukturierte Fahrplandaten einbezogen werden, könnte die effektive Datenmenge erhöhen, ohne die Fokussierung zu verwässern.
+
+Die Fachliteratur schlägt zudem Few-Shot Learning und Meta-Learning als vielversprechende Ansätze für Small-Data-Scenarios vor. Diese Methoden trainieren Modelle darauf, aus wenigen Beispielen zu lernen, indem sie explizit auf Transferierbarkeit optimiert werden. Die Anwendung solcher Techniken auf die Verkehrsinformations-Domäne könnte interessante Forschungsfragen für zukünftige Arbeiten eröffnen.
+
+\paragraph{Evaluation der gewählten Strategie}
+
+Die Effektivität der implementierten Strategien wird durch die in Kapitel~\ref{chap:7} dargestellten Evaluationsergebnisse beurteilt. Die Kombination aus parameter-effizienten Fine-Tuning-Methoden, systematischer Datenaugmentierung und umfassenden Regularisierungsmaßnahmen zielt darauf ab, trotz des begrenzten Datensatzes eine robuste Domänenspezialisierung zu erreichen. Die Early-Stopping-Strategie gewährleistet, dass das Training im optimalen Punkt gestoppt wird, an dem das Modell sowohl auf den Trainingsdaten als auch auf den Validierungsdaten gute Performance zeigt.
+
+Die bewusste Priorisierung von Domänenspezialisierung gegenüber allgemeinen Fähigkeiten prägt nicht nur die Datensatzentwicklung, sondern auch die Interpretation der Evaluationsergebnisse. Das trainierte Modell sollte primär anhand seiner Performance in der Zieldomäne bewertet werden, während potenzielle Limitationen in allgemeinen Sprachverarbeitungsaufgaben akzeptabel sind. Diese fokussierte Perspektive entspricht dem praktischen Anwendungsziel und reflektiert die Realität begrenzter Ressourcen im Kontext von Small-Data-Scenarios.
+
+Die detaillierte Analyse des Trainingsverlaufs, einschließlich der Konvergenzgeschwindigkeit und der Entwicklung von Training und Validation Loss, erfolgt in Kapitel~\ref{chap:6}. Die finale Bewertung der Modellqualität anhand von Testdaten sowie der Vergleich verschiedener Modellvarianten werden in Kapitel~\ref{chap:7} dargelegt.

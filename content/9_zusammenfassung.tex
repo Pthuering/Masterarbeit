@@ -1,71 +1,113 @@
-\section{Zusammenfassung und Ausblick} \label{chap:9}
+\section{Zusammenfassung und Ausblick}
+\label{chap:9}
 
-% Ziel: 5-6 Seiten
+Die vorliegende Arbeit untersuchte die Entwicklung eines ressourceneffizienten, domänenspezifischen Sprachmodells zur automatisierten Transformation technischer Verkehrsanweisungen in fahrgastgerechte Informationstexte. Dieses abschließende Kapitel fasst die durchgeführten Arbeiten und wesentlichen Erkenntnisse zusammen, beantwortet die eingangs formulierten Forschungsfragen und diskutiert sowohl den wissenschaftlichen als auch praktischen Beitrag der Arbeit. Darüber hinaus werden praktische Implikationen, konkrete Erweiterungsmöglichkeiten sowie offene Forschungsfragen erörtert.
 
-    \subsection{Zusammenfassung der Arbeit}
-    \label{sec:9.1}
-    
-    % Ziel: 1,5 Seiten
-    % - Problemstellung
-    % - Durchgeführte Arbeiten
-    % - Hauptergebnisse
+\subsection{Zusammenfassung der Arbeit}
+\label{sec:9.1}
 
+Die Leipziger Verkehrsbetriebe erstellen regelmäßig technische Verkehrsanweisungen, um interne Abläufe bei Baumaßnahmen, Umleitungen oder Betriebsänderungen zu koordinieren. Diese Dokumente enthalten sowohl fahrgastrelevante als auch rein betriebliche Informationen und sind in einer technischen Fachsprache verfasst, die für Fahrgäste nicht unmittelbar verständlich ist. Die manuelle Transformation dieser Anweisungen in verschiedene nutzergerechte Formate stellt einen zeitaufwendigen Prozess dar und führt zu Inkonsistenzen in den resultierenden Texten. Die zentrale Problemstellung dieser Arbeit bestand darin, diesen Transformationsprozess zu automatisieren und dabei gleichzeitig einheitliche, qualitativ hochwertige Ausgaben zu gewährleisten.
 
-    \subsection{Beantwortung der Forschungsfragen}
-    \label{sec:9.2}
-    
-    % Ziel: 1,5 Seiten
-    % Direkte Beantwortung aller Forschungsfragen aus 1.2:
-    % 1. Wie kann ein 7B-Parameter-Modell durch Fine-Tuning für diese spezifische Aufgabe optimiert werden?
-    % 2. Welche Qualität erreichen quantisierte Modellversionen im Vergleich zum Vollmodell?
-    % 3. Wie kann die Transformation durch Prompt Engineering automatisiert werden?
+Das methodische Vorgehen gliederte sich in mehrere aufeinander aufbauende Schritte. Zunächst erfolgte eine systematische Analyse der bestehenden Verkehrsanweisungen und Fahrgastinformationen, um die strukturellen Merkmale, Informationshierarchien und Qualitätsanforderungen zu identifizieren. Auf dieser Grundlage wurde ein Datensatz von etwa 950 Trainingsbeispielen entwickelt, der verschiedene Komplexitätsstufen und Anweisungstypen abdeckt. Die Datensatzentwicklung umfasste neben der manuellen Annotation auch systematische Datenaugmentierungsstrategien sowie ein zweistufiges Validierungssystem zur Qualitätssicherung.
 
+Für die Modellentwicklung wurde das deutschsprachige LeoLM-Modell mit 7 Milliarden Parametern als Ausgangspunkt gewählt. Das Fine-Tuning erfolgte mittels des Low-Rank Adaptation Verfahrens, das eine effiziente Anpassung des Modells an die Zieldomäne ermöglicht, ohne alle Parameter neu trainieren zu müssen. Parallel wurden verschiedene Quantisierungsstufen evaluiert, um den Trade-off zwischen Modellgröße, Ressourcenverbrauch und Ausgabequalität zu untersuchen. Das Prompt Engineering umfasste die Entwicklung eines systematischen Ansatzes zur Automatisierung der Transformation, der Knowledge-Enhanced Prompts nutzt, um domänenspezifisches Wissen bereitzustellen, ohne auf externe Wissensdatenbanken zurückgreifen zu müssen.
 
-    \subsection{Wissenschaftlicher und praktischer Beitrag}
-    \label{sec:9.3}
-    
-    % Ziel: 1 Seite
-    % - Für die Forschung
-    % - Für die Praxis (LVB und andere ÖPNV-Betreiber)
+Die Evaluation des entwickelten Systems erfolgte anhand eines Testdatensatzes von 38 Beispielen unter Verwendung sowohl automatisierter Metriken als auch manueller Bewertungskriterien. Dabei zeigte sich ein überraschendes Ergebnis: Die 4-Bit-quantisierte Version des Modells erzielte in spezifischen Evaluationsszenarien bessere Resultate als die 8-Bit-Variante. Dieses kontraintuitive Phänomen wurde auf mögliche Regularisierungseffekte durch die aggressivere Quantisierung zurückgeführt. Das entwickelte System demonstriert die prinzipielle Machbarkeit einer automatisierten Transformation unter Verwendung kompakter Sprachmodelle, weist jedoch auch spezifische Herausforderungen auf, insbesondere bei der Filterung relevanter Informationen aus umfangreichen Anweisungstexten.
 
+\subsection{Beantwortung der Forschungsfragen}
+\label{sec:9.2}
 
-    \subsection{Ausblick und zukünftige Forschung}
-    \label{sec:9.4}
-    
-    % Ziel: 2-3 Seiten
-    
-        \subsubsection{Praktische Implikationen}
-        \label{sec:9.4.1}
-        
-        % - Übertragbarkeit auf andere Verkehrsbetriebe
-        % - Nachhaltigkeitsaspekte
-        % - Wirtschaftlichkeit
-        
-        
-        \subsubsection{Erweiterungsmöglichkeiten}
-        \label{sec:9.4.2}
-        
-        % - RAG-Integration (Haupterweiterung)
-        %   * Vollständiges Retrieval-Augmented Generation System
-        %   * Vektorstore mit historischen Verkehrsanweisungen
-        %   * Datenbank vergangener Bau- und Umgehungsmaßnahmen
-        %   * Automatische Empfehlung von Umgehungsstrategien basierend auf:
-        %     - Betroffenen Straßen/Haltestellen
-        %     - Ähnlichen historischen Fällen
-        %     - Bewährten Umleitungen
-        %   * Dynamisches Retrieval relevanter Kontextinformationen
-        %   * Skalierung auf umfangreiche Wissensbasen
-        %   * Erhöhte Konsistenz durch historische Referenzen
-        % - Multilingualität
-        %   * Mehrsprachige Ausgaben für internationale Fahrgäste
-        %   * Cross-lingual Transfer Learning
-        % - Übertragung auf andere Domänen
-        %   * Andere ÖPNV-Betreiber
-        %   * Weitere Verkehrssektoren (Bahn, Flugverkehr)
-        
-        
-        \subsubsection{Offene Forschungsfragen}
-        \label{sec:9.4.3}
-        
-        % - Zukünftige Untersuchungen
+Die in Abschnitt~\ref{sec:1.2} formulierten Forschungsfragen lassen sich auf Basis der durchgeführten Arbeiten wie folgt beantworten.
 
+\subsubsection*{Forschungsfrage 1: Wie kann ein 7B-Parameter-Modell durch Fine-Tuning für diese spezifische Aufgabe optimiert werden?}
+
+Das Fine-Tuning eines 7B-Parameter-Modells für die Transformation technischer Verkehrsanweisungen erweist sich als praktikabel und effektiv durch die Kombination mehrerer methodischer Ansätze. Die Verwendung des Low-Rank Adaptation Verfahrens ermöglicht eine ressourceneffiziente Anpassung des Modells, indem nur ein Bruchteil der Parameter trainiert wird. Mit etwa 950 manuell erstellten und validierten Trainingsbeispielen konnte eine ausreichende Spezialisierung auf die Zieldomäne erreicht werden. Diese Datensatzgröße liegt im typischen Bereich für domänenspezifisches Fine-Tuning und demonstriert, dass keine umfangreichen Datenmengen erforderlich sind, sofern das Basismodell bereits über relevantes Vorwissen verfügt.
+
+Die Strukturierung des Datensatzes nach Komplexitätsstufen sowie die Integration verschiedener Ausgabeformate tragen zur Robustheit des trainierten Modells bei. Die systematische Datenaugmentierung sowie die zweistufige Validierung gewährleisten die Qualität der Trainingsdaten. Entscheidend für den Erfolg ist zudem die Wahl eines deutschsprachigen Basismodells, da dieses bereits domänenrelevantes Vokabular und sprachliche Strukturen mitbringt. Die detaillierte Diskussion der Implementierung findet sich in den Kapiteln~\ref{sec:5.2} und~\ref{chap:6}.
+
+\subsubsection*{Forschungsfrage 2: Welche Qualität erreichen quantisierte Modellversionen im Vergleich zum Vollmodell?}
+
+Die Evaluation verschiedener Quantisierungsstufen ergab differenzierte Ergebnisse, die von den spezifischen Testszenarien abhängen. In fokussierten Evaluationen mit klar strukturierten Anweisungen erreichte die 4-Bit-Quantisierung überraschend gute Resultate und übertraf teilweise sogar die 8-Bit-Variante. Dieses Phänomen wird auf mögliche Regularisierungseffekte zurückgeführt, die durch die stärkere Quantisierung entstehen und zu robusteren Repräsentationen führen können. Bei erweiterten Tests mit komplexeren und umfangreicheren Verkehrsanweisungen zeigten hingegen die 8-Bit-Modelle eine konsistenteren und zuverlässigeren Leistung.
+
+Aus praktischer Sicht stellt die 4-Bit-Quantisierung eine attraktive Option dar, da sie den Speicherbedarf von etwa 28 GB auf circa 3,5 GB reduziert und damit den Betrieb auf Consumer-Hardware ermöglicht. Die 8-Bit-Variante bietet mit etwa 7 GB einen Kompromiss zwischen Ressourceneffizienz und Robustheit. Das Vollpräzisionsmodell konnte aufgrund der verfügbaren Hardware-Limitationen nicht umfassend evaluiert werden. Die ausführliche Diskussion der Evaluationsergebnisse findet sich in Kapitel~\ref{sec:7.2}.
+
+\subsubsection*{Forschungsfrage 3: Wie kann die Transformation durch Prompt Engineering automatisiert werden?}
+
+Die Automatisierung der Transformation erfolgt durch ein systematisches Prompt Engineering, das auf dem Chat-Format von LeoLM aufbaut. Zentrale Elemente sind Knowledge-Enhanced Prompts, die domänenspezifisches Wissen direkt in die Anweisungen integrieren, sowie strukturierte Templates für verschiedene Ausgabeformate. Diese Vorgehensweise eliminiert die Notwendigkeit einer externen Wissensdatenbank und reduziert damit die Systemkomplexität erheblich.
+
+Das entwickelte System nutzt deterministische Generierungsparameter, um konsistente und reproduzierbare Ausgaben zu gewährleisten. Eine zweistufige Qualitätssicherung, bestehend aus pattern-basierten Validierungsregeln und semantischen Konsistenzprüfungen, stellt sicher, dass nur validierte Transformationen weitergegeben werden. Die praktische Evaluation zeigt, dass dieser Ansatz für die vorliegende überschaubare Domäne ausreichend ist und keine aufwendigeren Retrieval-Augmented Generation Systeme erfordert. Bei sehr umfangreichen oder sich häufig ändernden Wissensbereichen wäre jedoch eine Erweiterung um externe Wissensdatenbanken zu erwägen. Die detaillierte Beschreibung der Prompt-Strukturen und Automatisierungsmechanismen findet sich in den Kapiteln~\ref{sec:6.2} und~\ref{sec:7.2}.
+
+\subsection{Wissenschaftlicher und praktischer Beitrag}
+\label{sec:9.3}
+
+Die vorliegende Arbeit leistet Beiträge sowohl zur wissenschaftlichen Forschung im Bereich ressourceneffizienter Sprachmodelle als auch zur praktischen Anwendung im öffentlichen Nahverkehr.
+
+\subsubsection*{Wissenschaftlicher Beitrag}
+
+Der zentrale wissenschaftliche Beitrag dieser Arbeit liegt in der empirischen Evidenz, dass aggressive Quantisierung unter bestimmten Bedingungen nicht zwangsläufig zu Qualitätseinbußen führt, sondern in spezifischen Evaluationsszenarien sogar vorteilhaft sein kann. Die Beobachtung, dass die 4-Bit-Quantisierung in fokussierten Tests bessere Ergebnisse als die 8-Bit-Variante erzielte, während sich das Verhältnis bei erweiterten Tests umkehrte, liefert wichtige Erkenntnisse für die Diskussion über effiziente Modellkompression. Diese Ergebnisse tragen zur Differenzierung des Verständnisses bei, unter welchen Rahmenbedingungen verschiedene Quantisierungsstufen optimal geeignet sind.
+
+Darüber hinaus demonstriert die Arbeit, dass kleine spezialisierte Modelle mit etwa 950 Trainingsbeispielen für klar definierte Aufgaben sehr gute Ergebnisse erzielen können. Dies hat Implikationen für die Entwicklung domänenspezifischer Systeme, insbesondere in Kontexten mit begrenzten Ressourcen oder strengen Datenschutzanforderungen. Die Kombination von Low-Rank Adaptation und Knowledge-Enhanced Prompts stellt einen effizienten methodischen Ansatz dar, der ohne umfangreiche Infrastruktur umsetzbar ist.
+
+Ein weiterer Beitrag liegt im Bereich deutschsprachiger Sprachmodelle. Die Arbeit zeigt, dass LeoLM als deutschsprachiges Modell eine sehr gute Basis für die Entwicklung spezialisierter Anwendungen darstellt. Die erfolgreiche Spezialisierung auf den Verkehrsbereich demonstriert die Qualität der deutschen Vortrainierung und liefert empirische Evidenz für die Eignung dieses Modells für praktische Anwendungsfälle. Dies ist besonders relevant vor dem Hintergrund der dominierenden Stellung englischsprachiger Modelle in der Forschung.
+
+\subsubsection*{Praktischer Beitrag}
+
+Für die Praxis bei den Leipziger Verkehrsbetrieben liegt der wesentliche Nutzen des entwickelten Systems nicht primär in der Zeitersparnis, sondern in der Gewährleistung einer einheitlichen Aufbereitung der Fahrgastinformationen. Die automatisierte Transformation stellt sicher, dass alle Ausgabeformate konsistenten Qualitätsstandards entsprechen und die gleiche Informationsbasis verwenden. Dies ist besonders relevant für die nachgelagerten Prozesse in der Kommunikationspipeline, von der Durchgabe an das Fahrpersonal bis zur Veröffentlichung auf Social-Media-Kanälen, die bisher weitgehend separat und unterschiedlich verarbeitet wurden.
+
+Das entwickelte System stellt einen funktionsfähigen Prototyp dar, der über Azure AI Foundry integriert werden kann. Die geplante Einbindung als Plugin direkt in Microsoft Word fügt sich nahtlos in die bestehende IT-Infrastruktur der Leipziger Verkehrsbetriebe ein, die generell mit Azure Cloud und Microsoft-Produkten arbeitet. Diese Integrationsstrategie minimiert technische Hürden und erleichtert die Akzeptanz bei den Mitarbeitenden.
+
+Die Akzeptanz des Systems bei den Fachkräften ist vorhanden, insbesondere im Hinblick auf mögliche Erweiterungen. Die Aussicht auf eine umfassendere Automatisierung, die über die reine Textgenerierung hinausgeht und vorgelagerte Prozessschritte einbezieht, wird positiv bewertet. Dies deutet darauf hin, dass das entwickelte System als Ausgangspunkt für eine schrittweise Erweiterung der Automatisierung dienen kann.
+
+Die Übertragbarkeit des Ansatzes auf andere Verkehrsbetriebe ist prinzipiell gegeben, sofern diese ebenfalls VDV-konforme Verkehrsanweisungen verwenden. Die zugrundeliegenden Konzepte und Terminologien sind im öffentlichen Nahverkehr weitgehend standardisiert, was eine Adaption des Systems erleichtert. Für eine vollständige Anpassung an ein neues Verkehrsunternehmen wäre allerdings ein unternehmensspezifisches Fine-Tuning mit lokalen Beispielen empfehlenswert, um unternehmensspezifische Formulierungskonventionen zu berücksichtigen.
+
+\subsection{Ausblick und zukünftige Forschung}
+\label{sec:9.4}
+
+Die vorliegende Arbeit stellt einen ersten Schritt in Richtung einer potentiellen umfassenden Automatisierung der Informationsverarbeitung im öffentlichen Nahverkehr dar. Die folgenden Abschnitte diskutieren praktische Implikationen, konkrete Erweiterungsmöglichkeiten sowie offene Forschungsfragen.
+
+\subsubsection{Praktische Implikationen}
+\label{sec:9.4.1}
+
+Die praktische Implementierung des entwickelten Systems bei den Leipziger Verkehrsbetrieben über Azure AI Foundry bietet mehrere strategische Vorteile. Die Integration als Microsoft Word Plugin fügt sich nahtlos in bestehende Arbeitsabläufe ein und ermöglicht den Mitarbeitenden eine direkte Nutzung ohne Wechsel zwischen verschiedenen Anwendungen. Die Verwendung der Azure Cloud Infrastructure gewährleistet zudem Skalierbarkeit und profitiert von den umfangreichen Sicherheits- und Compliance-Mechanismen der Plattform.
+
+Die Wirtschaftlichkeit des Ansatzes ist auch bei umfangreicher Nutzung gegeben. Der Zeit- und Ressourcenaufwand für das Fine-Tuning erwies sich als verhältnismäßig gering, wie in Kapitel~\ref{chap:2} dargelegt. Im Vergleich zu kommerziellen Lösungen stellt sich die übliche Abwägung zwischen eigenem Entwicklungsaufwand und höheren laufenden Kosten für extern bereitgestellte Dienste. Der entwickelte Ansatz bietet den Vorteil vollständiger Kontrolle über das System sowie Unabhängigkeit von externen Anbietern und deren Preisgestaltung. Gleichzeitig erfordert er jedoch initiale Investitionen in Entwicklung und Infrastruktur sowie laufenden Wartungsaufwand.
+
+Die Frage der Übertragbarkeit auf andere Verkehrsbetriebe ist differenziert zu betrachten. Deutsche Verkehrsunternehmen, die ebenfalls VDV-konforme Anweisungen verwenden, können mit relativ geringem Anpassungsaufwand von dem entwickelten Ansatz profitieren. Ein unternehmensspezifisches Fine-Tuning mit lokalen Beispielen würde die Anpassung an spezifische Formulierungen und Strukturen ermöglichen. Für kleinere Verkehrsbetriebe könnte sich zudem eine kooperative Lösung anbieten, bei der mehrere Unternehmen gemeinsam ein Modell trainieren und pflegen.
+
+Multilingualität stellt derzeit noch keine unmittelbare Anforderung dar, könnte jedoch mit zunehmender Internationalisierung in den kommenden Jahren relevant werden. Leipzig verzeichnet einen steigenden Anteil internationaler Besucher und Bewohner, was perspektivisch mehrsprachige Fahrgastinformationen erforderlich machen könnte. Die Erweiterung um zusätzliche Sprachen würde entweder den Einsatz multilingualer Modelle oder separate Fine-Tuning-Prozesse für jede Zielsprache erfordern. Dies stellt eine interessante Forschungsrichtung für zukünftige Arbeiten dar.
+
+\subsubsection{Erweiterungsmöglichkeiten}
+\label{sec:9.4.2}
+
+Die vielversprechendste Erweiterung des entwickelten Systems liegt im Aufbau eines automatisierten agentischen Workflows innerhalb der Azure AI Foundry Umgebung. Der in dieser Arbeit implementierte Ansatz emuliert einen mehrstufigen Prozess durch nacheinander gepromptete Modellinstanzen. Eine native Implementierung als orchestrierter Workflow würde mehrere Vorteile bieten: explizite Modellierung der Prozessschritte, bessere Fehlerbehandlung und Logging sowie die Möglichkeit zur parallelen Verarbeitung unabhängiger Teilaufgaben.
+
+Ein solcher agentischer Workflow könnte die Transformation in eine Kette klar definierter Schritte zerlegen. Die Informationsextraktion würde die relevanten Inhalte aus der technischen Anweisung identifizieren und strukturieren. Die nachfolgende Transformation würde diese strukturierten Informationen in die verschiedenen Ausgabeformate überführen. Eine separate Validierungsinstanz würde die generierten Texte auf Konsistenz und Einhaltung der Vorgaben prüfen. Schließlich könnte eine Konsolidierungskomponente die validierten Ausgaben zusammenführen und für die Weiterverarbeitung bereitstellen.
+
+Die Azure AI Foundry Plattform bietet native Unterstützung für solche Multi-Agent-Systeme und würde die Orchestrierung dieser Komponenten erheblich vereinfachen. Die Modellierung als expliziter Workflow erhöht zudem die Wartbarkeit und Nachvollziehbarkeit des Systems. Einzelne Komponenten könnten unabhängig voneinander optimiert oder ausgetauscht werden, ohne das Gesamtsystem zu beeinträchtigen.
+
+Hinsichtlich der Frage, warum in dieser Arbeit kein Retrieval-Augmented Generation System implementiert wurde, ist der aktuelle Anwendungsfall ausschlaggebend. Die Domäne ist überschaubar genug, dass alle relevanten Informationen wie Liniennummern, zugehörige Fahrzeugtypen, spezielle Rechtschreibungen oder domänenspezifischer Wortgebrauch in der Kontextlänge der Modellinstanzen Platz finden. Das Fine-Tuning hat zudem gute Vorarbeit geleistet, sodass nicht mehr alle Details in großem Umfang im Prompt spezifiziert werden müssen. Für zukünftige Erweiterungen, insbesondere im Kontext einer umfassenderen Automatisierung mit historischen Datenbanken zu Baumaßnahmen und bewährten Umleitungsstrategien, könnte RAG jedoch eine sinnvolle Ergänzung darstellen.
+
+Eine solche umfassendere Automatisierung würde über die in dieser Arbeit realisierte Texttransformation hinausgehen und mehrere vorgelagerte Prozessschritte einbeziehen. Das entwickelte System deckt derzeit den letzten Schritt in der Verarbeitungskette ab, nämlich die Transformation bereits vorliegender technischer Verkehrsanweisungen in fahrgastgerechte Texte. Eine vollständige Automatisierung könnte jedoch bereits mit der eigenständigen Analyse von Streckendaten und geplanten Baumaßnahmen beginnen. Größere Modelle wären potentiell in der Lage, komplexe verkehrstechnische Situationen zu erfassen und daraus Implikationen für den Fahrgastverkehr abzuleiten.
+
+Darauf aufbauend könnte ein erweitertes System eigenständig Empfehlungen für Umleitungsmaßnahmen entwickeln, indem es historische Daten ähnlicher Situationen sowie bewährte Lösungsstrategien berücksichtigt. Die Integration einer Wissensdatenbank mit vergangenen Baumaßnahmen und deren Handhabung würde es dem System ermöglichen, auf erprobte Konzepte zurückzugreifen und diese auf neue Situationen zu übertragen. Die nächste Stufe würde die automatische Zusammenstellung der für die Verkehrsanweisung benötigten Informationen an den relevanten Endpunkten umfassen. Schließlich könnte ein umfassendes System nicht nur die Fahrgastinformationen, sondern auch die technischen Verkehrsanweisungen selbst generieren.
+
+Bei einem derart erweiterten Automatisierungsgrad würde die menschliche Instanz primär eine kontrollierende und korrigierende Funktion einnehmen. Die Mitarbeitenden würden die vom System vorgeschlagenen Maßnahmen prüfen, gegebenenfalls Anpassungen vornehmen und die finale Freigabe erteilen. Dies würde eine erhebliche Arbeitserleichterung über die reine Automatisierung der Textgenerierung hinaus bedeuten und gleichzeitig die Konsistenz über alle Verarbeitungsschritte hinweg erhöhen. Die Akzeptanz eines solchen erweiterten Systems bei den Mitarbeitenden ist bereits vorhanden, was die schrittweise Weiterentwicklung in diese Richtung begünstigt.
+
+Allerdings ist zu betonen, dass eine solche umfassende Automatisierung deutlich komplexere Anforderungen an das zugrundeliegende Modell stellt. Die Integration verschiedener Datenquellen, die Bewertung verkehrstechnischer Alternativen sowie die Berücksichtigung betrieblicher Rahmenbedingungen erfordern ein tiefergehendes Verständnis der Domäne, als es für die reine Texttransformation notwendig ist. Ob und in welchem Umfang größere Modelle diese erweiterten Aufgaben ohne spezifisches Training bewältigen könnten, bleibt eine offene Forschungsfrage, die in zukünftigen Arbeiten adressiert werden sollte.
+
+Eine weitere interessante Erweiterungsrichtung liegt in der Evaluation größerer Modellvarianten. Aktuell steht nur die 7B-Version von LeoLM zur Verfügung. Das LeoLM-Team plant jedoch die Entwicklung von 13B- und 70B-Versionen. Die Evaluation dieser größeren Modelle im Kontext des Unternehmens wäre potentiell lohnenswert, insbesondere im Hinblick auf einen breiteren Einsatz über die reine Textgenerierung hinaus. Größere Modelle könnten komplexere Zusammenhänge erfassen und damit die diskutierte umfassendere Automatisierung ermöglichen.
+
+\subsubsection{Offene Forschungsfragen}
+\label{sec:9.4.3}
+
+Mehrere Aspekte dieser Arbeit eröffnen Anknüpfungspunkte für zukünftige Forschung. Die Frage nach den genauen Mechanismen, die zur überlegenen Leistung der 4-Bit-Quantisierung in spezifischen Testszenarien führen, bleibt teilweise unbeantwortet. Eine detailliertere Analyse der Interaktion zwischen Quantisierung, LoRA-Adaptern und der Größe des Trainingsdatensatzes könnte wertvolle Erkenntnisse für die effiziente Modellentwicklung liefern.
+
+Die Übertragbarkeit des Ansatzes auf andere Domänen mit möglicherweise geringerer Präsenz in allgemeinen Trainingsdaten stellt eine interessante Forschungsrichtung dar. Der öffentliche Nahverkehr profitiert davon, dass entsprechende Begrifflichkeiten und Konzepte bereits in den Vortrainingsdaten enthalten sind. Für hochspezialisierte Fachbereiche mit eigenen Terminologien könnte sich die Datensatzanforderung deutlich unterscheiden. Systematische Untersuchungen zur Mindestgröße von Trainingsdatensätzen in Abhängigkeit von der Domänenspezifität würden praktische Orientierung für die Entwicklung ähnlicher Systeme bieten.
+
+Die empirische Messung des Energieverbrauchs und des CO2-Fußabdrucks verschiedener Modellvarianten wurde in dieser Arbeit nicht durchgeführt. Angesichts der zunehmenden Relevanz von Nachhaltigkeitsaspekten in der künstlichen Intelligenz wären systematische Energiemessungen über den gesamten Lebenszyklus von der Entwicklung über das Training bis zum Betrieb von großem Interesse. Dies würde eine fundiertere Bewertung der Ressourceneffizienz ermöglichen und könnte Entscheidungsgrundlagen für die Auswahl geeigneter Modellgrößen und Quantisierungsstufen liefern.
+
+Die Evaluation mehrsprachiger Ansätze stellt eine weitere offene Forschungsrichtung dar. Die Frage, ob multilinguale Modelle für deutschsprachige Aufgaben vergleichbare oder sogar bessere Ergebnisse als spezialisierte deutschsprachige Modelle erzielen, ist von praktischer Relevanz. Multilinguale Modelle würden eine einfachere Erweiterung um zusätzliche Sprachen ermöglichen, könnten jedoch möglicherweise geringere Leistung in der deutschen Sprache aufweisen.
+
+Schließlich verdient die Frage der Integration und Orchestrierung verschiedener Modellinstanzen in produktiven Systemen weitere Aufmerksamkeit. Die Entwicklung von Best Practices für den Aufbau robuster Multi-Agent-Systeme im Kontext der Textgenerierung, einschließlich Fehlerbehandlung, Versionierung und kontinuierlicher Verbesserung, würde den Transfer von Forschungsprototypen in praktische Anwendungen erleichtern.
+
+Die vorliegende Arbeit demonstriert die prinzipielle Machbarkeit ressourceneffizienter, domänenspezifischer Sprachmodelle für die Transformation technischer Verkehrsanweisungen. Die erzielten Ergebnisse sowie die identifizierten Herausforderungen und Erweiterungsmöglichkeiten bieten vielfältige Anknüpfungspunkte sowohl für die weitere wissenschaftliche Forschung als auch für die praktische Weiterentwicklung des Systems zu einer umfassenden Automatisierungslösung im öffentlichen Nahverkehr.

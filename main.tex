@@ -1,6 +1,6 @@
 \documentclass{article}
 % hiermit werden alle packages in eine separate .tex datei ausgeladen
-\include{packages}
+\input{packages}
 
 \addbibresource{lit/lit.bib}
 
@@ -18,7 +18,7 @@
     % abstand zwischen neuen absätzen erhöhen, am anfang des eigentlichen contents gelistet
     \parskip 8pt % andere einheiten px, em, ex und viele mehr
 
-    % Hauptkapitel der Masterarbeit (neue Gliederung)
+     Hauptkapitel der Masterarbeit (neue Gliederung)
     \include{content/1_einleitung}
     \include{content/2_grundlagen}
     \include{content/3_anwendungskontext}
@@ -37,16 +37,9 @@
     \renewcommand{\listoflistingscaption}{Listingverzeichnis}
     \listoflistings
     \newpage
-    % literaturverzeichnis
-    \printbibliography
-
-    % Formatierungsbeispiele und Hinweise (aus alter Dummy-Gliederung)
-    \include{content/hinweise}
-    \include{content/hinweise_problem}
-    \include{content/hinweise_analyse}
-    \include{content/hinweise_synthese}
-
-    \include{content/appendix/appendix}
+        % literaturverzeichnis
+        \printbibliography
+        \include{content/appendix/appendix}
 
     % kommt immer ganz an ende
     \include{config/eidesstattliche_untersch}

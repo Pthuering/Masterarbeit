@@ -1,34 +1,90 @@
-\section{Diskussion} \label{chap:8}
+\section{Diskussion}
+\label{chap:8}
 
-% Ziel: 6-8 Seiten
+Die vorliegende Arbeit untersuchte die Entwicklung eines ressourceneffizienten, domänenspezifischen Sprachmodells zur automatisierten Transformation technischer Verkehrsanweisungen in fahrgastgerechte Informationstexte. Die Evaluation des Systems ergab sowohl erwartete als auch überraschende Erkenntnisse, die in den folgenden Abschnitten interpretiert und kritisch bewertet werden.
 
-    \subsection{Interpretation der Ergebnisse}
-    \label{sec:8.1}
-    
-    % Ziel: 2-3 Seiten
-    % - Was bedeuten die Ergebnisse?
-    % - Vollmodell vs. Quantisierung: Wo ist der Sweet Spot?
-    % - Erfolge und Herausforderungen beim Fine-Tuning
+\subsection{Interpretation der Ergebnisse}
+\label{sec:8.1}
 
+Die Evaluationsergebnisse aus Kapitel~\ref{chap:7} zeigen, dass das entwickelte System in der Lage ist, technische Verkehrsanweisungen mit hoher Qualität in fahrgastgerechte Texte zu transformieren. Dabei traten jedoch mehrere Phänomene auf, die einer eingehenden Diskussion bedürfen.
 
-    \subsection{Kritische Bewertung}
-    \label{sec:8.2}
-    
-    % Ziel: 2-3 Seiten
-    
-        \subsubsection{Limitationen der Arbeit}
-        \label{sec:8.2.1}
-        
-        % - Datensatzgröße
-        % - Keine empirische Energiemessung
-        % - Beschränkung auf einen Anwendungsfall
-        
-        
-        \subsubsection{Validität der Ergebnisse}
-        \label{sec:8.2.2}
-        
-        % - Generalisierbarkeit
-        % - Vergleich mit domänenspezifischen Modellen (TrafficSafetyGPT, etc.)
-        % - Beitrag zur Forschung über ressourceneffiziente NLP-Systeme
-        % - Relevanz für deutschsprachige Modelle
+\subsubsection{Das Quantisierungsparadoxon}
 
+Das zentrale und überraschendste Ergebnis dieser Arbeit ist die überlegene Leistung der 4-Bit-Quantisierung gegenüber sowohl der 8-Bit-Variante als auch dem Vollpräzisionsmodell. Dieses Resultat steht im Widerspruch zur gängigen Annahme, dass eine stärkere Quantisierung zwangsläufig zu einem Qualitätsverlust führt. Die beobachtete Verbesserung lässt sich durch mehrere theoretische Erklärungsansätze diskutieren.
+
+Ein möglicher Erklärungsansatz liegt in einem Regularisierungseffekt der aggressiveren Quantisierung. Die Reduktion der numerischen Präzision auf 4 Bit führt zu einem stärkeren Informationsverlust, der paradoxerweise eine Art implizite Regularisierung bewirken kann. Diese erzwungene Vereinfachung der Modellgewichte könnte dazu beitragen, dass das Modell robustere und generalisierbarere Repräsentationen lernt, anstatt sich auf feinkörnige Details des Trainingsdatensatzes zu spezialisieren. Obwohl der Trainingsdatensatz mit etwa 950 Beispielen für Fine-Tuning-Standards durchaus im üblichen Rahmen liegt, könnte dieser Mechanismus dennoch zur beobachteten Leistung beitragen.
+
+Eine alternative Erklärung bezieht sich auf die numerische Stabilität während des Fine-Tuning-Prozesses. Die Interaktion zwischen der Quantisierung und den LoRA-Adaptern könnte zu einer stabileren Optimierung führen. Während das vollpräzise Modell theoretisch eine höhere Ausdruckskapazität besitzt, könnte diese Flexibilität im Kontext eines kleinen Datensatzes nachteilig sein. Die stärkere Quantisierung beschränkt den Parameterraum und könnte dadurch zu einer effizienteren Nutzung der begrenzten Trainingsdaten führen.
+
+Zudem ist zu berücksichtigen, dass die Evaluationsmetriken möglicherweise nicht alle Aspekte der Modellqualität vollständig erfassen. Die in Kapitel~\ref{sec:7.1} beschriebenen automatisierten Metriken wie BLEU, ROUGE und BERTScore messen primär die Übereinstimmung mit Referenztexten. Es ist denkbar, dass die 4-Bit-Variante konsistentere und strukturell stärker an den Vorgaben orientierte Ausgaben produziert, selbst wenn diese nicht zwingend eine höhere lexikalische Übereinstimmung mit den Referenzen aufweisen.
+
+Diese Beobachtung steht im Einklang mit neueren Forschungsergebnissen im Bereich der Quantisierung, die zeigen, dass der Zusammenhang zwischen Präzision und Leistung komplexer ist als ursprünglich angenommen. Die Ergebnisse dieser Arbeit liefern einen empirischen Beitrag zu dieser Diskussion, insbesondere im Kontext deutschsprachiger Modelle und hochspezialisierter Anwendungsfälle.
+
+\subsubsection{Erfolge trotz begrenzter Datenbasis}
+
+Ein weiteres bemerkenswertes Ergebnis ist die Tatsache, dass etwa 950 manuell erstellte Trainingsbeispiele ausreichen, um ein funktionsfähiges System zu entwickeln. Diese Datensatzgröße liegt im typischen Bereich für domänenspezifisches Fine-Tuning und demonstriert die Effizienz des gewählten Ansatzes. Die Beobachtung hat mehrere Implikationen für die praktische Anwendung und theoretische Einordnung des Verfahrens.
+
+Die Effektivität des LoRA-Verfahrens zeigt sich darin, dass durch das selektive Fine-Tuning nur eines kleinen Teils der Modellparameter eine Spezialisierung auf die Zieldomäne erreicht werden konnte. Das vortrainierte LeoLM-Modell bringt bereits umfangreiches Weltwissen mit, insbesondere im Bereich des öffentlichen Nahverkehrs und der deutschen Sprache. Das Fine-Tuning mit LoRA ermöglicht es, dieses bestehende Wissen zu adaptieren, ohne das gesamte Modell neu trainieren zu müssen. Diese Beobachtung bestätigt die Annahme, dass für hochspezialisierte Aufgaben mit klar definierten Strukturen und Vorgaben eine vollständige Neutrainierung nicht erforderlich ist.
+
+Die Verwendung von Knowledge-Enhanced Prompts kompensiert erfolgreich das Fehlen eines Retrieval-Augmented Generation Systems. Durch die Integration domänenspezifischen Wissens direkt in die Prompts kann das Modell auf die notwendigen Kontextinformationen zugreifen, ohne dass eine externe Wissensdatenbank erforderlich ist. Diese Designentscheidung erweist sich für die vorliegende Anwendung als besonders geeignet, da die relevanten Informationen überschaubar und stabil sind. Die klare Abgrenzung der Domäne sowie die Existenz eindeutiger Formatierungsvorgaben begünstigen diesen Ansatz zusätzlich.
+
+Dennoch ist zu beachten, dass diese Erfolge nicht ohne Weiteres auf beliebige andere Domänen übertragbar sind. Die Eignung des Ansatzes hängt maßgeblich von der Verfügbarkeit domänenspezifischer Vortrainierung und der Strukturiertheit der Zielaufgabe ab. Im Falle des öffentlichen Nahverkehrs profitiert das Modell davon, dass entsprechende Begrifflichkeiten und Konzepte bereits in den allgemeinen Trainingsdaten enthalten sind. Für hochspezialisierte Fachbereiche mit eigenen Terminologien könnte ein größerer Trainingsdatensatz erforderlich sein.
+
+\subsubsection{Identifizierte Herausforderungen}
+
+Trotz der insgesamt positiven Ergebnisse offenbarten sich während der Evaluation auch spezifische Herausforderungen, die auf konzeptionelle Grenzen des entwickelten Ansatzes hinweisen.
+
+Die Informationsfilterung stellte sich als kritischer Aspekt heraus. Das Modell zeigt Schwierigkeiten bei der Extraktion relevanter Informationen aus umfangreichen Anweisungstexten, insbesondere wenn mehrere Linien oder komplexe Umleitungsszenarien beschrieben werden. Diese Beobachtung deutet darauf hin, dass das Modell primär die Transformation bereits identifizierter Informationen gelernt hat, nicht jedoch die vorgelagerte Aufgabe der selektiven Informationsextraktion. Dieses Verhalten ist auf die Struktur des Trainingsdatensatzes zurückzuführen, in dem die Eingabetexte bereits weitgehend auf die relevanten Informationen fokussiert waren.
+
+Als Konsequenz dieser Erkenntnis wurde ein zweistufiger Ansatz entwickelt, der die Aufgabe in eine Extraktions- und eine Transformationsphase unterteilt. Dieser Ansatz entspricht auch der kognitiven Vorgehensweise menschlicher Bearbeiter, die zunächst die relevanten Informationen identifizieren und anschließend in die Zielformate überführen. Die Implementierung dieses zweistufigen Verfahrens könnte die Robustheit des Systems erhöhen und gleichzeitig die Nachvollziehbarkeit der Transformation verbessern.
+
+Ein weiteres identifiziertes Problem betrifft die Qualität der Ansagetexte. Diese zeigten eine geringere Qualität im Vergleich zu den App-Texten, was vermutlich auf eine Unausgewogenheit im Trainingsdatensatz zurückzuführen ist. Die Analyse der Datenverteilung legt nahe, dass Ansagetexte unterrepräsentiert sind, was zu einer schlechteren Generalisierung für diesen Ausgabetyp führt. Diese Beobachtung unterstreicht die Bedeutung einer ausgewogenen Datenzusammenstellung für das Fine-Tuning von Sprachmodellen.
+
+\subsubsection{Validierung der Designentscheidungen}
+
+Die Evaluation bestätigt mehrere zentrale Designentscheidungen, die während der Entwicklung des Systems getroffen wurden. Die Entscheidung für Knowledge-Enhanced Prompts anstelle eines RAG-Systems erweist sich für die überschaubare Domäne als angemessen. Der Verzicht auf eine externe Wissensdatenbank reduziert die Systemkomplexität erheblich und eliminiert potenzielle Fehlerquellen im Retrieval-Prozess. Für Domänen mit umfangreicherem oder sich häufig änderndem Hintergrundwissen wäre diese Entscheidung jedoch zu überdenken.
+
+Die implementierte zweistufige Qualitätssicherung, bestehend aus automatisierten Checks und semantischer Konsistenzprüfung, funktioniert zuverlässig. Die pattern-basierte Validierung erkennt Formatierungsfehler und strukturelle Abweichungen mit hoher Präzision, während die semantische Prüfung subtilere Inkonsistenzen identifiziert. Dieser Ansatz stellt sicher, dass nur validierte Ausgaben weitergegeben werden und ermöglicht gleichzeitig die systematische Erfassung von Fehlermustern für zukünftige Verbesserungen.
+
+Die Verwendung deterministischer Generierungsparameter gewährleistet die Reproduzierbarkeit der Systemausgaben. Diese Konsistenz ist für den praktischen Einsatz von entscheidender Bedeutung, da sie die Nachvollziehbarkeit der Transformationen sicherstellt und das Debugging erleichtert. Der Verzicht auf stochastisches Sampling führt zwar zu einer geringeren Variabilität der Ausgaben, entspricht jedoch den Anforderungen des Anwendungsfalls, in dem einheitliche und vorhersagbare Formulierungen gewünscht sind.
+
+\subsection{Kritische Bewertung}
+\label{sec:8.2}
+
+Die kritische Reflexion der durchgeführten Arbeit erfordert eine differenzierte Betrachtung sowohl der methodischen Limitationen als auch der Validität und Generalisierbarkeit der Ergebnisse.
+
+\subsubsection{Limitationen der Arbeit}
+\label{sec:8.2.1}
+
+Die vorliegende Arbeit unterliegt mehreren Einschränkungen, die bei der Interpretation der Ergebnisse berücksichtigt werden müssen.
+
+Die Größe des Datensatzes stellt eine methodische Einschränkung dar. Mit etwa 950 Trainingsbeispielen und 38 Testbeispielen bewegt sich diese Arbeit im unteren bis mittleren Bereich typischer Fine-Tuning-Datensätze. Obwohl die Ergebnisse zeigen, dass diese Datenmenge für die spezifische Aufgabe ausreichend ist, besteht ein gewisses Risiko der Überanpassung an LVB-spezifische Formulierungen und Strukturen. Die beobachtete Modellleistung könnte teilweise auf eine Anpassung an häufige Muster im Trainingsdatensatz zurückzuführen sein. Für eine noch belastbarere Evaluation wäre ein umfangreicherer Datensatz wünschenswert, idealerweise mit mehreren Jahren an Verkehrsanweisungen, um auch seltene Sonderfälle und Randszenarien noch besser abzudecken und das Verhältnis zwischen verschiedenen Anweisungstypen, insbesondere für Ansagetexte, weiter zu optimieren.
+
+Die Hardware-Limitationen schränken den Umfang der durchführbaren Experimente ein. Die Verwendung einer NVIDIA A100 GPU mit 40 GB Speicher ermöglichte zwar das Fine-Tuning und die Evaluation des 7B-Modells in verschiedenen Quantisierungsstufen, verhinderte jedoch einen Vergleich mit größeren Modellen wie der 13B- oder 70B-Variante. Ebenso konnte das Vollpräzisionsmodell aufgrund der Speicherbeschränkungen nicht umfassend evaluiert werden. Es ist durchaus möglich, dass größere Modelle noch bessere Ergebnisse erzielen würden, insbesondere bei der Verarbeitung komplexer Anweisungstexte oder der Behandlung von Sonderfällen. Diese Hypothese kann jedoch im Rahmen dieser Arbeit nicht überprüft werden.
+
+Eine weitere signifikante Limitation besteht im Fehlen empirischer Energiemessungen. Während der Speicherverbrauch systematisch erfasst wurde, erfolgte keine Messung des tatsächlichen Energieverbrauchs oder des CO2-Fußabdrucks des Systems. Ebenso fehlen Latenz-Messungen unter Lastbedingungen, die für die Bewertung der Praxistauglichkeit relevant wären. Die Aussagen zur Ressourceneffizienz beruhen daher primär auf theoretischen Überlegungen und dem gemessenen Speicherverbrauch, nicht auf einer umfassenden Energieanalyse.
+
+Der Anwendungsbereich dieser Arbeit ist auf ein einzelnes Verkehrsunternehmen, die Leipziger Verkehrsbetriebe, beschränkt. Die Verkehrsanweisungen folgen zwar dem VDV-Standard und sollten somit strukturell mit Anweisungen anderer deutscher Verkehrsbetriebe vergleichbar sein, jedoch können sich Formulierungskonventionen und interne Vorgaben unterscheiden. Die Übertragbarkeit des entwickelten Systems auf andere Verkehrsunternehmen ist daher nicht ohne weiteres gegeben und bedarf einer empirischen Validierung. Darüber hinaus beschränkt sich die Arbeit auf die deutsche Sprache, was die internationale Anwendbarkeit einschränkt.
+
+Die ausschließliche Verwendung von Open-Source-Tools und -Modellen stellt einerseits einen Vorteil hinsichtlich Transparenz und Reproduzierbarkeit dar, verhindert jedoch einen direkten Vergleich mit proprietären Lösungen wie GPT-4 oder Claude. Ohne eine solche kommerzielle Baseline ist es schwierig, die absolute Leistungsfähigkeit des entwickelten Systems einzuordnen. Es bleibt unklar, inwieweit die beobachtete Qualität dem Stand der Technik entspricht oder ob kommerzielle Lösungen signifikant bessere Ergebnisse erzielen würden.
+
+\subsubsection{Validität der Ergebnisse}
+\label{sec:8.2.2}
+
+Die Generalisierbarkeit der Ergebnisse ist differenziert zu betrachten. Für andere deutsche Verkehrsunternehmen mit ähnlichen Strukturen und Anforderungen ist eine gute Übertragbarkeit wahrscheinlich, insbesondere wenn diese ebenfalls VDV-konforme Verkehrsanweisungen verwenden. Die zugrundeliegenden Konzepte und Terminologien sind im Bereich des öffentlichen Nahverkehrs weitgehend standardisiert, was eine Adaption des Systems erleichtern sollte. Allerdings wäre für eine vollständige Anpassung an ein neues Verkehrsunternehmen ein unternehmensspezifisches Fine-Tuning mit lokalen Beispielen empfehlenswert.
+
+Für andere Sprachen ist ein Transfer-Learning-Ansatz erforderlich. Das verwendete LeoLM-Modell ist primär auf deutsche Texte spezialisiert, was die direkte Anwendung auf fremdsprachige Verkehrsanweisungen ausschließt. Ein mehrsprachiger Ansatz würde entweder die Verwendung multilingualer Modelle oder separate Fine-Tuning-Prozesse für jede Zielsprache erfordern.
+
+Die Übertragbarkeit auf andere Domänen außerhalb des öffentlichen Nahverkehrs erscheint ohne substanzielles Retraining unwahrscheinlich. Während das grundsätzliche Konzept der Transformation technischer Dokumente in zielgruppengerechte Texte domänenübergreifend relevant ist, profitiert das entwickelte System stark von der Verfügbarkeit domänenspezifischen Vorwissens im Basismodell. Der öffentliche Nahverkehr ist ein relativ häufig diskutiertes Thema in allgemeinen Sprachkorpora, was die Effektivität des Fine-Tunings begünstigt. Für hochspezialisierte Fachbereiche mit eigenen Terminologien und weniger Präsenz in öffentlichen Trainingsdaten wäre vermutlich ein umfangreicherer Trainingsdatensatz erforderlich. Diese Hypothese bedarf jedoch einer empirischen Überprüfung.
+
+Ein wesentlicher Kritikpunkt ist das Fehlen eines direkten Vergleichs mit State-of-the-Art-Systemen. In der Einleitung wurde auf domänenspezifische Modelle wie TrafficSafetyGPT verwiesen, jedoch erfolgte kein systematischer Vergleich mit solchen Systemen. Ebenso fehlt eine Baseline-Evaluation mit großen kommerziellen Modellen wie GPT-4 oder Claude. Ohne solche Vergleichswerte ist es schwierig, die absolute Qualität des entwickelten Systems einzuordnen und zu bewerten, ob der gewählte Ansatz tatsächlich Vorteile gegenüber alternativen Lösungen bietet.
+
+Dennoch leistet diese Arbeit einen relevanten Beitrag zur Forschung über ressourceneffiziente NLP-Systeme. Die Ergebnisse demonstrieren, dass kleine, spezialisierte Modelle mit begrenzten Ressourcen trainiert und betrieben werden können, ohne signifikante Qualitätseinbußen hinnehmen zu müssen. Dies hat praktische Implikationen für Organisationen, die nicht über die Infrastruktur oder das Budget für den Betrieb großer kommerzieller Modelle verfügen. Insbesondere die Erkenntnis, dass aggressive Quantisierung unter bestimmten Umständen sogar zu Qualitätsverbesserungen führen kann, stellt einen wertvollen Beitrag zur Diskussion über effiziente Modellkompression dar.
+
+Für deutschsprachige Modelle liefert diese Arbeit empirische Evidenz, dass das LeoLM-Modell als deutscher State-of-the-Art-Ansatz für hochspezialisierte Anwendungen geeignet ist. Die Frage, ob multilinguale Modelle möglicherweise bessere Ergebnisse erzielen würden, bleibt jedoch offen. Die Fokussierung auf ein deutschsprachiges Modell war pragmatisch motiviert, eine vergleichende Evaluation mit multilingualen Alternativen wäre für zukünftige Arbeiten von Interesse.
+
+Die praktische Einsetzbarkeit des Systems ist grundsätzlich gegeben, jedoch mit Einschränkungen. Das System funktioniert zuverlässig für die im Training abgedeckten Anweisungstypen und kann den manuellen Aufwand zur Erstellung von Fahrgastinformationen erheblich reduzieren. Für einen produktiven Einsatz wären jedoch mehrere Erweiterungen empfehlenswert. Eine Evaluation mit einem größeren Modell könnte klären, ob damit eine weitere Qualitätssteigerung erzielbar ist. Zudem würde ein mehrstufiger Ansatz, der Extraktion, Generierung und Prüfung separat behandelt, die Robustheit und Nachvollziehbarkeit des Systems erhöhen.
+
+Die wichtigsten Verbesserungspotenziale liegen in der weiteren Ausweitung des Trainingsdatensatzes sowie der Optimierung des Gleichgewichts zwischen verschiedenen Anweisungstypen. Ein noch umfangreicherer Datensatz, der mehrere Jahre an Verkehrsanweisungen umfasst, würde eine noch bessere Abdeckung von Sonderfällen und seltenen Szenarien ermöglichen. Insbesondere die relative Unterrepräsentation von Ansagetexten sollte durch gezieltes Sampling ausgeglichen werden, um eine gleichmäßigere Qualität über alle Ausgabeformate hinweg zu gewährleisten.
+
+Die Frage, was die Ergebnisse über kleine versus große Modelle aussagen, lässt sich wie folgt beantworten: Kleine spezialisierte Modelle können mit ausreichendem domänenspezifischen Training sehr gute Ergebnisse in klar definierten Aufgaben erreichen. Dies erweist sich langfristig als ressourcenschonender als der Einsatz großer Allzweckmodelle, insbesondere wenn konsistente Formatierungsvorgaben existieren und der Anwendungsbereich überschaubar ist. Bei umfassenderen Aufgabenstellungen behalten größere Modelle jedoch ihre Vorteile, da sie über breitere Fähigkeiten verfügen und potentiell komplexere Zusammenhänge erfassen können. Die detaillierte Diskussion möglicher Erweiterungen sowie ein Ausblick auf den Einsatz größerer Modelle erfolgen in Kapitel~\ref{chap:9}.

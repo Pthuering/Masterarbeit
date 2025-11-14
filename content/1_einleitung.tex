@@ -1,49 +1,57 @@
-\section{Einleitung} \label{chap:1}
+\section{Einleitung}
+\label{chap:1}
 
-% Ziel: 8-9 Seiten
+Die Digitalisierung des öffentlichen Personennahverkehrs erfordert zunehmend die automatisierte Verarbeitung und Aufbereitung von Informationen für unterschiedliche Zielgruppen und Kommunikationskanäle. Verkehrsbetriebe stehen dabei vor der Herausforderung, technische Betriebsinformationen in verständliche Fahrgastinformationen zu transformieren. Diese Transformation erfolgt gegenwärtig überwiegend manuell und ist sowohl zeitintensiv als auch anfällig für Inkonsistenzen. Mit der zunehmenden Verfügbarkeit großer Sprachmodelle (Large Language Models, LLM) eröffnen sich neue Möglichkeiten zur Automatisierung solcher Transformationsprozesse. Gleichzeitig führt der Einsatz dieser Modelle häufig zu einer Überkapazität an Rechenressourcen, wenn generische Großmodelle für spezialisierte Aufgaben eingesetzt werden, die auch von kompakteren Systemen bewältigt werden könnten.
 
-    \subsection{Motivation und Problemstellung}
-    \label{sec:1.1}
-    
-    % Ziel: 2-3 Seiten
-    % Inhalt:
-    % - Manuelle Transformation bei LVB zeitaufwändig und inkonsistent
-    % - Potenzial durch KI-Automatisierung
-    % - Problematik überdimensionierter KI-Systeme in der Praxis
+Die vorliegende Arbeit untersucht, wie ein ressourceneffizientes System zur automatischen Transformation von Verkehrsanweisungen entwickelt werden kann, indem ein kompaktes Sprachmodell durch gezieltes Fine-Tuning auf die spezifische Aufgabe spezialisiert wird. Dabei steht die Frage im Mittelpunkt, welche Qualität durch ein 7-Milliarden-Parameter-Modell mit begrenzten Trainingsdaten erreicht werden kann und wie verschiedene Quantisierungstechniken die Ressourceneffizienz bei gleichbleibender oder verbesserter Qualität beeinflussen.
 
+\subsection{Motivation und Problemstellung}
+\label{sec:1.1}
 
-    \subsection{Zielsetzung und Forschungsfragen}
-    \label{sec:1.2}
-    
-    % Ziel: 2 Seiten
-    % Hauptziel: Automatische Transformation technischer Verkehrsanweisungen in nutzergerechte 
-    % Formate durch Fine-Tuning eines kompakten Sprachmodells
-    %
-    % Forschungsfragen:
-    % 1. Wie kann ein 7B-Parameter-Modell durch Fine-Tuning für diese spezifische Aufgabe optimiert werden?
-    % 2. Welche Qualität erreichen quantisierte Modellversionen im Vergleich zum Vollmodell?
-    % 3. Wie kann die Transformation durch Prompt Engineering automatisiert werden?
+Die Leipziger Verkehrsbetriebe (LVB) erstellen für betriebliche Störungen und geplante Baumaßnahmen technische Verkehrsanweisungen, die detaillierte Informationen zu Umleitungen, Haltestellenverlegungen und Fahrplanänderungen enthalten. Diese Anweisungen werden intern von Mitarbeitenden verfasst und richten sich primär an das Fachpersonal. Für die Fahrgastkommunikation müssen diese technischen Dokumente jedoch in verschiedene Formate transformiert werden, die sich in Detailgrad, Formulierung und Struktur unterscheiden. Dieser Transformationsprozess erfolgt gegenwärtig manuell durch Mitarbeitende, die die komplexen betrieblichen Informationen in zielgruppengerechte Formulierungen übersetzen.
 
+Die manuelle Transformation stellt mehrere Herausforderungen dar. Erstens ist der Prozess zeitintensiv, da für jede Verkehrsanweisung mehrere unterschiedliche Textversionen erstellt werden müssen. Zweitens können durch die manuelle Bearbeitung Inkonsistenzen in Formulierung und Struktur entstehen, insbesondere wenn verschiedene Mitarbeitende an ähnlichen Transformationen arbeiten. Drittens wächst mit zunehmender Anzahl von Baumaßnahmen und Störungen der Aufwand für die Erstellung und Pflege der Fahrgastinformationen.
 
-    \subsection{Wissenschaftlicher Beitrag und Forschungslücke}
-    \label{sec:1.3}
-    
-    % Ziel: 2-3 Seiten
-    % Einordnung der Arbeit:
-    % - Domänenspezifisches Fine-Tuning für Verkehrsinformationen
-    % - Praxisnahe Evaluation quantisierter Modelle
-    % - Open-Source-Ansatz mit deutschem Modell (LeoLM)
-    %
-    % Forschungslücke:
-    % - Keine Untersuchungen zu ressourceneffizienten Modellen für Verkehrsanweisungs-Transformation
-    % - Fehlende Evaluation quantisierter Modelle in dieser Domäne
-    % - Deutschsprachige Modelle im Verkehrssektor unterrepräsentiert
-    % - Vergleich ressourceneffizienter Ansätze vs. generische Großmodelle
+Die Automatisierung dieses Prozesses mittels künstlicher Intelligenz erscheint naheliegend. In der Praxis zeigt sich jedoch eine grundlegende Problematik moderner KI-Implementierungen: Häufig werden überdimensionierte Modelle für Aufgaben eingesetzt, die auch von kleineren, spezialisierten Systemen bewältigt werden könnten. Diese Tendenz zur Überkapazität führt zu unnötig hohen Betriebskosten, erhöhtem Energieverbrauch und erschwert das Deployment auf Consumer-Hardware. Generische Großmodelle mit mehreren hundert Milliarden Parametern benötigen spezialisierte Server-Infrastruktur und verursachen laufende Kosten durch Cloud-APIs oder erfordern den Betrieb eigener Hochleistungsserver.
 
+Für die LVB bietet sich daher die Möglichkeit, von Beginn an auf eine nachhaltige und ressourceneffiziente Lösung zu setzen. Ein gezielt trainiertes, kompaktes Modell kann die spezifische Aufgabe der Texttransformation effizient erfüllen, ohne die Nachteile generischer Großmodelle in Kauf nehmen zu müssen. Dies ermöglicht potentiell den Betrieb auf Consumer-Hardware im Unternehmen, reduziert laufende Kosten und gewährleistet gleichzeitig Datenschutz durch lokale Verarbeitung.
 
-    \subsection{Aufbau der Arbeit}
-    \label{sec:1.4}
-    
-    % Ziel: 1 Seite
-    % Kurze Übersicht über die Struktur der Arbeit
+\subsection{Zielsetzung und Forschungsfragen}
+\label{sec:1.2}
 
+Das Hauptziel dieser Arbeit besteht in der Entwicklung eines ressourceneffizienten Systems zur automatischen Transformation technischer Verkehrsanweisungen in einheitlich formulierte Fahrgastinformationen. Dabei soll bewusst ein kleineres Sprachmodell durch gezieltes Fine-Tuning auf die domänenspezifische Aufgabe spezialisiert werden, um langfristig Rechenressourcen zu schonen und eine nachhaltige Lösung zu etablieren.
+
+Die Arbeit orientiert sich an folgenden Forschungsfragen:
+
+\begin{enumerate}
+    \item Wie kann ein 7-Milliarden-Parameter-Modell durch domänenspezifisches Fine-Tuning für die Transformation von Verkehrsanweisungen optimiert werden, und welche Qualität lässt sich mit begrenzten Trainingsdaten erreichen?
+    \item Welche Auswirkungen haben unterschiedliche Quantisierungsstufen (Vollmodell, 8-Bit, 4-Bit) auf die Qualität der Texttransformation, und existieren überraschende Befunde hinsichtlich des Trade-offs zwischen Ressourceneffizienz und Ausgabequalität?
+    \item Wie kann die Transformation durch systematisches Prompt Engineering automatisiert werden, um konsistente und regelkonforme Ausgaben zu gewährleisten?
+\end{enumerate}
+
+Die erste Forschungsfrage adressiert die grundlegende Machbarkeit der Aufgabe mit einem kompakten Modell. Im Gegensatz zu generischen Großmodellen mit mehreren hundert Milliarden Parametern soll untersucht werden, ob ein 7B-Modell durch spezialisiertes Training ausreichende Qualität für die domänenspezifische Transformation erreichen kann. Dabei ist insbesondere relevant, wie sich die begrenzte Verfügbarkeit von Trainingsdaten auswirkt, da für die Leipziger Verkehrsbetriebe keine umfangreichen vorannotierten Datensätze existieren.
+
+Die zweite Forschungsfrage fokussiert auf die praktische Deploybarkeit des Systems. Quantisierung reduziert den Speicherbedarf und Rechenaufwand von Sprachmodellen erheblich, kann jedoch mit Qualitätseinbußen einhergehen. Die systematische Evaluation verschiedener Quantisierungsstufen soll aufzeigen, welcher Trade-off zwischen Ressourceneffizienz und Ausgabequalität für den praktischen Einsatz optimal ist.
+
+Die dritte Forschungsfrage betrifft die Integration domänenspezifischen Wissens in das System. Durch gezieltes Prompt Engineering können Informationen zu Linienbezeichnungen, Fahrzeugtypen und Formatierungskonventionen in die Generierung integriert werden, ohne auf komplexe Retrieval-Augmented Generation Systeme zurückgreifen zu müssen. Dies reduziert die Systemkomplexität und ermöglicht eine effizientere Verarbeitung.
+
+\subsection{Aufbau der Arbeit}
+\label{sec:1.3}
+
+Die vorliegende Arbeit gliedert sich in neun Kapitel, die aufeinander aufbauen und die systematische Entwicklung sowie Evaluation des ressourceneffizienten Transformationssystems dokumentieren.
+
+Kapitel 2 legt die theoretischen Grundlagen der Arbeit dar. Es werden die Fundamente des Natural Language Processing eingeführt, beginnend mit der Transformer-Architektur über das Pretraining-Finetuning-Paradigma bis hin zu deutschsprachigen Modellen. Anschließend werden Methoden zur Modelloptimierung behandelt, insbesondere parameter-effizientes Fine-Tuning durch LoRA, Strategien für das Training mit begrenzten Daten sowie Prompt Engineering. Der dritte Teil fokussiert auf Aspekte der Produktionsreife, einschließlich Quantisierung, Halluzination Prevention und Knowledge Integration.
+
+Kapitel 3 beschreibt den Anwendungskontext der Leipziger Verkehrsbetriebe. Es charakterisiert die Struktur technischer Verkehrsanweisungen anhand von sieben identifizierten Komplexitätsmerkmalen und dokumentiert die Extraktion von Transformationsregeln aus bestehenden Fahrgastinformationen. Die exemplarische Analyse konkreter Verkehrsanweisungen verdeutlicht die Herausforderungen der Transformationsaufgabe.
+
+Kapitel 4 begründet die Auswahl des Modells leo-mistral-hessianai-7b. Es werden drei Kandidaten verglichen: Mistral-7B als englisches Base Model, Mistral-7B-Instruct als englisches Instruct-Model sowie LeoLM als Base Model mit deutschem Continued Pretraining. Die Entscheidung für LeoLM wird durch Anforderungen an deutschsprachige Kompetenz, Deploybarkeit auf Consumer-Hardware und Eignung für domänenspezifisches Fine-Tuning begründet.
+
+Kapitel 5 dokumentiert die Entwicklung des Datensatzes. Es beschreibt die Annotationsstrategie für die manuelle Erstellung der Trainingsbeispiele, das implementierte Qualitätssicherungssystem, sieben entwickelte Augmentierungsstrategien zur Erweiterung des begrenzten Datensatzes sowie die finale Datensatzstruktur mit Train-Validation-Test-Split. Das Kapitel schließt mit der Diskussion der Herausforderungen beim Training mit 950 Beispielen.
+
+Kapitel 6 beschreibt die technische Implementierung des Systems. Es dokumentiert die Entwicklungsumgebung und eingesetzte Hardware, das Fine-Tuning mittels QLoRA auf einer NVIDIA RTX A2000 12GB Grafikkarte sowie das Design der Prompt-Templates für die automatisierte Transformation. Die Integration domänenspezifischen Wissens durch Knowledge-Enhanced System Prompts wird detailliert dargelegt, ebenso die Implementierung automatisierter Qualitätssicherung zur Erkennung von Halluzinationen und semantischen Inkonsistenzen.
+
+Kapitel 7 präsentiert die Evaluation des Systems. Es beschreibt die Evaluationsmethodik einschließlich des Testdatensatzes mit 38 Beispielen sowie die eingesetzten automatischen und manuellen Evaluationsmetriken. 
+
+Kapitel 8 diskutiert die Ergebnisse der Arbeit. Es ordnet den Quantisierungsbefund theoretisch ein, reflektiert Limitationen des Systems und bewertet die praktische Anwendbarkeit im Unternehmenskontext der Leipziger Verkehrsbetriebe.
+
+Kapitel 9 fasst die Erkenntnisse zusammen und gibt einen Ausblick auf zukünftige Entwicklungen. Es werden Erweiterungsmöglichkeiten des Systems diskutiert, insbesondere die Integration in umfassendere Automatisierungsszenarien und die potenzielle Evaluation größerer Modellvarianten. Die Übertragbarkeit des Ansatzes auf andere Verkehrsbetriebe und verwandte Domänen wird abschließend erörtert.

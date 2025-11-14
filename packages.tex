@@ -21,8 +21,11 @@
 \usepackage{ifthen}
 % für tabellen 
 \usepackage{tabularx}
+% für mathematische Symbole
+\usepackage{amsmath}
+\usepackage{amssymb}
 % literaturverzeichnisse verwenden
-\usepackage[style=authortitle,natbib,backend=biber]{biblatex}
+\usepackage[style=ieee,natbib,backend=biber]{biblatex}
 % formatierung der footnote citation nach singers gemüt
 \makeatletter%
 \long\def\@makefntext#1{%
@@ -42,3 +45,5 @@
 
 % einfügen von pdfs 
 \usepackage{pdfpages}
+% Schriftart Latin Modern für bessere Ligaturen
+\usepackage{lmodern}

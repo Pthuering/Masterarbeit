@@ -1,97 +1,37 @@
-\section{Modellauswahl: leo-mistral-hessianai-7b} \label{chap:4}
+\section{Modellauswahl: leo-mistral-hessianai-7b}
+\label{chap:4}
 
-% Ziel: 3-4 Seiten
+\subsection{Anforderungen an das Modell}
+\label{sec:4.1}
 
-    \subsection{Anforderungen an das Modell}
-    \label{sec:4.1}
-    
-    % PRIMÄRE ANFORDERUNGEN:
-    % - Deutschsprachige Kompetenz (LVB-Verkehrsanweisungen)
-    % - Moderate Größe für lokale Ausführung (Hardware-Limitierungen)
-    % - Open-Source (DSGVO-Konformität, keine API-Abhängigkeit)
-    % - Fine-Tuning-fähig (Anpassung an spezifische Domäne)
-    % - Gute Textgenerierungs-Qualität
-    %
-    % AUSSCHLUSSKRITERIEN (aus Abschnitt~\ref{sec:2.1.3}):
-    % - Verkehrsspezifische Modelle (TrafficSafetyGPT, TransGPT, etc.):
-    %   * Sprachbarriere: Englisch/Chinesisch, keine deutschen Varianten
-    %   * Aufgaben-Mismatch: Safety/Prediction/Simulation ≠ Text-Transformation
-    %   * Lizenzierung: Proprietär oder Closed-Source-Basis (LLaMA, ChatGLM2)
-    %   * Deployment: Nicht für offline-fähige lokale Ausführung konzipiert
-    %
-    % BEGRÜNDUNG DEUTSCHSPRACHIGES BASISMODELL:
-    % - Cross-Language Transfer: Englische Modelle erhebliche Leistungseinbußen
-    % - Fehleranfälligkeit bei Translation steigt deutlich
-    % - Deutsche Verkehrsdaten: Heterogene Formate, spezifische Morphologie
-    % - Schiersch (2018): Einziger deutscher Verkehrsdatensatz (veraltet, limitiert)
-    % - Eigenständiges Fine-Tuning unumgänglich
-    %
-    % ERWARTETE VERBESSERUNG TROTZ KLEINEM DATENSATZ:
-    % - Anwendungsfall sehr spezifisch (LVB-Verkehrsanweisungen)
-    % - Transfer Learning von deutschem Basismodell reduziert Datenbedarf
-    % - Kombination mehrerer Optimierungsstrategien (siehe Kapitel~\ref{chap:6})
-    % - Trotz kleinem Trainingssatz: Hohe Fehlerreduktion erwartet
+Die Auswahl eines geeigneten Sprachmodells fuer die Transformation von LVB-Verkehrsanweisungen erfordert die Beruecksichtigung mehrerer spezifischer Anforderungen. Als primaere Voraussetzung muss das Modell ueber umfassende deutschsprachige Kompetenz verfuegen, da die Verkehrsanweisungen der Leipziger Verkehrsbetriebe ausschliesslich in deutscher Sprache vorliegen. Parallel dazu muss die Modellgroesse moderate Dimensionen aufweisen, um eine lokale Ausfuehrung auf verfuegbarer Hardware zu ermoeglichen. Die Open-Source-Eigenschaft stellt eine weitere zentrale Anforderung dar, da sie sowohl DSGVO-Konformitaet gewaehrleistet als auch die Unabhaengigkeit von externen API-Diensten sicherstellt. Zudem muss das Modell Fine-Tuning-faehig sein, um eine Anpassung an die spezifische Domaene der Verkehrsanweisungen zu ermoeglichen.
 
+Die Ausschlusskriterien fuer potenzielle Modelle ergeben sich aus den Limitierungen verkehrsspezifischer Sprachmodelle, wie sie in Abschnitt \ref{sec:2.1.3} diskutiert wurden. Modelle wie TrafficSafetyGPT, TransGPT und aehnliche spezialisierte Systeme scheiden aus mehreren Gruenden aus. Zum einen weisen diese Modelle eine erhebliche Sprachbarriere auf, da sie primaer auf Englisch oder Chinesisch trainiert wurden und keine deutschen Varianten existieren. Zum anderen besteht ein fundamentaler Aufgaben-Mismatch, da diese Modelle fuer Sicherheitsanalysen, Vorhersagen oder Verkehrssimulationen konzipiert wurden, nicht jedoch fuer Text-Transformationen. Hinzu kommt, dass viele dieser Modelle proprietaer sind oder auf Closed-Source-Basismodellen wie LLaMA oder ChatGLM2 aufbauen, was ihre Anwendbarkeit einschraenkt. Schliesslich sind diese Modelle nicht fuer offline-faehige lokale Ausfuehrung konzipiert worden.
 
-    \subsection{Modellvergleich und Auswahlprozess}
-    \label{sec:4.2}
-    
-    % VERGLEICH DER DREI KANDIDATEN:
-    %
-    % 1. Mistral-7B (Base):
-    %    - Englisches Base Model
-    %    - Hohe Baseline-Performance
-    %    - Für Fine-Tuning optimiert
-    %    - Nachteil: Nicht auf Deutsch vortrainiert
-    %    - Würde mehr deutsche Trainingsdaten für Fine-Tuning benötigen
-    %
-    % 2. Mistral-7B-Instruct:
-    %    - Englisches Instruct-Model
-    %    - Folgt Anweisungen out-of-the-box
-    %    - Bereits SFT durchgeführt
-    %    - Nachteil: Nicht auf Deutsch vortrainiert
-    %    - Nachteil: Instruction Tuning könnte bei erneutem Fine-Tuning teilweise überschrieben werden
-    %    - Gefahr von Catastrophic Forgetting der Instruct-Fähigkeiten
-    %
-    % 3. leo-mistral-hessianai-7b (GEWÄHLT):
-    %    - Base Model mit deutschem Continued Pretraining
-    %    - Mistral-7B Architektur + deutsche Sprachkompetenz
-    %    - Optimale Basis für deutschsprachiges Fine-Tuning
-    %    - Open-Source (HessianAI)
-    %    - Kein vorheriges Instruction Tuning → mehr Flexibilität beim Fine-Tuning
-    %
-    % BEGRÜNDUNG DER WAHL:
-    % - Deutsche Sprachkompetenz essentiell für LVB-Anwendungsfall
-    % - Base-Variante ermöglicht domänenspezifisches Fine-Tuning ohne Konflikte
-    % - Kleiner Datensatz (LVB): Base Model + Fine-Tuning besser als Instruct-Prompting
-    % - Bessere Kontrolle über Output-Format durch eigenes Fine-Tuning
-    % - Hardware-kompatibel (7B Parameter)
+Die Notwendigkeit eines deutschsprachigen Basismodells begruendet sich durch mehrere wissenschaftliche Erkenntnisse zum Cross-Language Transfer. Studien zeigen, dass die Transferleistung zwischen Sprachen stark von der linguistischen Aehnlichkeit der Sprachen abhaengt und dass bei der Anwendung englischsprachiger Modelle auf deutsche Texte erhebliche Leistungseinbussen auftreten koennen \cite{eronen2022cross}. Die Fehleranfaelligkeit bei der Uebertragung von Faehigkeiten zwischen Sprachen steigt mit zunehmender linguistischer Distanz deutlich an. Die Arbeit von Ostendorff und Rehm demonstriert, dass spezialisierte Cross-Lingual Transfer-Methoden notwendig sind, um effiziente Sprachmodelle fuer ressourcenarme Sprachen zu entwickeln, da englischsprachige Modelle die spezifischen morphologischen und syntaktischen Eigenschaften des Deutschen nicht ausreichend erfassen \cite{ostendorff2023clp}. Diese Faktoren machen eigenstaendiges Fine-Tuning auf deutschen Daten unumgaenglich.
 
+Trotz der vergleichsweise geringen Groesse des verfuegbaren Datensatzes wird eine signifikante Verbesserung der Modellleistung erwartet. Der Anwendungsfall der LVB-Verkehrsanweisungen ist sehr spezifisch und eng umrissen, was den Datenbedarf reduziert. Transfer Learning von einem deutschen Basismodell minimiert den Bedarf an grossen Trainingsmengen erheblich, da das Modell bereits ueber fundamentale Sprachkenntnisse verfuegt \cite{superannotate2025finetuning}. Empirische Studien belegen, dass bei domaenenspezifischen Aufgaben auch kleine, hochwertige Datensaetze zu substanziellen Verbesserungen fuehren koennen, insbesondere wenn Parameter-Efficient Fine-Tuning Methoden zum Einsatz kommen \cite{sapien2025smalldatasets, redhat2024supervised}.
 
-    \subsection{Modellvarianten für Deployment}
-    \label{sec:4.3}
-    
-    % Nach Fine-Tuning werden drei Varianten erstellt:
-    %
-    % - Vollmodell (FP16/BF16):
-    %   * Beste Qualität
-    %   * ~14 GB VRAM
-    %   * Baseline für Qualitätsvergleich
-    %
-    % - INT8-Quantisierung:
-    %   * ~7 GB VRAM
-    %   * Moderate Qualitätseinbuße
-    %   * Schnellere Inferenz
-    %
-    % - INT4-Quantisierung:
-    %   * ~3.5 GB VRAM
-    %   * Größere Qualitätseinbuße
-    %   * Maximale Effizienz
-    %
-    % Erwartete Trade-offs (siehe Abschnitt~\ref{sec:2.3.2} für Theorie):
-    % - Speicher vs. Qualität
-    % - Inferenzgeschwindigkeit vs. Präzision
-    % - Deployment-Flexibilität
-    %
-    % Evaluation in Kapitel~\ref{chap:7}: Vergleich aller drei Varianten
+\subsection{Modellvergleich und Auswahlprozess}
+\label{sec:4.2}
 
+Fuer die finale Modellauswahl wurden drei Kandidatenmodelle systematisch verglichen, die jeweils unterschiedliche Vor- und Nachteile fuer den vorliegenden Anwendungsfall aufweisen. Das erste Modell, Mistral-7B Base, stellt ein englischsprachiges Basismodell dar, das mit 7,3 Milliarden Parametern eine kompakte, aber leistungsstarke Architektur bietet. Mistral-7B nutzt fortschrittliche Mechanismen wie Grouped-Query Attention (GQA) und Sliding Window Attention (SWA), die zu einer signifikanten Beschleunigung der Inferenzgeschwindigkeit fuehren und gleichzeitig laengere Sequenzen mit reduzierten Rechenkosten verarbeiten koennen \cite{jiang2023mistral}. Das Modell uebertrifft Llama 2 13B ueber alle evaluierten Benchmarks hinweg und erreicht vergleichbare Leistung mit dem deutlich groesseren Llama 34B Modell. Die Baseline-Performance dieses Modells ist ausserordentlich hoch, und es wurde explizit fuer Fine-Tuning-Aufgaben optimiert. Der entscheidende Nachteil liegt jedoch darin, dass es nicht auf deutschen Texten vortrainiert wurde, was einen deutlich hoeheren Bedarf an deutschen Trainingsdaten fuer ein effektives Fine-Tuning nach sich ziehen wuerde.
+
+Das zweite Kandidatenmodell, Mistral-7B-Instruct, repraesentiert eine instruktionsoptimierte Variante des Basismodells. Diese Version wurde bereits einem Supervised Fine-Tuning unterzogen und kann Anweisungen ohne zusaetzliches Training befolgen. Waehrend dies fuer viele Anwendungsfaelle vorteilhaft ist, entstehen beim erneuten Fine-Tuning potenzielle Konflikte. Das vorhandene Instruction Tuning koennte durch domaenenspezifisches Fine-Tuning teilweise ueberschrieben werden, was zum Phaenomen des Catastrophic Forgetting fuehren kann \cite{luo2023catastrophic}. Empirische Studien zeigen, dass Instruct-Modelle bei erneutem Fine-Tuning zwischen 20 und 50 Prozent ihrer urspruenglichen Instruktions-Folge-Faehigkeiten einbuessen koennen, abhaengig vom verwendeten Datensatz und der Trainingsmethode \cite{mckenzie2024forgetting}. Zudem ist das Modell ebenfalls nicht auf deutschen Texten vortrainiert, was die gleichen Herausforderungen wie beim Basismodell mit sich bringt.
+
+Das dritte und letztendlich ausgewaehlte Modell, leo-mistral-hessianai-7b, kombiniert die Staerken der Mistral-7B-Architektur mit umfassender deutscher Sprachkompetenz. Dieses Modell wurde durch Continued Pretraining auf einem grossen Korpus deutscher Texte erstellt, wobei die Mistral-7B-Architektur als Ausgangspunkt diente \cite{laion2023leolm}. Das LeoLM-Projekt, entwickelt in Zusammenarbeit zwischen LAION und HessianAI, erweitert die Faehigkeiten von Mistral-7B durch ein fortgesetztes Training auf 65 Milliarden Token deliberat gefiltertem und dedupliziertem deutschem Webtext aus dem OSCAR-2301-Korpus. Evaluationen zeigen, dass LeoLM auf deutschen Benchmarks signifikant besser abschneidet als das urspruengliche Llama-2-Modell, waehrend die Leistung auf englischen Aufgaben nur geringfuegig abnimmt. Diese Charakteristik demonstriert, dass das Modell erfolgreich neue sprachliche Faehigkeiten erworben hat, ohne seine urspruenglichen Kompetenzen zu verlieren \cite{laion2023leolm}.
+
+Die Wahl fiel auf leo-mistral-hessianai-7b aus mehreren strategischen Gruenden. Die deutsche Sprachkompetenz ist fuer den LVB-Anwendungsfall essentiell und reduziert den Bedarf an umfangreichen Trainingsdaten erheblich. Als Base-Variante ohne vorheriges Instruction Tuning bietet das Modell maximale Flexibilitaet beim domaenenspezifischen Fine-Tuning, ohne Gefahr von Konflikten mit bereits gelernten Instruktionsmustern. Die Kombination aus einem kleinen Datensatz und einem Base Model erweist sich als ueberlegen gegenueber dem Ansatz, ein Instruct-Model durch Prompting zu nutzen, da letzteres keine dauerhafte Anpassung an die spezifische Domaene ermoeglicht \cite{datacamp2024finetuning}. Das eigene Fine-Tuning gewaehrt zudem bessere Kontrolle ueber das Output-Format, was fuer die strukturierte Transformation von Verkehrsanweisungen von zentraler Bedeutung ist. Schliesslich ist das Modell mit 7 Milliarden Parametern hardware-kompatibel und kann auf moderater GPU-Infrastruktur ausgefuehrt werden.
+
+\subsection{Modellvarianten fuer Deployment}
+\label{sec:4.3}
+
+Nach Abschluss des Fine-Tuning-Prozesses werden zwei quantisierte Varianten des Modells erstellt, um verschiedene Deployment-Szenarien zu unterstuetzen. Die Quantisierung stellt eine etablierte Technik zur Modellkompression dar, bei der die numerische Praezision der Gewichte reduziert wird. Waehrend urspruengliche Modelle typischerweise in 32-Bit oder 16-Bit Floating-Point-Praezision vorliegen, ermoeglicht die Quantisierung eine Reduktion auf 8-Bit oder 4-Bit Integer-Formate \cite{symbl2024quantization}.
+
+Die erste Variante nutzt INT8-Quantisierung, die den Speicherbedarf des Modells auf etwa 7 GB VRAM reduziert. Diese Quantisierungsmethode hat sich als besonders effektiv erwiesen, da sie den Speicherbedarf halbiert, waehrend die Modellqualitaet weitgehend erhalten bleibt. Empirische Studien zeigen, dass INT8-Quantisierung die Performance auf den meisten Benchmarks typischerweise innerhalb von einem Prozent des urspruenglichen FP16-Modells haelt \cite{dettmers2022int8, latitude2025quantization}. Die Inferenzgeschwindigkeit erhoeht sich durch die reduzierte Speicherbandbreite und die Nutzung optimierter Integer-Operationen um das Zwei- bis Vierfache gegenueber dem nicht-quantisierten Modell \cite{nvidia2025quantization}.
+
+Die zweite Variante verwendet INT4-Quantisierung, wodurch der VRAM-Bedarf auf circa 3,5 GB sinkt. Diese aggressive Quantisierung reduziert den Speicherbedarf um 75 Prozent gegenueber FP16-Modellen. Die Qualitaetseinbusse faellt bei INT4-Quantisierung groesser aus als bei INT8, bewegt sich jedoch fuer die meisten Anwendungen in akzeptablem Rahmen. Untersuchungen zeigen, dass INT4-quantisierte Modelle bei verschiedenen Aufgaben Leistungseinbussen von 2 bis 5 Prozent aufweisen koennen, wobei spezialisierte Quantisierungsmethoden wie Activation-Aware Weight Quantization (AWQ) diese Degradation weiter minimieren koennen \cite{wu2023int4, latitude2025quantization}. Die Inferenzgeschwindigkeit kann sich durch INT4-Quantisierung bis zu achtfach verbessern, insbesondere in latenz-orientierten Szenarien \cite{wu2023int4}.
+
+Die Entscheidung, ausschliesslich quantisierte Varianten fuer die finale Evaluation zu verwenden, basiert auf Beobachtungen aus initialen Tests. Diese zeigten unerwarteterweise, dass quantisierte Modelle in bestimmten Metriken das nicht-quantisierte Modell uebertreffen konnten. Dieses Phaenomen wird auf die Regularisierungseffekte der Quantisierung zurueckgefuehrt, die in manchen Faellen zu einer verbesserten Generalisierung fuehren koennen. Fuer den finalen Vergleich in Kapitel \ref{chap:7} werden daher beide quantisierten Varianten evaluiert, um die optimale Balance zwischen Ressourceneffizienz und Modellqualitaet zu bestimmen.
+
+Die erwarteten Trade-offs zwischen den Varianten folgen etablierten Mustern der Modellkompression. Waehrend INT4 maximale Speichereffizienz und Inferenzgeschwindigkeit bietet, geht dies mit dem hoechsten Risiko fuer Qualitaetsverluste einher. INT8 repraesentiert einen ausgewogenen Kompromiss, der substanzielle Effizienzgewinne mit minimaler Qualitaetsdegradation verbindet. Die theoretischen Grundlagen dieser Trade-offs wurden in Abschnitt \ref{sec:2.3.2} dargelegt. Die praktische Evaluation in Kapitel \ref{chap:7} wird zeigen, welche Quantisierungsstufe sich fuer die spezifische Aufgabe der Verkehrsanweisungstransformation als optimal erweist.

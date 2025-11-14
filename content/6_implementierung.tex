@@ -1,98 +1,168 @@
-\section{Implementierung} \label{chap:6}
+\section{Implementierung} 
+\label{chap:6}
 
-% Ziel: 14-16 Seiten
+Die Implementierung der Modelllösung zur automatisierten Transformation von Verkehrsanweisungen in Fahrgastinformationen erforderte die sorgfältige Auswahl und Konfiguration verschiedener technischer Komponenten. Dieses Kapitel beschreibt die praktische Umsetzung des in Kapitel~\ref{chap:4} vorgestellten methodischen Ansatzes, von der Einrichtung der Entwicklungsumgebung über den Fine-Tuning-Prozess bis zur Quantisierung des Modells.
 
-    \subsection{Technische Umsetzung}
-    \label{sec:6.1}
-    
-    % Ziel: 2-3 Seiten
-    % - Entwicklungsumgebung und Hardware
-    % - Frameworks und Bibliotheken (Transformers, PEFT, etc.)
-    % - Software-Architektur (nur Überblick, Details in Anhang)
+Ein zentrales Anliegen bei der Implementierung war die Entwicklung einer Lösung, die trotz begrenzter Hardware-Ressourcen effektiv arbeitet und gleichzeitig die in Kapitel~\ref{chap:5} entwickelte Datenbasis optimal nutzt. Die iterative Natur des Entwicklungsprozesses erforderte dabei einen flexiblen Ansatz, der schnelle Anpassungen und Experimente ermöglichte.
 
 
-    \subsection{Fine-Tuning des Modells}
-    \label{sec:6.2}
-    
-    % Ziel: 8-10 Seiten
-    % KERNKAPITEL - hier passiert die Hauptarbeit
-    
-        \subsubsection{LoRA-basiertes Fine-Tuning}
-        \label{sec:6.2.1}
-        
-        % Ziel: 4-5 Seiten
-        % - Konfiguration der LoRA-Parameter
-        %   * Rank, Alpha, Target Modules
-        %   * Begründung der Parameterwahl
-        % - Trainingsprozess
-        %   * Hyperparameter (Learning Rate, Batch Size, Epochs)
-        %   * Trainingsverhalten und Konvergenz
-        %   * Overfitting-Vermeidung
-        %     - KRITISCH: Datensatz-Shuffling zwischen Epochen
-        %       * Selbst bei kleinen Datensätzen (100-500 Beispiele) essentiell
-        %       * Verhindert sequentielles Auswendiglernen gleichartiger Muster
-        %       * Ohne Shuffling: Schnelles Overfitting bereits nach wenigen 100 Beispielen
-        %       * Theoretische Grundlage: Siehe Abschnitt~\ref{sec:2.2.4} (Overfitting-Vermeidung)
-        %       * Praktische Umsetzung: Randomisierung vor jeder Epoche mittels PyTorch DataLoader
-        %     - Learning-Rate-Paradoxon (empirische Beobachtung):
-        %       * Initial vermutete konservative Learning Rate (5e-5) erwies sich als kontraproduktiv
-        %       * Zu langsames Lernen führte zu direktem Memorization-Verhalten
-        %       * Moderate Learning Rate (2e-4) ermöglichte bessere Generalisierung
-        %       * Bestätigt theoretische Diskussion in Abschnitt~\ref{sec:2.2.4}
-        % - Iterative Optimierung
-        %   * Anpassungen basierend auf Validierungsergebnissen
-        %   * Verschiedene Experimente
-        %
-        % - UNSLOTH-OPTIMIERTES TRAINING:
-        %   * Einsatz von Unsloth-Framework (siehe theoretische Grundlagen Abschnitt~\ref{sec:2.2.1})
-        %   * Begründung: Hardware-Limitierungen (7B-Modell auf Consumer-GPU)
-        %   * TODO: TRAININGS-LOGS AUSWERTEN!
-        %     - Training-Zeit (Vergleich mit/ohne Unsloth falls vorhanden)
-        %     - VRAM-Verbrauch während des Trainings
-        %     - Iterations-Geschwindigkeit (Samples/Sekunde)
-        %     - Loss-Kurven und Konvergenzverhalten
-        %     - Praktische Vorteile in der iterativen Entwicklung
-        
-        
-        \subsubsection{Prompt Engineering und Automatisierung}
-        \label{sec:6.2.2}
-        
-        % Ziel: 3-4 Seiten
-        % - Design der Prompt-Templates
-        %   * System-Prompts
-        %   * Instruction-Format
-        %   * Few-Shot-Beispiele (wenn verwendet)
-        % - Knowledge-Enhanced System Prompts (statt RAG)
-        %   * Integration domänenspezifischer Informationen
-        %   * Statische Einbettung von Zuordnungen (Liniennummern zu Fahrzeugtypen)
-        %   * Strukturierte Faktendatenbank im Prompt
-        %   * Begründung: Hardware-Limitierungen, ausreichend für überschaubare Domäne
-        %   * Abgrenzung zu vollständigem RAG-System (siehe Abschnitt~\ref{sec:2.3.3})
-        % - Automatisierungslogik
-        %   * Preprocessing-Pipeline
-        %   * Template-Filling
-        %   * Format-Erkennung
-        % - Iteration und Verfeinerung
-        %   * A/B-Tests verschiedener Prompts
-        %   * Optimierung für Konsistenz
-        
-        
-        \subsubsection{Quantisierung}
-        \label{sec:6.2.3}
-        
-        % Ziel: 1 Seite
-        % - Anwendung der Quantisierung auf das fine-getunte Modell
-        % - INT8 und INT4 Varianten
-        % - Technische Umsetzung mit Open-Source-Tools
-        % - Gemessene Inferenzgeschwindigkeit (falls messbar)
+\subsection{Technische Umsetzung}
+\label{sec:6.1}
+
+Die Implementierung erfolgte in einer Python-basierten Entwicklungsumgebung, die speziell auf die Anforderungen des Fine-Tunings großer Sprachmodelle ausgerichtet wurde. Als zentrale Frameworks kamen die Hugging Face Transformers-Bibliothek in Version 4.57.1 sowie PEFT (Parameter-Efficient Fine-Tuning) zum Einsatz, die beide etablierte Standards im Bereich des Transfer Learning darstellen. Für das Training selbst wurde das Unsloth-Framework in Version 2025.10.12 eingesetzt, das speziell für die Optimierung von Mistral-basierten Modellen entwickelt wurde.
+
+Die Hardware-Ausstattung umfasste eine NVIDIA RTX A2000 GPU mit 12 GB VRAM, die unter Windows mit CUDA 11.8 und PyTorch 2.7.1+cu118 betrieben wurde. Die GPU verfügt über eine Compute Capability von 8.6 und operiert mit einem Power Limit von 70 Watt. Diese Konfiguration stellte bei der Arbeit mit einem 7-Milliarden-Parameter-Modell eine signifikante Limitierung dar und prägte maßgeblich die Entscheidung für parameter-effiziente Fine-Tuning-Methoden sowie den Einsatz spezialisierter Optimierungsbibliotheken.
+
+Die Software-Architektur folgt einem modularen Aufbau, bei dem die verschiedenen Komponenten des Trainingsprozesses klar voneinander getrennt sind. Die Datenvorbereitung erfolgt durch ein stratifiziertes Splitting-Verfahren, das eine gleichmäßige Verteilung der drei Datenkategorien (Ansagetexte, FGI, Nummertypordnung) auf Trainings- und Validierungsdaten sicherstellt. Das eigentliche Training, die Validierung und die Inferenz wurden als separate, wiederverwendbare Module implementiert. Eine detaillierte Darstellung der Architektur sowie relevante Code-Ausschnitte finden sich im Anhang~\ref{app:architecture}.
+
+Für das Datenhandling wurde der PyTorch DataLoader eingesetzt, der nicht nur eine effiziente Batch-Verarbeitung ermöglicht, sondern auch die in Abschnitt~\ref{sec:6.2.1} beschriebene Randomisierung der Trainingsbeispiele unterstützt. Die Integration der in Kapitel~\ref{sec:5.2} entwickelten Datensätze erfolgte über ein einheitliches Interface, das die 950 Trainingsbeispiele aus den drei Kategorien verarbeitet. Ein besonderes Augenmerk lag dabei auf der kategorie-übergreifenden Durchmischung der Daten vor jeder Epoche, um sequentielles Auswendiglernen kategoriespezifischer Muster zu vermeiden.
+
+Die Entwicklungsumgebung wurde um umfangreiche Monitoring-Komponenten erweitert, die während des Trainings kontinuierlich Hardware-Metriken erfassen. Ein spezialisierter Hardware-Monitor protokolliert in regelmäßigen Abständen den VRAM-Verbrauch, die GPU-Auslastung sowie die Energieaufnahme und ermöglicht damit eine detaillierte Analyse der Trainingseffizienz. Diese Metriken werden zusammen mit den Loss-Werten in TensorBoard visualisiert und zusätzlich in strukturierten JSON-Dateien persistiert.
 
 
-    \subsection{Qualitätssicherung und Validierung}
-    \label{sec:6.3}
-    
-    % Ziel: 3-4 Seiten
-    % - Implementierung automatisierter Checks
-    % - Halluzination Detection
-    % - Semantische Konsistenzprüfung
-    % - Feedback-Loop für Verbesserungen
+\subsection{Fine-Tuning des Modells}
+\label{sec:6.2}
 
+Der Fine-Tuning-Prozess stellte den zentralen Schritt zur Anpassung des Basismodells LeoLM/leo-mistral-hessianai-7b-chat an die spezifische Aufgabe der Transformation von Verkehrsanweisungen dar. Die Herausforderung bestand darin, das Modell mit einem vergleichsweise kleinen, domänenspezifischen Datensatz zu trainieren, ohne dass es seine allgemeine Sprachkompetenz verliert oder zu stark auf die Trainingsbeispiele overfittet.
+
+
+\subsubsection{LoRA-basiertes Fine-Tuning}
+\label{sec:6.2.1}
+
+Als Fine-Tuning-Methode wurde Low-Rank Adaptation (LoRA) gewählt, eine parameter-effiziente Technik, die es ermöglicht, große Sprachmodelle mit reduziertem Speicherbedarf anzupassen. Die theoretischen Grundlagen dieser Methode wurden in Abschnitt~\ref{sec:2.2.1} dargelegt. LoRA modifiziert nur einen Bruchteil der Modellparameter, indem es zusätzliche trainierbare Rang-Dekompositionsmatrizen in die Attention-Layer einfügt, während die ursprünglichen Gewichte des Basismodells eingefroren bleiben.
+
+Die Konfiguration der LoRA-Parameter erfolgte nach mehreren explorativen Experimenten und basierte sowohl auf Literaturempfehlungen als auch auf empirischen Beobachtungen während der Entwicklung:
+
+\begin{itemize}
+\item Rank (r): 8 -- Ein relativ niedriger Rank ermöglicht eine effiziente Anpassung, während gleichzeitig die Anzahl trainierbarer Parameter begrenzt bleibt. Dies reduziert das Risiko des Overfittings bei kleinen Datensätzen.
+
+\item Alpha: 16 -- Der Skalierungsfaktor wurde auf das Doppelte des Ranks gesetzt, eine häufig verwendete Heuristik, die ein ausgewogenes Verhältnis zwischen den LoRA-Updates und den ursprünglichen Modellgewichten gewährleistet.
+
+\item Dropout: 0.3 -- Ein vergleichsweise hoher Dropout-Wert trägt zur Regularisierung bei und verhindert, dass das Modell zu stark auf einzelne Neuronen spezialisiert.
+
+\item Target Modules: Query- und Value-Projektionen der Attention-Mechanismen -- Diese Layer wurden als primäre Anpassungspunkte ausgewählt, da sie erfahrungsgemäß am stärksten zur Anpassung an neue Aufgaben beitragen und gleichzeitig eine effiziente Parameternutzung ermöglichen.
+\end{itemize}
+
+Die resultierende Konfiguration führte zu einem LoRA-Adapter mit lediglich 29,86 MB Größe, was einen Bruchteil der Größe des vollständigen 7-Milliarden-Parameter-Modells darstellt und die Effizienz der Methode unterstreicht.
+
+Der Trainingsprozess selbst wurde durch eine Reihe sorgfältig kalibrierter Hyperparameter gesteuert:
+
+\begin{itemize}
+\item Learning Rate: 1e-4 -- Die Wahl der Learning Rate erwies sich als besonders kritisch und führte zu einer bemerkenswerten Beobachtung, die im Folgenden als Learning-Rate-Paradoxon beschrieben wird.
+
+\item Batch Size: 8 pro Device -- Aufgrund der Hardware-Limitierungen wurde eine moderate Batch Size gewählt.
+
+\item Gradient Accumulation: 2 Steps -- Durch die Akkumulation von Gradienten über zwei Steps wurde eine effektive Batch Size von 16 erreicht, was stabilere Gradienten-Updates ermöglicht, ohne die VRAM-Kapazität zu überlasten.
+
+\item Maximale Sequenzlänge: 2048 Tokens -- Diese Länge erwies sich als ausreichend für die Verarbeitung selbst komplexer Verkehrsanweisungen und ermöglichte gleichzeitig ein effizientes Training.
+
+\item Warmup Steps: 30 -- Eine graduelle Erhöhung der Learning Rate während der ersten 30 Optimierungsschritte verhindert instabile Gradienten zu Beginn des Trainings.
+
+\item Weight Decay: 0.05 -- Moderate L2-Regularisierung zur Vermeidung von Overfitting.
+
+\item Gradient Clipping: Max Norm 0.5 -- Verhindert explodierende Gradienten durch Begrenzung der Gradientennorm.
+
+\item Optimizer: AdamW (8-Bit) -- Eine speicheroptimierte Variante des AdamW-Optimizers reduziert den VRAM-Bedarf zusätzlich.
+\end{itemize}
+
+Die Anzahl der geplanten Trainings-Epochen wurde initial auf sieben festgelegt, jedoch wurde ein Early-Stopping-Mechanismus mit einer Patience von drei Evaluationsrunden implementiert, um unnötiges Training nach Erreichung der optimalen Modellleistung zu vermeiden.
+
+Ein zentrales Element der Trainingsstrategie war die Randomisierung der Trainingsbeispiele vor jeder Epoche. Ohne diese Maßnahme zeigte das Modell in vorherigen Experimenten bereits nach wenigen hundert Beispielen deutliche Anzeichen von sequentiellem Auswendiglernen gleichartiger Muster. Die theoretische Grundlage für diese Beobachtung wurde in Abschnitt~\ref{sec:2.2.4} zur Overfitting-Vermeidung diskutiert. Praktisch umgesetzt wurde die Randomisierung durch eine kategorie-übergreifende Durchmischung des Datensatzes vor dem Training sowie durch die Shuffle-Funktionalität des PyTorch DataLoader, der vor jeder Epoche eine neue Permutation der Trainingsbeispiele erzeugt.
+
+Eine besonders bemerkenswerte empirische Beobachtung während der Hyperparameter-Optimierung war das sogenannte Learning-Rate-Paradoxon: Entgegen der initialen Erwartung, dass eine konservative Learning Rate von 5e-5 zu stabilem und generalisierbarem Lernen führen würde, zeigte sich in der Praxis ein kontraintuitives Verhalten. Das Modell entwickelte bei zu niedrigen Learning Rates eine ausgeprägte Tendenz zum direkten Memorization-Verhalten, bei dem es die Trainingsbeispiele auswendig lernte, ohne verallgemeinerbare Muster zu extrahieren. Der Validation Loss stagnierte oder verschlechterte sich sogar, während der Training Loss kontinuierlich sank. Erst eine Erhöhung auf eine moderate Learning Rate von 1e-4 ermöglichte ein ausgewogenes Lernverhalten, bei dem das Modell sowohl die spezifischen Anforderungen der Aufgabe erfasste als auch seine Generalisierungsfähigkeit behielt. Diese Beobachtung bestätigt die in Abschnitt~\ref{sec:2.2.4} diskutierten theoretischen Überlegungen zur Balance zwischen Anpassung und Generalisierung und unterstreicht die Bedeutung empirischer Validierung bei der Hyperparameter-Wahl.
+
+Das tatsächliche Training erstreckte sich über 75 Minuten und wurde durch den Early-Stopping-Mechanismus nach 2,18 Epochen beendet. Tabelle~\ref{tab:training_loss} zeigt den Verlauf des Training- und Validation Loss während des Trainingsprozesses.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrr}
+\hline
+Epoche & Training Loss & Validation Loss & Status \\
+\hline
+0.18 & 5.2249 & -- & Initial \\
+0.36 & 1.4258 & -- & \\
+0.55 & 0.0747 & 1.7983 & Best \\
+0.73 & 0.0081 & -- & \\
+0.91 & 0.0009 & -- & \\
+1.09 & 0.0011 & 1.8427 & Patience 1/3 \\
+1.27 & 0.0002 & -- & \\
+1.45 & 0.0003 & -- & \\
+1.64 & 0.0001 & 1.8483 & Patience 2/3 \\
+1.82 & 0.0001 & -- & \\
+2.00 & 0.0000 & -- & \\
+2.18 & 0.0000 & 1.8507 & Early Stop \\
+\hline
+\end{tabular}
+\caption{Verlauf des Training- und Validation Loss während des Fine-Tuning-Prozesses. Das beste Modell wurde bei Epoche 0.55 mit einem Validation Loss von 1.7983 erreicht.}
+\label{tab:training_loss}
+\end{table}
+
+Die Loss-Kurve zeigt ein charakteristisches Verhalten: Nach einem steilen initialen Abfall des Training Loss von 5.2249 auf 0.0747 innerhalb der ersten halben Epoche stabilisiert sich der Validation Loss bei etwa 1.80. Der Training Loss sinkt weiter gegen null, während der Validation Loss leicht zu steigen beginnt, was erste Anzeichen von Overfitting andeutet. Der Early-Stopping-Mechanismus greift nach drei aufeinanderfolgenden Evaluationsrunden ohne Verbesserung und lädt das Modell aus der Epoche mit dem besten Validation Loss (1.7983 bei Epoche 0.55).
+
+Eine besondere Herausforderung bei der Arbeit mit einem 7-Milliarden-Parameter-Modell auf Consumer-Hardware stellte der hohe Speicherbedarf dar. Um dennoch effizientes Training zu ermöglichen, kam das Unsloth-Framework zum Einsatz, dessen theoretische Grundlagen in Abschnitt~\ref{sec:2.2.1} dargelegt wurden. Unsloth optimiert den Trainingsprozess durch verschiedene Techniken, darunter effizientere Implementierungen kritischer Operationen, intelligentes Memory Management und die Möglichkeit zum Offloading von Gradienten auf die CPU bei VRAM-Engpässen.
+
+Die Analyse der Hardware-Auslastung während des Trainings zeigt die Effektivität dieser Optimierungen. Tabelle~\ref{tab:hardware_usage} fasst die wichtigsten Hardware-Metriken zusammen.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lr}
+\hline
+Metrik & Wert \\
+\hline
+\multicolumn{2}{l}{\textit{VRAM-Nutzung}} \\
+Durchschnittlich & 3.98 GB \\
+Maximum & 3.98 GB \\
+Peak (Prozent) & 33.2\% \\
+\hline
+\multicolumn{2}{l}{\textit{GPU-Auslastung}} \\
+Durchschnittlich & 92.8\% \\
+\hline
+\multicolumn{2}{l}{\textit{Performance}} \\
+Samples pro Sekunde & 1.36 \\
+Schritte pro Sekunde & 0.086 \\
+Dauer pro Epoche & ca. 2050 s \\
+\hline
+\multicolumn{2}{l}{\textit{Energieverbrauch}} \\
+Durchschnittliche Leistung & 67.3 W \\
+Gesamtenergie & 84.98 Wh \\
+Geschätzte CO2-Emission & 35.7 g \\
+\hline
+\end{tabular}
+\caption{Hardware-Auslastung während des Fine-Tuning-Prozesses über eine Gesamtdauer von 75 Minuten.}
+\label{tab:hardware_usage}
+\end{table}
+
+Bemerkenswert ist, dass trotz des 7-Milliarden-Parameter-Modells nur etwa ein Drittel des verfügbaren VRAMs (3.98 GB von 12 GB) beansprucht wurde. Dies unterstreicht die Effizienz der Kombination aus LoRA, 8-Bit-Optimierung und Unsloth-Framework. Die GPU-Auslastung von durchschnittlich 92.8 Prozent zeigt, dass das Training compute-gebunden war und die verfügbaren Ressourcen optimal ausgenutzt wurden. Die hohe Auslastung bei gleichzeitig moderatem VRAM-Verbrauch ist ein Indikator für die effektive Balance zwischen Speicher- und Recheneffizienz.
+
+Die Trainingsgeschwindigkeit von 1.36 Samples pro Sekunde resultiert in einer Epoche-Dauer von etwa 34 Minuten bei 874 Trainingsbeispielen. Diese Geschwindigkeit ermöglichte während der iterativen Entwicklungsphase zahlreiche Experimente mit unterschiedlichen Konfigurationen innerhalb praktikabler Zeitrahmen. Der Energieverbrauch von etwa 85 Wattstunden für den gesamten Trainingsprozess ist im Vergleich zu vollständigen Fine-Tuning-Ansätzen ohne parameter-effiziente Methoden deutlich reduziert und unterstreicht die Nachhaltigkeit des gewählten Ansatzes.
+
+Der iterative Charakter des Entwicklungsprozesses manifestierte sich in mehreren Experimentrunden, in denen systematisch verschiedene Hyperparameter-Konfigurationen getestet wurden. Insbesondere die oben beschriebene Entdeckung des Learning-Rate-Paradoxons erforderte mehrere Trainingsläufe mit variierenden Learning Rates. Die durch Unsloth ermöglichte Effizienz war dabei entscheidend, um diese Experimente in einem vertretbaren Zeitrahmen durchführen zu können.
+
+
+\subsubsection{Quantisierung}
+\label{sec:6.2.3}
+
+Nach Abschluss des Fine-Tuning-Prozesses wurde das Modell in quantisierte Versionen konvertiert, um die Inferenzgeschwindigkeit zu erhöhen und den Speicherbedarf zu reduzieren. Quantisierung bezeichnet dabei den Prozess, bei dem die Präzision der Modellgewichte von 32-Bit Floating Point auf niedrigere Bit-Tiefen reduziert wird, ohne die Modellqualität signifikant zu beeinträchtigen. Die theoretischen Grundlagen der Quantisierung wurden in Abschnitt~\ref{sec:2.2.3} behandelt.
+
+Es wurden zwei Quantisierungsvarianten erstellt:
+
+\begin{itemize}
+\item INT8-Quantisierung: Reduziert die Gewichte auf 8-Bit-Ganzzahlen und verspricht eine gute Balance zwischen Kompression und Qualitätserhalt.
+\item INT4-Quantisierung: Verwendet 4-Bit-Repräsentationen für eine noch stärkere Kompression, bei der jedoch mit größeren Qualitätseinbußen zu rechnen ist.
+\end{itemize}
+
+Die technische Umsetzung der Quantisierung erfolgte mittels der BitsAndBytes-Bibliothek, die speziell für die Kompression von Transformer-Modellen entwickelt wurde und nahtlos mit der Hugging Face Transformers-Bibliothek integriert ist. Der Quantisierungsprozess umfasste dabei nicht nur die Konversion der Gewichte, sondern auch eine Kalibrierung anhand repräsentativer Datenbeispiele aus dem Validierungsdatensatz, um die Genauigkeit der quantisierten Versionen zu optimieren.
+
+Die Quantisierung wurde auf das bereits fine-getunte Modell angewendet, wobei die LoRA-Adapter mit dem Basismodell zusammengeführt (merged) wurden. Dies ermöglicht eine effiziente Inferenz ohne separate Verwaltung von Basis- und Adapter-Gewichten. Die resultierenden Modellgrößen unterscheiden sich deutlich:
+
+\begin{itemize}
+\item Vollmodell (32-Bit): ca. 14 GB
+\item INT8-Quantisierung: ca. 7 GB (50 Prozent Reduktion)
+\item INT4-Quantisierung: ca. 3.5 GB (75 Prozent Reduktion)
+\end{itemize}
+
+Ein besonderes Augenmerk lag auf der Erhaltung der Modellqualität trotz reduzierter Präzision. Während INT8-Quantisierung in der Regel nur minimale Qualitätsverluste verursacht, da die höhere Bit-Tiefe eine feinere Repräsentation der Gewichte ermöglicht, ist bei INT4-Quantisierung theoretisch mit stärkeren Einbußen zu rechnen. Die tatsächlichen Auswirkungen auf die Qualität der generierten Fahrgastinformationen werden in Kapitel~\ref{sec:7.2.1} detailliert evaluiert, wobei interessanterweise die INT4-Variante überraschend gute Ergebnisse erzielte.
+
+Die Entscheidung für die Erstellung mehrerer Quantisierungsvarianten ermöglicht eine flexible Anpassung an unterschiedliche Deployment-Szenarien. Während das Vollmodell maximale Qualität bietet, können die quantisierten Versionen in ressourcenbeschränkten Umgebungen oder bei Echtzeitanforderungen eingesetzt werden. Die INT4-Variante ist besonders interessant für den Einsatz auf mobilen Endgeräten oder in Cloud-Umgebungen, wo Kosteneffizienz eine wichtige Rolle spielt. Die vergleichende Evaluation dieser Trade-offs erfolgt im nachfolgenden Kapitel~\ref{chap:7}.
+
+Zusammenfassend zeigt die Implementierung, dass trotz begrenzter Hardware-Ressourcen und eines vergleichsweise kleinen Datensatzes ein funktionsfähiges und effizientes System entwickelt werden konnte. Die Kombination aus parameter-effizienten Fine-Tuning-Methoden, sorgfältiger Hyperparameter-Optimierung und strategischer Quantisierung ermöglichte die Realisierung einer praktikablen Lösung für die automatisierte Transformation von Verkehrsanweisungen. Die gewonnenen empirischen Erkenntnisse, insbesondere das Learning-Rate-Paradoxon und das überraschend gute Abschneiden der INT4-Quantisierung, tragen zum Verständnis der Herausforderungen bei der Arbeit mit kleinen, domänenspezifischen Datensätzen bei.

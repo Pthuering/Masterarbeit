@@ -3,14 +3,31 @@
 \section*{Anhang}   \label{chap:appendix}
 \addcontentsline{toc}{section}{Anhang}
 
-
-% um numerierung im anhang trotzdem zu erhalten
+% Subsections im Anhang alphabetisch nummerieren (A, B, ...)
 \renewcommand{\thesubsection}{\Alph{subsection}}
-% notation von abbildungen wird geänder: 1 > A.1 
+
+% Einbindung relevanter PDF-Dokumente als Anhang
+
+\clearpage
+\refstepcounter{subsection}
+\subsection*{\thesubsection\quad Regeln zur Formulierung von Fahrgastinformationen}
+\addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}Regeln zur Formulierung von Fahrgastinformationen}
+\label{anh:regeln}
+\includepdf[pages=-,pagecommand={\thispagestyle{plain}}]{graphics/Regeln_Formulierung_Fahrgastinformationen_aktualisiert.pdf}
+
+\clearpage
+\refstepcounter{subsection}
+\subsection*{\thesubsection\quad Sperrung der Lützner Straße}
+\addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}Sperrung der Lützner Straße}
+\label{anh:sperrung}
+\includepdf[pages=-,pagecommand={\thispagestyle{plain}}]{graphics/Sperrung_der_Luetzner_Strasse-1.pdf}
+
+% (Makros zur Inline-Einbindung entfernt — komplette PDFs werden jetzt mit \includepdf eingefügt)
+
+
+% um numerierung im anhang trotzdem zu erhalten (figure/listing numeration uses \thesubsection)
 \renewcommand{\thefigure}{\thesubsection.\arabic{figure}}
 \renewcommand{\theHfigure}{\thesubsection.\arabic{figure}}%<---!!!!--- Erklärung: https://tex.stackexchange.com/questions/442514/ref-jumps-not-to-the-right-figure-in-appendix
-% an dieser stelle würde ich gern die notation von listings im anhang anpassen, bisher aber leider erfolglos
-
 % notation für listings ändern, gleich wie abbildungen
 \renewcommand{\thelisting}{\thesubsection.\arabic{listing}}
 
@@ -18,7 +35,13 @@
 \setcounter{figure}{0}
 \setcounter{listing}{0}
 
-\subsection{Nachbereitung}
+% Gleisbauarbeiten (komplette PDF-Seiten einfügen, nummerierte Subsection + TOC)
+\clearpage
+\refstepcounter{subsection}
+\subsection*{\thesubsection\quad Gleisbauarbeiten in der Riesaer Straße}
+\addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}Gleisbauarbeiten in der Riesaer Straße}
+\label{anh:gleisbau}
+\includepdf[pages=-,pagecommand={\thispagestyle{plain}}]{graphics/Gleisbauarbeiten_in_der_Riesaer_Strasse.pdf}
 
 Als allererstes, hier noch die letzte Referenz zum folgenden Listing im Anhang: \ref{lst:helloworld}  
 Die hier benutzte Arbeit entstand im Rahmen des Moduls \textit{Wissenschaftliches Arbeiten} aus dem 

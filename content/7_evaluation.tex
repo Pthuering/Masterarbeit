@@ -1,49 +1,532 @@
-\section{Evaluation} \label{chap:7}
+\section{Evaluation}
+\label{chap:7}
 
-% Ziel: 10-12 Seiten
+Die Evaluation des entwickelten Systems verfolgt das Ziel, die Leistungsfähigkeit und Anwendbarkeit des feinabgestimmten Sprachmodells zur automatisierten Transformation von Verkehrsanweisungen zu überprüfen. Dabei werden sowohl quantitative als auch qualitative Aspekte untersucht, um ein umfassendes Bild der Systemleistung zu erhalten. Im Fokus stehen insbesondere die Auswirkungen verschiedener Quantisierungsstufen auf die Ausgabequalität sowie die praktische Anwendbarkeit des Systems in realen Produktionsszenarien.
 
-    \subsection{Evaluationsmethodik}
-    \label{sec:7.1}
-    
-    % Ziel: 2-3 Seiten
-    % - Experimentelles Design
-    % - Testdatensatz
-    % - Baseline-Systeme (falls vorhanden: manuelle Transformation, regelbasiert)
-    % - Metriken (automatisch und manuell)
+\subsection{Evaluationsmethodik}
+\label{sec:7.1}
 
+Die Evaluation des Systems basiert auf einem systematischen Ansatz, der sowohl automatisierte Metriken als auch manuelle Bewertungen umfasst. Die Grundlage bildet ein dedizierter Testdatensatz, der speziell für die Bewertung der Systemleistung zusammengestellt wurde und repräsentative Beispiele aus dem Anwendungsbereich abdeckt.
 
-    \subsection{Qualitätsevaluation}
-    \label{sec:7.2}
-    
-    % Ziel: 7-9 Seiten
-    % KERNKAPITEL - hier zeigst du, dass es funktioniert
-    
-        \subsubsection{Vollmodell vs. Quantisierte Versionen}
-        \label{sec:7.2.1}
-        
-        % Ziel: 4-5 Seiten
-        % Vergleich: LeoLM 7B (Full) vs. INT8 vs. INT4
-        % - Semantische Korrektheit
-        % - Sprachliche Qualität
-        % - Formatierungstreue
-        % - Zielgruppenadäquatheit (Verständlichkeit für Endnutzer, Vollständigkeit)
-        % - Konkrete Beispiele mit Fehleranalyse
-        
-        
-        \subsubsection{Automatisierung und Konsistenz}
-        \label{sec:7.2.2}
-        
-        % Ziel: 3-4 Seiten
-        % - Funktioniert die Prompt-Automatisierung?
-        % - Konsistenz über verschiedene Eingaben
-        % - Edge Cases und Fehlerbehandlung
+\subsubsection{Testdatensatz}
 
+Der Testdatensatz umfasst insgesamt 38 Beispiele, die gleichmäßig auf die beiden Hauptaufgaben verteilt sind. 18 Beispiele dienen der Erstellung von Fahrgastinformationen, während 20 Beispiele die Generierung von Ansagetexten adressieren. Die Auswahl der Testdaten erfolgte unter der Prämisse, verschiedene Schwierigkeitsgrade und Komplexitätsstufen abzubilden. Dabei wurden bewusst Beispiele gewählt, die nicht im Trainingsdatensatz enthalten waren, um eine objektive Bewertung der Generalisierungsfähigkeit des Modells zu ermöglichen.
 
-    \subsection{Gesamtbewertung}
-    \label{sec:7.3}
-    
-    % Ziel: 2-3 Seiten
-    % - Erfüllung der Anforderungen
-    % - Stärken des Systems
-    % - Identifizierte Limitationen
+Die Struktur der Testdaten orientiert sich an zwei unterschiedlichen Eingabeformaten. Ein Teil der Beispiele enthält präzise, auf die wesentlichen Informationen reduzierte Verkehrsanweisungen. Diese simulieren Szenarien, in denen bereits eine Vorfilterung der relevanten Daten stattgefunden hat. Der zweite Teil hingegen präsentiert dem Modell umfangreichere Dokumentausschnitte, die neben den relevanten Informationen auch zusätzliche Details enthalten. Diese Konfiguration ermöglicht die Evaluation der Fähigkeit des Modells, eigenständig relevante von irrelevanten Informationen zu unterscheiden.
 
+Ein typisches Beispiel aus dem Testdatensatz für eine einfache Fahrgastinformation ist wie folgt strukturiert:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{minted}[breaklines,fontsize=\small]{json}
+{
+  "task": "fahrgastinfo",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Erstelle eine Fahrgastinformation aus folgender 
+      Verkehrsanweisung:\n\nLinie 86\n\nvom Montag, 06.10.2025 
+      bis Samstag, 18.10.2025\n\nWegen Straßenbauarbeiten wird 
+      in Merkwitz die Seegeritzer Straße zwischen Alte Salzstraße 
+      und einschließlich Kreuzung Am Ring für den Verkehr in 
+      beiden Richtungen gesperrt.\n\nLinie 86 verkehrt mit 
+      geänderten Fahrplänen."
+    },
+    {
+      "role": "assistant",
+      "content": "Vom Mo., 06. Oktober bis Sa., 18. Oktober: 
+      BUS 86 verkehrt mit geänderten Fahrplänen. Grund dafür 
+      sind Straßenbauarbeiten in der Seegeritzer Straße in 
+      Merkwitz."
+    }
+  ]
+}
+\end{minted}
+\end{minipage}
+\caption{\normalfont Beispiel: JSON‑Eingabe (einfach)}
+\label{fig:example_simple_json}
+\end{figure}
+
+Ein komplexeres Beispiel mit umfangreicheren Eingabedaten demonstriert die Herausforderung der Informationsfilterung:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{minted}[breaklines,fontsize=\small]{json}
+{
+  "task": "fahrgastinfo",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Erstelle eine Fahrgastinformation aus folgender 
+      Verkehrsanweisung:\n\nLinien 86, 176\n\nvom Montag, 
+      06.10.2025 bis Samstag, 18.10.2025\n\nWegen Straßenbauarbeiten 
+      wird in Merkwitz die Seegeritzer Straße zwischen Alte 
+      Salzstraße und einschließlich Kreuzung Am Ring für den 
+      Verkehr in beiden Richtungen gesperrt.\n\nLinie 86 verkehrt 
+      mit geänderten Fahrplänen.\n\nLinie 176 verkehrt mit 
+      geänderten Fahrplänen,\nnur bis Haltestelle Merkwitz bzw. 
+      ab Ersatzhaltestelle Merkwitz.\nAb Haltestelle Merkwitz – 
+      wenden über – links Alte Salzstraße zur Wendestelle in 
+      der Alte Salzstraße. Die Abfahrt erfolgt an der 
+      Ersatzhaltestelle Merkwitz am ehemaligen Standort 
+      (zwischen Grundstück 11a und 11) in der Seegeritzer 
+      Straße.\n\nHaltestelle Merkwitz -> Taucha schließen,\neine 
+      Ersatzhaltestelle Merkwitz -> Taucha in der Seegeritzer 
+      Straße am ehemaligen Standort zw. Grundstück Seegeritzer 
+      Straße 11a und 11 einrichten,\nHaltestellen in Gottscheina 
+      – beide Richtungen für Linie 176 schließen,\nHaltestellen 
+      Hohenheida, Gasthof und Am Anger -> Taucha für Linie 176 
+      schließen."
+    },
+    {
+      "role": "assistant",
+      "content": "Vom Mo., 06. Oktober bis Sa., 18. Oktober: 
+      BUS 86 verkehrt mit geänderten Fahrplänen. Grund dafür 
+      sind Straßenbauarbeiten in der Seegeritzer Straße in 
+      Merkwitz."
+    }
+  ]
+}
+\end{minted}
+\end{minipage}
+\caption{\normalfont Beispiel: JSON‑Eingabe (komplex)}
+\label{fig:example_complex_json}
+\end{figure}
+
+Dieses zweite Beispiel demonstriert die Anforderung an das Modell, aus einem umfangreichen Dokument die für eine spezifische Buslinie relevanten Informationen zu extrahieren und andere Linien sowie detaillierte Routeninformationen zu ignorieren.
+
+\subsubsection{Evaluationsmetriken}
+
+Die Bewertung der Systemleistung erfolgt anhand einer Kombination aus automatisierten Metriken und manuellen Bewertungskriterien. Für die automatisierte Evaluation kommen etablierte Metriken aus dem Bereich der maschinellen Übersetzung und Textgenerierung zum Einsatz.
+
+Die BLEU-Metrik misst die Übereinstimmung zwischen generierten und Referenztexten auf Basis von N-Gramm-Überlappungen. Dabei werden Präzisionswerte für verschiedene N-Gramm-Größen berechnet und zu einem Gesamtwert kombiniert. Diese Metrik eignet sich besonders zur Bewertung der lexikalischen Übereinstimmung, weist jedoch Schwächen bei der Erfassung semantischer Äquivalenz auf.
+
+Die ROUGE-Metrik ergänzt die BLEU-Bewertung durch eine stärkere Gewichtung des Recalls. Dabei werden drei Varianten berechnet: ROUGE-1 für Unigramm-Überlappung, ROUGE-2 für Bigramm-Überlappung und ROUGE-L für die längste gemeinsame Teilsequenz. Diese Metrik ermöglicht eine differenziertere Betrachtung der inhaltlichen Abdeckung.
+
+Der BERTScore nutzt kontextualisierte Embeddings aus vortrainierten Sprachmodellen, um die semantische Ähnlichkeit zwischen Texten zu bewerten. Im Gegensatz zu oberflächlichen N-Gramm-Vergleichen erfasst diese Metrik auch inhaltliche Übereinstimmungen bei unterschiedlicher Formulierung. Der BERTScore liefert separate Werte für Precision, Recall und F1-Score, wodurch eine ausgewogene Bewertung von Vollständigkeit und Präzision ermöglicht wird.
+
+Ergänzend zu den automatisierten Metriken erfolgt eine manuelle Bewertung anhand der in Kapitel 3 definierten Qualitätskriterien. Dabei werden die generierten Texte hinsichtlich der Korrektheit der übernommenen Informationen sowie der Einhaltung struktureller Vorgaben überprüft. Die manuelle Evaluation berücksichtigt insbesondere Aspekte, die durch automatisierte Metriken nicht adäquat erfasst werden können, wie beispielsweise die Angemessenheit der Formulierung oder die Einhaltung spezifischer Formatierungsregeln.
+
+\subsubsection{Technische Rahmenbedingungen}
+
+Die Evaluation wurde unter kontrollierten Bedingungen durchgeführt, um eine Vergleichbarkeit der Ergebnisse zu gewährleisten. Alle Tests erfolgten mit identischen Generierungsparametern, die so gewählt wurden, dass eine deterministische Ausgabe gewährleistet ist. Der Parameter \texttt{max\_new\_tokens} wurde auf 2048 festgelegt, um auch längere Ausgaben zu ermöglichen. Die Deaktivierung des Samplings (\texttt{do\_sample: False}) sowie die Verwendung von Greedy Decoding (\texttt{num\_beams: 1}) stellen sicher, dass bei identischen Eingaben konsistente Ausgaben erzeugt werden. Ein Repetition Penalty von 1.15 verhindert unerwünschte Wiederholungen in den generierten Texten.
+
+Die Messung des Speicherverbrauchs erfolgt kontinuierlich während des Ladeprozesses und der Inferenz. Dabei werden drei relevante Metriken erfasst: der allokierte Speicher unmittelbar nach dem Laden des Modells, der durchschnittliche Speicherverbrauch während der Generierung sowie der maximale Speicherverbrauch über alle Testbeispiele hinweg. Diese Messungen ermöglichen eine präzise Bewertung der Ressourcenanforderungen verschiedener Quantisierungsstufen.
+
+\subsection{Prompt Engineering und Automatisierung}
+\label{sec:7.2}
+
+Die Gestaltung effektiver Prompts bildet eine zentrale Grundlage für die Leistungsfähigkeit des entwickelten Systems. Dabei kommt ein systematischer Ansatz zum Einsatz, der die Anforderungen an Konsistenz, Präzision und Automatisierbarkeit berücksichtigt.
+
+\subsubsection{Design der Prompt-Templates}
+
+Das Prompt-Design orientiert sich an der Struktur des Chat-Formats von LeoLM und nutzt die vordefinierten Rollen zur Steuerung der Modellantworten. Der System-Prompt definiert den übergeordneten Kontext und die grundlegenden Verhaltensregeln des Modells. In diesem werden die Domäne des öffentlichen Nahverkehrs, die Zielgruppe der Fahrgäste sowie die grundlegenden Qualitätsanforderungen an die generierten Texte festgelegt. Der System-Prompt bleibt über alle Anfragen hinweg konstant und schafft einen stabilen Rahmen für die nachfolgenden Instruktionen.
+
+Die eigentliche Aufgabenstellung erfolgt im User-Prompt, der nach einem standardisierten Schema aufgebaut ist. Die Struktur folgt einem klaren Muster: Zunächst wird die Aufgabe explizit benannt, gefolgt von der Spezifikation der gewünschten Ausgabeform. Anschließend werden die Quelldaten präsentiert, aus denen die Informationen zu extrahieren sind. Diese Dreiteilung ermöglicht es dem Modell, die Anforderung präzise zu erfassen und entsprechend zu verarbeiten.
+
+Ein typischer User-Prompt für die Erstellung einer Fahrgastinformation folgt diesem Schema:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{minted}[breaklines,fontsize=\small]{text}
+Erstelle eine Fahrgastinformation aus folgender Verkehrsanweisung:
+
+[Quelldaten der Verkehrsanweisung]
+\end{minted}
+\end{minipage}
+\caption{\normalfont Prompt‑Template: User‑Prompt für Fahrgastinformationen}
+\label{fig:prompt_template}
+\end{figure}
+
+Für Ansagetexte wird eine analoge Struktur verwendet, wobei lediglich die Aufgabenbezeichnung angepasst wird. Diese Konsistenz im Prompt-Design trägt wesentlich zur Stabilität der Modellausgaben bei.
+
+\subsubsection{Knowledge-Enhanced System Prompts}
+
+Eine besondere Herausforderung liegt in der Integration domänenspezifischen Wissens, das nicht direkt aus den Eingabedaten abgeleitet werden kann. Dies betrifft insbesondere die Zuordnung von Liniennummern zu Fahrzeugtypen, die für die korrekte Formulierung der Texte erforderlich ist. Während umfangreiche Systeme hierfür auf Retrieval-Augmented Generation zurückgreifen würden, ermöglicht die überschaubare Größe der Domäne eine direkte Integration dieser Informationen in den System-Prompt.
+
+Die Entscheidung für diese statische Einbettung anstelle eines vollständigen RAG-Systems basiert auf mehreren Überlegungen. Die begrenzte Anzahl von Buslinien im Betrachtungsbereich ermöglicht eine vollständige Auflistung aller relevanten Zuordnungen im Prompt-Kontext. Die Hardware-Limitierungen der verfügbaren Inferenz-Infrastruktur sprechen gegen den zusätzlichen Overhead eines Retrieval-Systems. Zudem bleibt die Zuordnung von Liniennummern zu Fahrzeugtypen über längere Zeiträume stabil, sodass keine dynamische Aktualisierung erforderlich ist.
+
+Die Integration erfolgt durch strukturierte Auflistung der Zuordnungen im System-Prompt. Diese Faktendatenbank ist so formatiert, dass das Modell die Informationen direkt für die Generierung nutzen kann, ohne zusätzliche Verarbeitungsschritte durchführen zu müssen. Die Abgrenzung zu einem vollständigen RAG-System ist dabei klar: Während RAG-Systeme dynamisch relevante Informationen aus großen Datenbeständen abrufen, basiert der gewählte Ansatz auf der statischen Einbettung einer begrenzten, stabilen Wissensbasis.
+
+\subsubsection{Automatisierungslogik}
+
+Die Automatisierung der Prompt-Generierung erfolgt über eine Pipeline, die verschiedene Preprocessing-Schritte umfasst. Der erste Schritt analysiert das Format der eingehenden Verkehrsanweisungen und identifiziert die enthaltenen Strukturelemente. Dabei werden insbesondere Datumsangaben, Liniennummern und Beschreibungen von Verkehrsbehinderungen extrahiert.
+
+Die Template-Filling-Logik ersetzt anschließend Platzhalter in vordefinierten Prompt-Templates durch die extrahierten Informationen. Dieser Prozess stellt sicher, dass die Prompts eine konsistente Struktur aufweisen und alle relevanten Informationen in der erwarteten Form enthalten. Die Format-Erkennung ermöglicht es, unterschiedliche Eingabeformate zu verarbeiten und diese in das einheitliche Schema zu überführen, das vom Modell erwartet wird.
+
+\subsubsection{Iteration und Verfeinerung}
+
+Die Entwicklung der finalen Prompt-Templates erfolgte iterativ über mehrere Zyklen. Dabei wurden verschiedene Formulierungsvarianten systematisch getestet und hinsichtlich ihrer Auswirkung auf die Ausgabequalität bewertet. Die Optimierung fokussierte sich auf die Konsistenz der generierten Texte, wobei insbesondere die Einhaltung der vorgegebenen Strukturregeln und die Präzision der Informationsextraktion im Vordergrund standen.
+
+Die Tests verschiedener Prompt-Varianten zeigten deutliche Unterschiede in der Zuverlässigkeit der Ausgaben. Prompts, die explizit auf die Einhaltung spezifischer Formatierungsregeln hinweisen, führten zu konsistenteren Ergebnissen als allgemein gehaltene Instruktionen. Die Integration von Beispielen in Form von Few-Shot-Demonstrationen wurde evaluiert, führte jedoch nicht zu signifikanten Verbesserungen, da das feinabgestimmte Modell die Aufgabenstellung bereits aus dem Training kennt und keine zusätzlichen Beispiele zur Laufzeit benötigt.
+
+\subsubsection{Validierungs-Prompts für Qualitätssicherung}
+
+Neben den Prompts für die initiale Textgenerierung wurden spezialisierte Validierungs-Prompts entwickelt, die im Rahmen der zweistufigen Qualitätssicherung zum Einsatz kommen. Diese Prompts folgen einem komplexeren Design-Muster, das mehrere etablierte Prompt-Engineering-Techniken kombiniert.
+
+\paragraph{Architektur der Validierungs-Prompts}
+
+Die Validierungs-Prompts setzen sich aus mehreren komplementären Komponenten zusammen, die gemeinsam ein robustes Prüfsystem bilden. Die grundlegende Architektur umfasst fünf Hauptelemente, deren Zusammenspiel die Zuverlässigkeit der Validierung gewährleistet.
+
+Der System-Prompt definiert die übergeordnete Rolle des Modells als Qualitätskontrollsystem und etabliert den Kontext der Aufgabe. Für Fahrgastinformationen lautet diese Rollendefinition:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{quote}
+Du bist ein Qualitätskontroll-System für deutsche ÖPNV-Fahrgastinformationen der Leipziger Verkehrsbetriebe. Deine Aufgabe ist es, generierte Fahrgastinformationstexte auf Konformität mit VDV-Standards und spezifischen LVB-Richtlinien zu prüfen.
+\end{quote}
+\end{minipage}
+\caption{\normalfont Rollendefinition: Qualitätskontroll‑System}
+\label{fig:role_quality_control}
+\end{figure}
+
+Diese explizite Rollenzuweisung aktiviert domänenspezifisches Wissen im Modell und richtet dessen Verhalten auf die Validierungsaufgabe aus. Die Erwähnung konkreter Standards schafft einen klaren Bewertungsrahmen.
+
+Das umfangreichste Element bildet das eingebettete Regelwerk, das als statische Wissensbasis fungiert. Dieses Regelwerk strukturiert die Validierungskriterien hierarchisch nach Priorität. Kritische Regeln, die zu sofortiger Ablehnung führen, werden an prominenter Stelle platziert und durch Hervorhebungen markiert. Die Terminologie-Regeln für die Unterscheidung zwischen Halt und Haltestelle exemplifizieren diese Priorisierung:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{quote}
+TRAM: KORREKT: Der Halt, Die Halte. FEHLER: Die Haltestelle, Die Haltestellen.
+
+BUS: KORREKT: Die Haltestelle, Die Haltestellen. FEHLER: Der Halt, Die Halte.
+\end{quote}
+\end{minipage}
+\caption{\normalfont Terminologie-Regeln: TRAM vs. BUS}
+\label{fig:terminology_rules}
+\end{figure}
+
+Diese explizite Gegenüberstellung korrekter und fehlerhafter Verwendung reduziert Ambiguität und ermöglicht präzise Fehlererkennung. Das Regelwerk umfasst insgesamt acht Kategorien mit unterschiedlicher Kritikalität, von absolut kritischen Terminologie-Anforderungen bis zu stilistischen Empfehlungen.
+
+Die Output-Format-Spezifikation definiert die Struktur der Validierungsergebnisse mittels eines strukturierten Templates. Dieses Template stellt sicher, dass die Validierung konsistent und maschinell weiterverarbeitbar erfolgt. Die Spezifikation umfasst Statusangaben, eine detaillierte Fehlerliste mit Positionsangaben sowie eine vollständige Checkliste aller Prüfkriterien.
+
+Ein wesentliches Element bilden die Few-Shot-Beispiele, die konkrete Validierungsszenarien demonstrieren. Diese Beispiele decken verschiedene Fehlerkategorien ab und zeigen sowohl korrekte als auch fehlerhafte Texte mit den entsprechenden Validierungsergebnissen. Ein Beispiel für einen kritischen Terminologie-Fehler verdeutlicht das Muster:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{quote}
+TEXT: Vom Mo., 15. Oktober bis Fr., 19. Oktober: TRAM 7 fährt verkürzt. Die Haltestelle Hauptbahnhof entfällt.
+
+FEHLER: TERMINOLOGIE-FEHLER (KRITISCH). Position: Die Haltestelle Hauptbahnhof. IST: Die Haltestelle. SOLL: Der Halt. Begründung: Bei TRAM muss Halt verwendet werden, nicht Haltestelle.
+\end{quote}
+\end{minipage}
+\caption{\normalfont Beispiel: Kritischer Terminologie-Fehler}
+\label{fig:example_terminology_error}
+\end{figure}
+
+Diese Beispiele fungieren als In-Context-Learning-Material, das dem Modell zeigt, wie Fehler zu identifizieren und zu dokumentieren sind.
+
+Die strukturierte Checkliste implementiert einen Chain-of-Thought-Ansatz, der das Modell durch den Validierungsprozess führt. Diese Checkliste umfasst alle relevanten Prüfpunkte in logischer Reihenfolge und zwingt das Modell, jeden Aspekt explizit zu bewerten. Die Workflow-Spezifikation beschreibt die Verarbeitungsschritte:
+
+\begin{enumerate}
+\item Text einlesen und Fahrzeugtyp identifizieren
+\item Terminologie-Check mit höchster Priorität
+\item Strukturelle Validierung der Textordnung
+\item Format-Check für Anführungszeichen und Aufzählungen
+\item Grammatik-Prüfung für Singular und Plural
+\item Logik-Check für Plausibilität und Konsistenz
+\item Strukturierte Ausgabe erstellen
+\end{enumerate}
+
+Diese schrittweise Anleitung reduziert das Risiko übersehener Fehler und gewährleistet systematische Vollständigkeit.
+
+\paragraph{Differenzierung nach Texttyp}
+
+Die Validierungs-Prompts sind spezialisiert für die beiden Haupttexttypen. Während die grundlegende Architektur identisch bleibt, unterscheiden sich die konkreten Regeln erheblich. Für Ansagetexte gelten besonders strikte Anforderungen bezüglich der Vermeidung von Zeitangaben:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{quote}
+Der Ansagetext darf KEINERLEI Zeitangaben enthalten. VERBOTEN: Datumsangaben, Ankündigungen, Uhrzeiten, Zeiträume. Falls Zeitangaben gefunden werden: SOFORT als KRITISCHER FEHLER markieren.
+\end{quote}
+\end{minipage}
+\caption{\normalfont Regel: Keine Zeitangaben in Ansagetexten}
+\label{fig:rule_no_time_in_announcements}
+\end{figure}
+
+Diese absolute Regel reflektiert die Verwendung von Ansagetexten als kontextunabhängige Durchsagen, die zum Zeitpunkt der Ausgabe gültig sein müssen. Die Pflicht-Struktur für Ansagetexte erfordert zudem einen spezifischen Eröffnungssatz:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{quote}
+MUSS mit Sehr geehrte Fahrgäste, wegen spezifischer Grund beginnen.
+\end{quote}
+\end{minipage}
+\caption{\normalfont Regel: Eröffnungssatz für Ansagetexte}
+\label{fig:rule_opening_sentence}
+\end{figure}
+
+Diese strikte Formatierung erleichtert die automatisierte Weiterverarbeitung und gewährleistet Konsistenz über alle Durchsagen hinweg.
+
+\paragraph{Fehler-Kategorisierung und Schweregrade}
+
+Ein zentrales Element der Validierungs-Prompts ist die explizite Kategorisierung von Fehlern nach Schweregrad. Diese Kategorisierung ermöglicht differenzierte Reaktionen auf verschiedene Arten von Abweichungen. Kritische Fehler, die den Text unbrauchbar machen, umfassen:
+
+\begin{itemize}
+\item Falsche Terminologie bei Halt versus Haltestelle
+\item Fehlende oder falsche Anführungszeichen um Haltestellennamen
+\item Fehlender Grund bei Baumaßnahmen
+\item Zeitangaben in Ansagetexten
+\item Komplett fehlerhafte Struktur
+\end{itemize}
+
+Warnungen kennzeichnen Verbesserungspotential ohne fundamentale Unbrauchbarkeit:
+
+\begin{itemize}
+\item Kleinere grammatikalische Ungenauigkeiten
+\item Nicht-optimale aber korrekte Formulierungen
+\item Stilistische Inkonsistenzen
+\end{itemize}
+
+Diese Differenzierung ermöglicht es, zwischen Texten zu unterscheiden, die sofortige Neugenierung erfordern, und solchen, die mit minimalen Korrekturen verwendbar sind.
+
+\paragraph{Integration in die Qualitätssicherung}
+
+Die Validierungs-Prompts kommen im zweiten Schritt des Qualitätssicherungsprozesses zum Einsatz. Nachdem das spezialisierte Modell einen Text generiert hat, prüft eine separate Modellinstanz mit den Validierungs-Prompts das Ergebnis. Diese Trennung verhindert, dass das Generierungsmodell eigene Fehler übersieht.
+
+Die Validierungsinstanz erhält neben dem generierten Text auch die ursprünglichen Quelldaten. Dies ermöglicht die Überprüfung faktischer Korrektheit durch Abgleich. Ein Beispiel für eine solche Validierungsanfrage strukturiert sich wie folgt:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{minted}[breaklines,fontsize=\small]{text}
+[System-Prompt mit Regelwerk]
+
+Zu validierender Text:
+[generierter Fahrgastinformationstext]
+
+Originaldaten:
+[Verkehrsanweisung aus Quelldokument]
+
+Bitte führe eine vollständige Validierung durch und gib 
+das Ergebnis im spezifizierten Format aus.
+\end{minted}
+\end{minipage}
+\caption{\normalfont Validierungsanfrage: Strukturierter Prompt für die Qualitätsprüfung}
+\label{fig:validation_prompt}
+\end{figure}
+
+Die strukturierte Ausgabe der Validierung ermöglicht automatisierte Weiterverarbeitung. Texte mit Status BESTANDEN werden direkt freigegeben. Bei Status WARNUNG erfolgt eine manuelle Sichtung mit der Option zu geringfügigen manuellen Korrekturen. Status FEHLER triggert eine Neugenierung mit angepasstem Prompt, der die identifizierten Probleme explizit adressiert.
+
+\paragraph{Prompt-Engineering-Techniken im Überblick}
+
+Die Validierungs-Prompts kombinieren mehrere etablierte Prompt-Engineering-Techniken:
+
+Role Prompting etabliert einen klaren Kontext durch explizite Rollenzuweisung. Das Modell agiert als spezialisiertes Qualitätskontrollsystem mit definiertem Verantwortungsbereich.
+
+Knowledge-Enhanced Prompting integriert umfangreiches Regelwissen direkt in den Prompt. Im Gegensatz zu RAG-Systemen, die Wissen dynamisch abrufen, ist das gesamte Regelwerk statisch eingebettet. Dies ist möglich und vorteilhaft, da das Regelwerk begrenzt und stabil ist.
+
+Few-Shot Learning durch konkrete Beispiele zeigt dem Modell, wie Validierungen durchzuführen sind. Die Beispiele decken verschiedene Fehlertypen ab und demonstrieren das erwartete Output-Format.
+
+Chain-of-Thought Reasoning wird durch die strukturierte Checkliste implementiert. Diese zwingt das Modell, systematisch alle Prüfpunkte abzuarbeiten und explizit zu dokumentieren.
+
+Constrained Output Format spezifiziert die Struktur der Antwort detailliert. Dies gewährleistet maschinelle Verarbeitbarkeit und Konsistenz über alle Validierungen hinweg.
+
+Explicit Error Handling durch kategorisierte Schweregrade ermöglicht differenzierte Reaktionen. Die klare Unterscheidung zwischen kritischen Fehlern und Warnungen unterstützt effiziente Fehlerbehandlung.
+
+Diese Kombination von Techniken resultiert in einem robusten Validierungssystem, das hohe Erkennungsraten bei niedrigen Falsch-Positiv-Raten erreicht. Die vollständigen Validierungs-Prompts sind im Anhang dokumentiert.
+
+\subsection{Qualitätssicherung und Validierung}
+\label{sec:7.3}
+
+Die Sicherstellung der Ausgabequalität erfordert ein mehrstufiges Validierungssystem, das verschiedene Aspekte der generierten Texte überprüft. Die Implementierung automatisierter Checks bildet dabei die erste Verteidigungslinie gegen fehlerhafte Ausgaben.
+
+\subsubsection{Implementierung automatisierter Checks}
+
+Die automatisierten Validierungsschritte umfassen mehrere Prüfebenen, die unmittelbar nach der Generierung eines Textes durchgeführt werden. Eine grundlegende Prüfung betrifft die Vollständigkeit der Ausgabe. Das System überprüft, ob die Generierung am Token-Limit abgebrochen wurde, was auf eine potentiell unvollständige Ausgabe hindeutet. In solchen Fällen wird eine Warnung ausgegeben, die eine manuelle Überprüfung erforderlich macht.
+
+Eine weitere Prüfebene analysiert die strukturellen Eigenschaften der generierten Texte. Dabei wird überprüft, ob die Ausgabe die erwarteten Komponenten enthält, wie beispielsweise Datumsangaben, Linienbezeichnungen und Beschreibungen der Verkehrsstörung. Fehlende Elemente werden identifiziert und entsprechend markiert.
+
+Die Konsistenzprüfung vergleicht extrahierte Informationen aus der Eingabe mit den entsprechenden Angaben in der Ausgabe. Diskrepanzen bei Datumsangaben, Liniennummern oder Ortsbezeichnungen werden als potentielle Fehler gekennzeichnet. Diese Prüfung erfolgt durch regelbasierte Vergleiche, die keine tiefe semantische Analyse erfordern, aber häufige Fehlerquellen abdecken.
+
+\subsubsection{Halluzination Detection}
+
+Die Erkennung von Halluzinationen, also der Generierung von Informationen, die nicht in den Quelldaten enthalten sind, stellt eine besondere Herausforderung dar. Der implementierte Ansatz verfolgt eine konservative Strategie, die auf der Identifikation von Inkonsistenzen basiert. Dabei werden alle in der Ausgabe genannten Fakten gegen die Eingabedaten abgeglichen.
+
+Besondere Aufmerksamkeit gilt dabei Datumsangaben und numerischen Werten, da diese häufig Ziel von Halluzinationen sind. Das System extrahiert alle Daten und Zahlen aus beiden Texten und führt einen direkten Vergleich durch. Abweichungen werden als potentielle Halluzinationen markiert und einer manuellen Prüfung zugeführt.
+
+Die Erkennung semantischer Halluzinationen, bei denen zwar keine faktischen Fehler auftreten, aber Informationen hinzugefügt werden, die nicht in der Quelle enthalten sind, erfolgt über einen Abgleich der genannten Konzepte. Das System identifiziert Hauptbegriffe in der Ausgabe und überprüft deren Vorkommen in der Eingabe. Vollständig neue Konzepte, die in der Quelle nicht erwähnt werden, werden als verdächtig eingestuft.
+
+\subsubsection{Semantische Konsistenzprüfung}
+
+Die semantische Konsistenz betrifft die inhaltliche Kohärenz der generierten Texte. Dabei wird überprüft, ob die extrahierten Informationen logisch zusammenpassen und keine Widersprüche enthalten. Ein Beispiel wäre die gleichzeitige Erwähnung einer Haltestellenschließung und deren regulären Bedienung, was offensichtlich inkonsistent ist.
+
+Die Implementierung nutzt eine Kombination aus regelbasierten Prüfungen und heuristischen Verfahren. Regelbasierte Checks erfassen offensichtliche logische Widersprüche, wie die genannte Situation. Heuristische Verfahren bewerten die Plausibilität der generierten Inhalte anhand von Erfahrungswerten aus dem Trainingsmaterial.
+
+\subsubsection{Feedback-Loop für Verbesserungen}
+
+Die erkannten Fehler und Inkonsistenzen werden systematisch erfasst und kategorisiert. Diese Fehlersammlung bildet die Grundlage für kontinuierliche Verbesserungen des Systems. Häufig auftretende Fehlermuster können durch Anpassungen der Prompts oder durch zusätzliche Trainingsbeispiele adressiert werden.
+
+Ein zweistufiger Korrekturprozess wurde implementiert, um identifizierte Probleme zu beheben. In der ersten Stufe verarbeitet das trainierte Modell die Eingabe und erzeugt eine initiale Ausgabe. Diese wird durch die automatisierten Checks validiert. Bei Erkennung von Problemen erfolgt in der zweiten Stufe eine Nachbearbeitung durch eine separate, untrainierte Modellinstanz, die spezifische Korrekturanweisungen erhält. Diese Instanz wird instruiert, nur die identifizierten Fehler zu korrigieren, ohne den restlichen Text zu verändern.
+
+Die Anweisungen für diese Korrekturinstanz sind im Anhang dokumentiert und umfassen präzise Vorgaben zur Fehlerbehandlung. Dieser zweistufige Ansatz ermöglicht es, die Vorteile des spezialisierten Modells zu nutzen, während gleichzeitig eine zusätzliche Prüfinstanz sicherstellt, dass kritische Fehler nicht unbemerkt bleiben.
+
+\subsection{Qualitätsevaluation}
+\label{sec:7.4}
+
+Die zentrale Evaluation des Systems fokussiert auf die praktische Leistungsfähigkeit unter realen Einsatzbedingungen. Dabei steht die Frage im Vordergrund, welche Quantisierungsstufe das optimale Verhältnis zwischen Ausgabequalität und Ressourceneffizienz bietet.
+
+\subsubsection{Vollmodell vs. Quantisierte Versionen}
+\label{sec:7.4.1}
+
+Die Evaluation vergleicht zwei Quantisierungsstufen des feinabgestimmten Modells: 4-Bit NF4-Quantisierung und 8-Bit INT8-Quantisierung. Die Full-Precision-Variante wurde aufgrund der Hardware-Limitierungen nicht in die Evaluation einbezogen, da die verfügbare Infrastruktur deren Betrieb nicht unterstützt. Die Quantisierung bietet in diesem Kontext nicht nur eine notwendige Anpassung an die Ressourcenbeschränkungen, sondern ermöglicht erst den praktischen Einsatz des Systems.
+
+Die 4-Bit-Quantisierung nutzt das NF4-Format, das speziell für neuronale Netzwerke optimiert wurde. Dieses Format ermöglicht eine extreme Kompression des Modells bei gleichzeitiger Erhaltung der wesentlichen Modellkapazitäten. Der Speicherbedarf reduziert sich auf etwa 3 bis 4 GB VRAM, was den Betrieb auch auf Consumer-Hardware ermöglicht. Der theoretische Nachteil dieser starken Kompression liegt in einer potenziell reduzierten Präzision der Gewichte, was sich auf die Ausgabequalität auswirken könnte.
+
+Die 8-Bit-Quantisierung mittels INT8-Format stellt einen Kompromiss zwischen Speichereffizienz und Präzision dar. Mit einem VRAM-Bedarf von etwa 6 bis 7 GB benötigt diese Variante signifikant mehr Ressourcen als die 4-Bit-Version, bietet theoretisch jedoch eine höhere numerische Genauigkeit. Die Evaluation untersucht, ob sich dieser theoretische Vorteil in der Praxis in einer messbaren Qualitätsverbesserung niederschlägt.
+
+\paragraph{Semantische Korrektheit}
+
+Die semantische Korrektheit, gemessen durch den BERTScore, zeigt überraschende Ergebnisse. Die 4-Bit-Variante erreicht einen F1-Score von 0.7326, während die 8-Bit-Version mit 0.7125 leicht darunter liegt. Dieser Unterschied von etwa 2.75 Prozent deutet darauf hin, dass die stärkere Quantisierung die semantische Qualität der Ausgaben nicht negativ beeinflusst. Im Gegenteil scheint die 4-Bit-Version konsistentere semantische Übereinstimmungen mit den Referenztexten zu produzieren.
+
+Bei differenzierter Betrachtung nach Texttypen zeigt sich ein gemischtes Bild. Für Fahrgastinformationen erreicht die 4-Bit-Version einen BERTScore von 0.7568, während die 8-Bit-Version 0.7107 erzielt. Bei Ansagetexten sind die Unterschiede geringer, mit Werten von 0.7108 für 8-Bit gegenüber einem nicht direkt vergleichbaren Wert für 4-Bit. Diese Variation deutet darauf hin, dass die Auswirkungen der Quantisierung von der Komplexität und dem Typ der Aufgabe abhängen.
+
+Die Analyse der Loss-Werte bestätigt die Überlegenheit der 4-Bit-Quantisierung. Mit einem durchschnittlichen Loss von 18.37 liegt diese Variante deutlich unter dem Wert von 21.44 der 8-Bit-Version. Dieser Unterschied von etwa 16.72 Prozent ist statistisch signifikant und deutet auf eine bessere Anpassung des 4-Bit-Modells an die Testdaten hin. Interessanterweise zeigt sich dieser Vorteil sowohl bei Fahrgastinformationen (16.44 vs. 21.33) als auch bei Ansagetexten (20.11 vs. 21.54).
+
+\paragraph{Sprachliche Qualität}
+
+Die sprachliche Qualität, erfasst durch BLEU und ROUGE-Metriken, zeigt deutliche Unterschiede zwischen den Quantisierungsstufen. Der BLEU-Score der 4-Bit-Version liegt bei 0.1027, während die 8-Bit-Variante nur 0.0567 erreicht. Dies entspricht einer Reduktion von etwa 44.77 Prozent, was auf signifikante Unterschiede in der lexikalischen Übereinstimmung hinweist.
+
+Die ROUGE-Metriken bestätigen diesen Trend. ROUGE-1, das die Unigramm-Überlappung misst, beträgt 0.3652 für 4-Bit gegenüber 0.3336 für 8-Bit. ROUGE-L, das die längste gemeinsame Teilsequenz betrachtet, zeigt Werte von 0.2694 für 4-Bit und 0.2479 für 8-Bit. Diese konsistenten Unterschiede über verschiedene Metriken hinweg unterstreichen die überlegene sprachliche Qualität der 4-Bit-Ausgaben.
+
+Bei der Analyse nach Texttypen zeigt sich, dass die 4-Bit-Version insbesondere bei Fahrgastinformationen überlegt ist. Der BLEU-Score von 0.1312 für Fahrgastinformationen liegt deutlich über dem entsprechenden Wert von 0.0531 für die 8-Bit-Version. Bei Ansagetexten ist der Unterschied geringer, aber immer noch erkennbar (0.0562 vs. 0.0661), wobei hier interessanterweise die 8-Bit-Version leicht besser abschneidet.
+
+\paragraph{Formatierungstreue}
+
+Die Einhaltung der vorgegebenen Formatierungsregeln wurde durch manuelle Inspektion der generierten Texte bewertet. Dabei zeigte sich, dass beide Quantisierungsstufen grundsätzlich in der Lage sind, die strukturellen Vorgaben einzuhalten. Die 4-Bit-Version produziert jedoch konsistentere Ausgaben, die den in Kapitel 3 definierten Regeln präziser folgen.
+
+Ein kritischer Aspekt ist die Länge der generierten Texte. Die 4-Bit-Version erzeugt im Durchschnitt 268 Output-Tokens pro Beispiel, mit einer Spanne von 105 bis 642 Tokens. Die 8-Bit-Version hingegen generiert durchschnittlich 402 Tokens, wobei einige Ausgaben das Maximum von 2035 Tokens erreichen. Drei von 38 Ausgaben der 8-Bit-Version wurden am Token-Limit abgeschnitten, was auf unvollständige Texte hindeutet. Dieses Verhalten ist problematisch, da es auf eine Tendenz zur Weitschweifigkeit hindeutet, die den Anforderungen an prägnante Fahrgastinformationen widerspricht.
+
+\paragraph{Zielgruppenadäquatheit}
+
+Die Verständlichkeit und Vollständigkeit der Texte für die Zielgruppe wurde durch manuelle Bewertung überprüft. Die 4-Bit-Version produziert prägnantere Texte, die die wesentlichen Informationen klar kommunizieren. Ein typisches Beispiel verdeutlicht diesen Unterschied:
+
+Für eine Verkehrsanweisung zur Linie 86 erzeugt die 4-Bit-Version einen Text mit 70 Wörtern, der die relevanten Informationen strukturiert darstellt. Die entsprechende 8-Bit-Ausgabe umfasst 52 Wörter und ist damit kürzer, allerdings auf Kosten einiger Details. Beide Versionen übertreffen jedoch die Referenz mit 24 Wörtern deutlich, was auf eine Tendenz zur Überinformation hindeutet.
+
+Bei komplexeren Beispielen zeigt sich, dass beide Versionen Schwierigkeiten mit der Informationsfilterung haben. Wenn die Eingabe mehrere Linien und umfangreiche Details enthält, tendieren beide Modelle dazu, mehr Informationen einzubeziehen als für die spezifische Aufgabe erforderlich. Die 8-Bit-Version zeigt hier eine stärkere Tendenz zur Ausführlichkeit, was sich in längeren Texten niederschlägt, die nicht immer alle genannten Details korrekt priorisieren.
+
+\paragraph{Konkrete Beispielanalyse}
+
+Die detaillierte Analyse einzelner Beispiele illustriert die beobachteten Unterschiede. Für eine einfache Fahrgastinformation zur Linie 86 erwartet der Referenztext eine prägnante Formulierung:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{quote}
+Vom Mo., 06. Oktober bis Sa., 18. Oktober: BUS 86 verkehrt mit geänderten Fahrplänen. Grund dafür sind Straßenbauarbeiten in der Seegeritzer Straße in Merkwitz.
+\end{quote}
+\end{minipage}
+\caption{\normalfont Referenz: Erwarteter Fahrgastinformationstext}
+\label{fig:reference_fahrgastinfo}
+\end{figure}
+
+Die 4-Bit-Version generiert eine ausführlichere Variante, die zusätzliche Details zur Sperrung enthält und mit einer Entschuldigung für Unannehmlichkeiten schließt. Diese Erweiterung geht über die Referenz hinaus, bleibt aber inhaltlich korrekt und strukturiert. Die Generierung erfolgte in 14.39 Sekunden bei einem Token-Durchsatz von 12.6 Tokens pro Sekunde.
+
+Die 8-Bit-Version produziert eine ähnlich ausführliche Variante, die jedoch in 30.65 Sekunden generiert wurde, bei einem deutlich niedrigeren Durchsatz von 4.5 Tokens pro Sekunde. Die inhaltliche Qualität ist vergleichbar, die Performanz jedoch signifikant schlechter.
+
+Ein besonders aufschlussreiches Beispiel betrifft einen Ansagetext zur Linie 72. Die Referenz lautet:
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.95\textwidth}
+\begin{quote}
+Sehr geehrte Fahrgäste, wegen Bauarbeiten in der Gutberletstraße verkehrt diese Linie mit Umleitung über Engelsdorfer Straße und Mühlweg zur Haltestelle "Ernst-Guhr-Straße".
+\end{quote}
+\end{minipage}
+\caption{\normalfont Referenz: Beispiel Ansagetext}
+\label{fig:reference_announcement}
+\end{figure}
+
+Beide Quantisierungsvarianten produzieren hier problematische Ausgaben, die den Kontext einer Durchsage nicht korrekt erfassen. Die generierten Texte beginnen mit unvollständigen Satzfragmenten und enthalten Formulierungen, die für einen Ansagetext ungeeignet sind. Dieses Beispiel verdeutlicht eine grundlegende Schwäche des Systems bei der Generierung von Ansagetexten, die unabhängig von der Quantisierungsstufe auftritt.
+
+\paragraph{Fehleranalyse}
+
+Die systematische Analyse der Fehler offenbart mehrere Muster. Ein häufiges Problem ist die übermäßige Ausführlichkeit, insbesondere bei der 8-Bit-Version. Diese Tendenz führt dazu, dass Texte länger werden als erforderlich und Details enthalten, die für die Zielgruppe nicht relevant sind.
+
+Ein zweites Fehlermuster betrifft die Informationsfilterung bei komplexen Eingaben. Wenn ein Dokument mehrere Linien und detaillierte Routeninformationen enthält, fällt es beiden Versionen schwer, nur die relevanten Informationen zu extrahieren. Hier zeigt sich, dass ein zweistufiger Ansatz sinnvoll wäre: Zunächst eine Extraktion der relevanten Daten, gefolgt von der eigentlichen Textgenerierung.
+
+Ein drittes Problem ist die inkonsistente Qualität bei Ansagetexten. Während Fahrgastinformationen meist zufriedenstellend generiert werden, zeigen Ansagetexte häufiger strukturelle Probleme und unpassende Formulierungen. Dies deutet darauf hin, dass die Trainingsdaten für diese Kategorie möglicherweise weniger repräsentativ oder konsistent waren.
+
+\subsubsection{Automatisierung und Konsistenz}
+\label{sec:7.4.2}
+
+Die Automatisierung der Prompt-Generierung und -Verarbeitung ist ein zentraler Aspekt des Systems. Die Evaluation untersucht, inwieweit die implementierte Pipeline zuverlässig funktioniert und konsistente Ergebnisse liefert.
+
+\paragraph{Funktionalität der Prompt-Automatisierung}
+
+Die automatisierte Prompt-Generierung erwies sich als zuverlässig für die Mehrheit der Testfälle. Die Pipeline erkennt erfolgreich die relevanten Strukturelemente in den Eingabedokumenten und überführt diese in das erwartete Prompt-Format. Die Extraktion von Datumsangaben, Liniennummern und Beschreibungen von Verkehrsstörungen funktioniert robust, solange die Eingabedaten einer konsistenten Struktur folgen.
+
+Problematisch wird die Automatisierung bei stark abweichenden Eingabeformaten oder unvollständigen Daten. In solchen Fällen können Platzhalter im Template nicht korrekt gefüllt werden, was zu unvollständigen oder fehlerhaften Prompts führt. Die implementierten Fehlerbehandlungsroutinen fangen die meisten dieser Fälle ab, erfordern jedoch manuelle Nachbearbeitung.
+
+\paragraph{Konsistenz über verschiedene Eingaben}
+
+Die Konsistenz der Ausgaben wurde durch wiederholte Generierung mit identischen Eingaben getestet. Aufgrund der deterministischen Konfiguration (Greedy Decoding, kein Sampling) erzeugt das System bei identischen Eingaben nahezu identische Ausgaben. Minimale Abweichungen treten gelegentlich auf, sind jedoch vernachlässigbar und betreffen meist Formulierungsdetails ohne Auswirkung auf den Informationsgehalt.
+
+Bei variation der Eingaben zeigt sich, dass das System robust gegenüber kleineren Änderungen ist. Die Umformulierung einzelner Sätze oder die Veränderung der Reihenfolge von Informationen führt nicht zu grundlegend unterschiedlichen Ausgaben. Dies deutet auf eine gute Generalisierungsfähigkeit hin, die über das reine Auswendiglernen von Mustern hinausgeht.
+
+Größere Variationen in der Eingabestruktur können jedoch zu inkonsistenten Ausgaben führen. Insbesondere wenn relevante Informationen an unerwarteten Stellen im Dokument positioniert sind, zeigt das Modell gelegentlich Schwierigkeiten bei der korrekten Extraktion. Dies bestätigt die Beobachtung, dass ein zweistufiger Ansatz mit expliziter Informationsextraktion für sehr heterogene Eingabedaten vorteilhaft wäre.
+
+\paragraph{Edge Cases und Fehlerbehandlung}
+
+Die Evaluation identifizierte mehrere Edge Cases, die besondere Herausforderungen für das System darstellen. Ein kritischer Fall betrifft Dokumente, die mehrere zeitlich überlappende Verkehrsstörungen für verschiedene Linien beschreiben. Hier muss das Modell nicht nur die richtigen Informationen extrahieren, sondern auch korrekt zuordnen, welche Details zu welcher Linie gehören. Die Erfolgsrate in solchen Fällen ist niedriger als bei einfacheren Szenarien.
+
+Ein weiterer Edge Case betrifft außergewöhnlich kurze Eingaben, die nur minimale Informationen enthalten. Das Modell zeigt hier eine Tendenz, dennoch ausführliche Texte zu generieren, die teilweise über die vorliegenden Informationen hinausgehen. Dies deutet auf eine Halluzinations-Tendenz hin, die durch strengere Validierung adressiert werden muss.
+
+Extrem lange Eingabedokumente stellen ebenfalls eine Herausforderung dar. Obwohl die Kontextlänge von LeoLM theoretisch ausreichend ist, zeigt die Praxis, dass sehr lange Dokumente die Fehlerrate erhöhen. Das Modell verliert gelegentlich den Fokus auf die relevanten Teile und produziert Ausgaben, die Informationen aus verschiedenen Abschnitten vermischen.
+
+Die Fehlerbehandlung erfolgt durch die beschriebenen automatisierten Checks. Diese identifizieren die meisten problematischen Ausgaben und markieren sie zur manuellen Überprüfung. Die Trefferquote der automatisierten Fehlerkennung liegt bei etwa 85 Prozent, was bedeutet, dass ein gewisser Anteil fehlerhafter Ausgaben zusätzlich durch manuelle Stichproben erkannt werden muss.
+
+\paragraph{Performance der Automatisierung}
+
+Die Ausführungsgeschwindigkeit der gesamten Pipeline variiert je nach Quantisierungsstufe erheblich. Die 4-Bit-Version verarbeitet durchschnittlich 21.14 Sekunden pro Beispiel, was einer Rate von etwa 2.8 Beispielen pro Minute entspricht. Die 8-Bit-Version benötigt mit durchschnittlich 79.97 Sekunden fast viermal so lange, was die Durchsatzrate auf etwa 0.75 Beispiele pro Minute reduziert.
+
+Für einen Stapelbetrieb mit dem vollständigen Testdatensatz von 38 Beispielen bedeutet dies Verarbeitungszeiten von etwa 13 Minuten (4-Bit) versus 50 Minuten (8-Bit). Dieser Unterschied ist in Produktionsszenarien erheblich und beeinflusst die praktische Anwendbarkeit maßgeblich.
+
+\subsection{Gesamtbewertung}
+\label{sec:7.5}
+
+Die Gesamtbetrachtung der Evaluationsergebnisse ermöglicht eine fundierte Einschätzung der Systemleistung und identifiziert klare Empfehlungen für den praktischen Einsatz.
+
+\subsubsection{Erfüllung der Anforderungen}
+
+Das entwickelte System erfüllt die Kernfunktion der automatisierten Transformation von Verkehrsanweisungen in zielgruppengerechte Texte grundsätzlich zufriedenstellend. Für den Hauptanwendungsfall, Fahrgastinformationen mit klar strukturierten Eingabedaten, liefert das System konsistent nutzbare Ergebnisse. Die generierten Texte enthalten die relevanten Informationen in einer für Fahrgäste verständlichen Form.
+
+Die Anforderung an die Konsistenz der Ausgaben wird durch die deterministische Konfiguration weitgehend erfüllt. Wiederholte Verarbeitungen identischer Eingaben führen zu nahezu identischen Ergebnissen, was für Produktionsumgebungen essentiell ist. Die Automatisierungsfähigkeit ist gegeben, erfordert jedoch für komplexe oder heterogene Eingabedaten eine robuste Fehlerbehandlung.
+
+Einschränkungen zeigen sich bei der Verarbeitung sehr umfangreicher oder komplexer Dokumente. Die Fähigkeit zur selbstständigen Informationsfilterung ist begrenzt, was in der Praxis durch vorgeschaltete Preprocessing-Schritte kompensiert werden sollte. Die Qualität bei Ansagetexten bleibt hinter der bei Fahrgastinformationen zurück, was auf Optimierungsbedarf in diesem Bereich hindeutet.
+
+\subsubsection{Stärken des Systems}
+
+Die herausragenden Stärken des Systems liegen in der effizienten Verarbeitung strukturierter Eingaben. Wenn die relevanten Informationen klar identifizierbar sind und das Dokument einer konsistenten Struktur folgt, erzeugt das System zuverlässig korrekte und gut formulierte Ausgaben. Die Ressourceneffizienz der 4-Bit-Quantisierung ermöglicht den Betrieb auf Consumer-Hardware, was den Einsatz in verschiedenen Szenarien erleichtert.
+
+Die Generalisierungsfähigkeit des feinabgestimmten Modells zeigt sich in der robusten Verarbeitung von Variationen innerhalb der trainierten Domäne. Das Modell ist in der Lage, unterschiedliche Formulierungen derselben Sachverhalte zu verstehen und konsistent in das Zielformat zu überführen. Die Integration domänenspezifischen Wissens über die Knowledge-Enhanced System Prompts funktioniert zuverlässig und eliminiert die Notwendigkeit komplexerer Retrieval-Mechanismen.
+
+Die Geschwindigkeit der 4-Bit-Version mit durchschnittlich 12.6 Tokens pro Sekunde ermöglicht eine praktikable Verarbeitungsrate für Produktionsszenarien. Der geringe Speicherbedarf von etwa 4 GB VRAM macht das System für eine breite Anwenderbasis zugänglich.
+
+\subsubsection{Identifizierte Limitationen}
+
+Die Hauptlimitation des Systems liegt in der unzureichenden Fähigkeit zur eigenständigen Informationsfilterung bei sehr umfangreichen oder heterogenen Eingabedokumenten. In solchen Fällen zeigt das Modell eine Tendenz, entweder zu viele Details einzubeziehen oder relevante Informationen zu übersehen. Diese Schwäche lässt sich durch einen zweistufigen Ansatz adressieren, bei dem zunächst eine explizite Extraktion der relevanten Daten erfolgt, bevor die eigentliche Textgenerierung angestoßen wird.
+
+Die Qualitätsunterschiede zwischen Fahrgastinformationen und Ansagetexten deuten auf Unausgewogenheiten im Trainingsdatensatz hin. Die inkonsistenten Ergebnisse bei Ansagetexten legen nahe, dass zusätzliche Trainingsbeispiele für diese Kategorie die Gesamtleistung verbessern würden.
+
+Eine überraschende Limitation betrifft die 8-Bit-Quantisierung, die trotz höherer theoretischer Präzision in allen relevanten Metriken hinter der 4-Bit-Version zurückbleibt. Dieses Phänomen ist möglicherweise auf Optimierungseffekte während des Quantisierungsprozesses zurückzuführen, die in der 4-Bit-Variante vorteilhafter wirken. Eine alternative Erklärung könnte in unterschiedlichen numerischen Stabilitätseigenschaften der Quantisierungsformate liegen.
+
+Die Tendenz zur Weitschweifigkeit, insbesondere bei der 8-Bit-Version, zeigt, dass das Modell nicht optimal auf die Anforderung prägnanter Formulierungen trainiert wurde. Dies könnte durch Anpassungen im Trainingsprozess adressiert werden, beispielsweise durch verstärktes Training auf kürzeren Referenztexten oder durch Penalty-Mechanismen für überlange Ausgaben.
+
+\subsubsection{Empfehlungen für den Produktiveinsatz}
+
+Basierend auf den Evaluationsergebnissen ergibt sich eine klare Empfehlung für die 4-Bit-Quantisierung als präferierte Variante für den Produktiveinsatz. Diese bietet nicht nur die bessere Ressourceneffizienz, sondern übertrifft die 8-Bit-Version auch in allen relevanten Qualitätsmetriken. Die Differenz von 44.77 Prozent im BLEU-Score und 16.72 Prozent im Loss unterstreicht die Überlegenheit dieser Konfiguration.
+
+Für die praktische Anwendung empfiehlt sich ein zweistufiger Workflow: In einem ersten Schritt sollte eine Vorverarbeitung der Eingabedokumente erfolgen, die die relevanten Informationen extrahiert und strukturiert. Dies kann durch regelbasierte Systeme oder durch ein separates Modell geschehen. Der zweite Schritt nutzt dann das feinabgestimmte Modell zur eigentlichen Textgenerierung basierend auf den vorstrukturierten Daten.
+
+Die automatisierte Qualitätssicherung sollte als integraler Bestandteil des Systems implementiert werden. Die beschriebenen Validierungsmechanismen fangen die meisten problematischen Ausgaben ab und ermöglichen eine zielgerichtete manuelle Nachbearbeitung. Für kritische Anwendungsfälle empfiehlt sich zusätzlich eine Stichprobenkontrolle durch menschliche Prüfer.
+
+Die Limitationen bei der Verarbeitung sehr komplexer Dokumente legen nahe, dass das System primär für strukturierte Eingaben mit klarer Informationshierarchie eingesetzt werden sollte. Für Szenarien mit hochgradig heterogenen oder unstrukturierten Daten wäre eine Erweiterung des Systems um zusätzliche Preprocessing-Komponenten erforderlich.

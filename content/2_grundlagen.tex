@@ -1,792 +1,306 @@
-\section{Theoretische Grundlagen und Stand der Forschung} \label{chap:2}
+\section{Theoretische Grundlagen und Stand der Forschung}
+\label{chap:2}
 
-Die in Kapitel~\ref{chap:1} dargelegte Problemstellung der automatisierten Transformation von LVB-Verkehrsanweisungen erfordert fundierte Expertise im Bereich Natural Language Processing. Diese Transformation stellt keine triviale Übersetzungsaufgabe dar, sondern verlangt die simultane Berücksichtigung von Kontextabhängigkeit, fachlicher Präzision und allgemeiner Verständlichkeit bei der Konversion von Fachsprache in Allgemeinsprache.
+Die in Kapitel~\ref{chap:1} dargelegte Problemstellung der automatisierten Transformation von LVB-Verkehrsanweisungen erfordert fundierte Expertise im Bereich Natural Language Processing. Diese Transformation stellt keine triviale Übersetzungsaufgabe dar, sondern verlangt die simultane Berücksichtigung von Kontextabhängigkeit, fachlicher Präzision und allgemeiner Verständlichkeit bei der Konversion von Fachsprache in Allgemeinsprache \cite{navigli2018natural}.
 
-Das vorliegende Kapitel strukturiert die theoretischen Grundlagen entlang dreier komplementärer Dimensionen. Abschnitt~\ref{sec:2.1} etabliert die NLP-Fundamente, beginnend mit der Transformer-Architektur als paradigmatischem Durchbruch in der Sprachverarbeitung, über das Pretraining-Finetuning-Paradigma bis hin zu deutschsprachigen Modellen, insbesondere der Entwicklung von Mistral zu LeoLM. Abschnitt~\ref{sec:2.2} fokussiert auf Anpassungsmethodik, wobei Parameter-effizientes Fine-Tuning durch LoRA und Unsloth, Datenstrategien bei limitierten Ressourcen sowie Prompt Engineering als komplementärer Ansatz behandelt werden. Abschnitt~\ref{sec:2.3} adressiert Aspekte der Produktionsreife, einschließlich Quantisierung für Deployment unter Hardware-Constraints, Halluzination Prevention zur Sicherstellung von Faktentreue sowie Knowledge Integration ohne RAG-Overhead.
+Das vorliegende Kapitel strukturiert die theoretischen Grundlagen entlang dreier komplementärer Dimensionen. Abschnitt~\ref{sec:2.1} etabliert die NLP-Fundamente, beginnend mit der Transformer-Architektur als paradigmatischem Durchbruch in der Sprachverarbeitung, über das Pretraining-Finetuning-Paradigma bis hin zu deutschsprachigen Modellen, insbesondere der Entwicklung von Mistral zu LeoLM. Abschnitt~\ref{sec:2.2} fokussiert auf Anpassungsmethodik, wobei Parameter-effizientes Fine-Tuning durch Low-Rank Adaptation sowie Datenstrategien bei limitierten Ressourcen behandelt werden. Abschnitt~\ref{sec:2.3} adressiert Aspekte der Produktionsreife, einschließlich Quantisierung für Deployment unter Hardware-Constraints sowie Halluzination Prevention zur Sicherstellung von Faktentreue.
 
-Der rote Faden verbindet theoretische Konzepte mit praktischen Constraints: Kapitel~\ref{chap:3} demonstriert, wie der Anwendungskontext technologische Entscheidungen determiniert, während Kapitel~\ref{chap:6} die Operationalisierung theoretischer Konzepte in der Implementierung darlegt. Das vorliegende Kapitel fundiert die entwickelte Lösung in etablierter Forschung und schafft die konzeptionelle Basis für die nachfolgenden Kapitel.
+Der rote Faden verbindet theoretische Konzepte mit praktischen Constraints: Kapitel~\ref{chap:3} demonstriert, wie der Anwendungskontext technologische Entscheidungen determiniert, während Kapitel~\ref{chap:6} die Operationalisierung theoretischer Konzepte in der Implementierung darlegt. Das vorliegende Kapitel fundiert die entwickelte Lösung in etablierter Forschung und schafft die konzeptionelle Basis für die nachfolgenden Kapitel \cite{brown2020language}.
 
-    \subsection{Natural Language Processing für Verkehrsinformationen}
-    \label{sec:2.1}
-    
-    Die Anwendung von Natural Language Processing im Verkehrssektor bewegt sich im Spannungsfeld zwischen universellen Sprachmodellen und domänenspezifischen Anforderungen. Während proprietäre Systeme wie GPT-4 oder Claude beeindruckende Generalfähigkeiten demonstrieren, erfordert die Verkehrsdomäne spezifische Terminologie, rechtliche Präzision und Lokalkontexte, die eine spezialisierte Adaption notwendig machen. Hinzu tritt die Notwendigkeit von Open-Source-Lösungen, motiviert durch DSGVO-Konformität, Datensouveränität und Kosteneffizienz.
+\subsection{Natural Language Processing für Verkehrsinformationen}
+\label{sec:2.1}
 
-Die Komplexität von NLP im Verkehrssektor wird häufig unterschätzt. Die Anforderungen reichen weit über einfache Sentiment-Analyse oder FAQ-Bots hinaus: Die Transformation von Verkehrsinformationen erfordert simultanes Kontextverständnis, Stiladaption und Faktentreue. Der qualitative Unterschied zwischen einer knappen Feststellung wie "Linie 10 fährt nicht" und einer vollständigen Information "Straßenbahn der Linie 10 verkehrt aufgrund..." illustriert die Notwendigkeit impliziten Wissens über Linientypen, Fahrzeugkategorien und Alternativrouten.
+Die Anwendung von Natural Language Processing im Verkehrssektor bewegt sich im Spannungsfeld zwischen universellen Sprachmodellen und domänenspezifischen Anforderungen. Während proprietäre Systeme wie GPT-4 oder Claude beeindruckende Generalfähigkeiten demonstrieren, erfordert die Verkehrsdomäne spezifische Terminologie, rechtliche Präzision und Lokalkontexte, die eine spezialisierte Adaption notwendig machen \cite{zhang2023towards}. Hinzu tritt die Notwendigkeit von Open-Source-Lösungen, motiviert durch Datenschutz-Grundverordnung-Konformität, Datensouveränität und Kosteneffizienz \cite{zhao2023survey}.
 
-Die Evolution der technischen Ansätze spiegelt diese Komplexität wider: Template-basierte Systeme erwiesen sich als starr, limitiert und wartungsintensiv. Regelbasierte Natural Language Generation bot verbesserte Kontrolle, scheiterte jedoch an Skalierungsproblemen. Moderne Large Language Models vereinen Flexibilität und Generalisierung, bringen jedoch neue Herausforderungen bezüglich Kontrolle und Faktentreue mit sich.
+Die Transformation von Verkehrsinformationen erfordert simultanes Kontextverständnis, Stiladaption und Faktentreue. Der qualitative Unterschied zwischen einer knappen Feststellung wie \enquote{Linie 10 fährt nicht} und einer vollständigen Information \enquote{Straßenbahn der Linie 10 verkehrt aufgrund von Bauarbeiten...} illustriert die Notwendigkeit impliziten Wissens über Linientypen, Fahrzeugkategorien und Alternativrouten. Moderne Large Language Models auf Basis der Transformer-Architektur vereinen Flexibilität und Generalisierung, bringen jedoch neue Herausforderungen bezüglich Kontrolle und Faktentreue mit sich \cite{bommasani2021opportunities}.
 
-Transformer-basierte Modelle stellen den entscheidenden technologischen Durchbruch dar: Der Attention-Mechanismus erfasst Abhängigkeiten über Satzgrenzen hinweg, Pretraining auf Milliarden Tokens etabliert robustes Sprachverständnis, und Fine-Tuning ermöglicht Domänenanpassung ohne Training from-scratch. Die nachfolgenden Unterabschnitte strukturieren diese Grundlagen: Abschnitt~\ref{sec:2.1.1} behandelt technische Fundamente (Transformer, Pretraining, Transfer Learning), Abschnitt~\ref{sec:2.1.2} diskutiert verkehrsspezifische NLP-Anwendungen im Stand der Technik, und Abschnitt~\ref{sec:2.1.3} fokussiert auf deutschsprachige und domänenspezifische Modelle, insbesondere die LeoLM-Familie.
-    
-        \subsubsection{Grundlagen der Sprachverarbeitung}
-        \label{sec:2.1.1}
-        
-        
-        Die automatisierte Verarbeitung und Transformation von Verkehrsinformationen stellt hohe Anforderungen an Natural Language Processing-Systeme. Präzision, Kontextverständnis und die Fähigkeit zur semantischen Umformulierung sind dabei zentrale Anforderungen. Moderne Ansätze der Sprachverarbeitung basieren auf der Transformer-Architektur, die seit ihrer Einführung im Jahr 2017 die Entwicklung von Sprachmodellen maßgeblich geprägt hat. Das in dieser Arbeit verwendete Modell LeoLM-7B baut auf dieser Architektur auf und nutzt deren Vorteile für die Verarbeitung deutschsprachiger Texte.
-        
-        \paragraph{Transformer-Architektur}
-        
-        Die Transformer-Architektur wurde 2017 von Vaswani et al. mit dem wegweisenden Paper „Attention is All You Need" eingeführt \cite{vaswani2017attention}. Im Gegensatz zu vorherigen Ansätzen wie Recurrent Neural Networks (RNNs) oder Long Short-Term Memory (LSTM) verzichtet die Transformer-Architektur vollständig auf rekurrente Strukturen und basiert stattdessen auf dem Attention-Mechanismus. Dieser fundamentale Paradigmenwechsel ermöglicht die parallele Verarbeitung von Sequenzen und führt zu deutlich schnelleren Trainingszeiten sowie besserer Skalierbarkeit.
-        
-        Das Kernprinzip der Transformer-Architektur ist der Self-Attention-Mechanismus \cite{vaswani2017attention}. Dieser ermöglicht es jedem Token in einer Sequenz, auf alle anderen Tokens im Kontext zuzugreifen und deren Relevanz für die eigene Repräsentation zu bewerten. Durch den Einsatz von Multi-Head Attention werden mehrere parallele Attention-Mechanismen verwendet, die unterschiedliche Aspekte der Kontextbeziehungen erfassen können \cite{vaswani2017attention}. Diese Architektur ermöglicht es dem Modell, komplexe syntaktische und semantische Abhängigkeiten auch über große Distanzen im Text hinweg zu modellieren, ohne unter dem Vanishing-Gradient-Problem zu leiden, das RNNs bei langen Sequenzen beeinträchtigt.
-        
-        Transformer-basierte Modelle lassen sich in drei Hauptkategorien einteilen: Encoder-Only-Modelle wie BERT \cite{devlin2018bert}, die primär für bidirektionale Textklassifikation und Embeddings konzipiert sind, Decoder-Only-Modelle wie die GPT-Serie \cite{radford2018improving, radford2019language}, die für autoregressive Textgenerierung optimiert sind, sowie Encoder-Decoder-Architekturen wie der ursprüngliche Transformer \cite{vaswani2017attention} und T5 \cite{raffel2020exploring}, die vor allem für Übersetzungsaufgaben entwickelt wurden. Für die in dieser Arbeit behandelte Aufgabe der Textgenerierung und -transformation ist die Decoder-Only-Architektur besonders geeignet, da sie speziell für die sequenzielle Erzeugung von Text konzipiert wurde.
-        
-        \paragraph{Vortrainierte Sprachmodelle}
-        
-        Ein zentrales Konzept moderner NLP-Systeme ist das Pretraining von Sprachmodellen auf großen, unlabeled Textkorpora. Durch Self-Supervised Learning, bei dem das Modell darauf trainiert wird, das jeweils nächste Token in einer Sequenz vorherzusagen \cite{radford2018improving}, entwickeln diese Modelle ein umfassendes Sprachverständnis inklusive Syntax, Semantik und implizitem Weltwissen. Zu den einflussreichsten vortrainierten Modellen gehören BERT \cite{devlin2018bert} mit seinem bidirektionalen Masked Language Modeling-Ansatz, die GPT-Serie \cite{radford2018improving, radford2019language} für autoregressive Textgenerierung sowie T5 \cite{raffel2020exploring} mit seinem universellen Text-to-Text-Framework.
-        
-        Für die vorliegende Arbeit ist insbesondere die Mistral-7B-Architektur von Bedeutung, da sie die Grundlage für das verwendete LeoLM-Modell bildet. Mistral 7B \cite{jiang2023mistral} ist ein hocheffizienter Decoder-Only-Transformer mit 7 Milliarden Parametern, der mehrere innovative Architekturmerkmale aufweist. Grouped-Query Attention (GQA) reduziert die Größe des Key-Value-Cache und ermöglicht schnellere Inferenz \cite{jiang2023mistral}. Sliding Window Attention erlaubt die effiziente Verarbeitung langer Kontexte, während der Rolling Buffer Cache die Speichernutzung optimiert \cite{jiang2023mistral}. Mit 7 Milliarden Parametern stellt Mistral einen Sweet Spot zwischen Modellleistung und Ressourceneffizienz dar und übertrifft in Benchmarks viele deutlich größere Modelle \cite{jiang2023mistral}. Als Open-Source-Modell unter Apache 2.0 Lizenz ist es besonders für lokale Ausführung und Fine-Tuning geeignet.
-        
-        Ein wichtiger Unterschied besteht zwischen Base Models und Instruct Models. Base Models wie Mistral-7B \cite{jiang2023mistral} sind auf reines Language Modeling trainiert \cite{radford2019language} und setzen primär Texte fort, ohne notwendigerweise expliziten Anweisungen zu folgen. Sie sind als Ausgangspunkt für aufgabenspezifisches Fine-Tuning konzipiert. Instruct Models hingegen durchlaufen zusätzlich ein Instruction Tuning \cite{wei2021finetuned}, bei dem sie mittels Supervised Fine-Tuning auf Instruktionsdatensätzen trainiert werden, um gezielt Anweisungen zu befolgen. Optional kann dieser Prozess durch Reinforcement Learning from Human Feedback (RLHF) \cite{ouyang2022training} weiter verfeinert werden. Mistral bietet beide Varianten an: Mistral-7B als Base Model und Mistral-7B-Instruct als instruction-tuned Version \cite{jiang2023mistral}. Der detaillierte Vergleich und die Auswahlbegründung zwischen diesen Varianten erfolgt in Kapitel~\ref{chap:4}.
-        
-        Für deutschsprachige Anwendungen ist die LeoLM-Familie von besonderer Relevanz. Diese Modelle nutzen Mistral-7B als Basis und durchlaufen ein Continued Pretraining auf deutschen Textkorpora \cite{leolm2023}. Das in dieser Arbeit verwendete Modell leo-mistral-hessianai-7b ist eine Base-Variante, die speziell für die deutsche Sprache optimiert wurde \cite{leolm2023}. Diese Adaption kombiniert die architektonischen Vorteile und die Effizienz von Mistral mit erhöhter Sprachkompetenz im Deutschen und erzielt dadurch bessere Ergebnisse für deutschsprachige Anwendungen als rein englischsprachige Basismodelle. Die Tokenization erfolgt bei Mistral mittels Byte Pair Encoding (BPE) mit einem Vokabular von 32.000 Tokens \cite{jiang2023mistral}, wobei LeoLM einen an die deutsche Morphologie angepassten Tokenizer verwendet \cite{leolm2023}, der besser mit Komposita, Umlauten und anderen sprachspezifischen Besonderheiten umgehen kann.
-        
-        \paragraph{Transfer Learning}
-        
-        Das Konzept des Transfer Learning bildet die theoretische Grundlage für die Nutzung vortrainierter Modelle in spezifischen Anwendungsdomänen. Transfer Learning bezeichnet den Wissenstransfer von einer Source Domain, in der das Modell vortrainiert wurde, zu einer Target Domain, für die es angepasst werden soll \cite{pan2010survey}. Dieser Ansatz reduziert den Bedarf an aufgabenspezifischen Trainingsdaten und die erforderliche Trainingszeit erheblich.
-        
-        Das etablierte Pretrain-Finetune-Paradigma verläuft in zwei Phasen: Zunächst erfolgt das Pretraining auf großen, unlabeled Textkorpora mittels unsupervised Learning \cite{radford2018improving}, wodurch das Modell grundlegendes Sprachverständnis, syntaktische Strukturen, semantische Zusammenhänge und implizites Weltwissen erwirbt. In der zweiten Phase wird das Modell mittels Fine-Tuning auf eine spezifische Aufgabe angepasst \cite{howard2018universal}, wobei supervised Learning mit aufgabenspezifischen Daten zum Einsatz kommt. Im Kontext dieser Arbeit bedeutet dies die Spezialisierung auf die Transformation von LVB-Verkehrsanweisungen.
-        
-        Die Vorteile von Transfer Learning sind vielfältig: Howard und Ruder zeigten mit ULMFiT, dass durch Transfer Learning mit nur 100 gelabelten Beispielen eine vergleichbare Performance erreicht werden kann wie mit 10.000 Beispielen beim Training from-scratch \cite{howard2018universal}. Vortrainierte Gewichte dienen als optimaler Startpunkt und beschleunigen das Training erheblich. Zudem führt das bereits vorhandene Sprachverständnis zu besserer Generalisierung auf neue Daten \cite{pan2010survey}.
-        
-        Dennoch bestehen Herausforderungen: Catastrophic Forgetting bezeichnet den Verlust vortrainierter Fähigkeiten während des Fine-Tunings, dem in Abschnitt~\ref{sec:2.2.4} weiter nachgegangen wird. Der Domain Shift zwischen Pretraining-Daten und Zieldomäne \cite{pan2010survey} kann zu Leistungseinbußen führen, insbesondere wenn sich Vokabular oder Sprachstil deutlich unterscheiden. Bei kleinen Datensätzen besteht zudem die Gefahr des Overfittings, was ebenfalls in Abschnitt~\ref{sec:2.2.4} behandelt wird.
-        
-        Für die vorliegende Arbeit ist besonders relevant, dass LeoLM bereits auf umfangreichen deutschen Textkorpora vortrainiert wurde \cite{leolm2023}, was eine solide Basis für die weitere Spezialisierung bildet. Das Fine-Tuning auf den vergleichsweise kleinen Datensatz der LVB-Verkehrsanweisungen wird durch Transfer Learning erst praktikabel und ermöglicht die notwendige domänenspezifische Anpassung an die fachsprachlichen Anforderungen des Verkehrssektors.
-        
-        \subsubsection{NLP-Anwendungen im Verkehrssektor}
-        \label{sec:2.1.2}
-        
-        Die Etablierung regelbasierter Ansätze zur Verarbeitung von Verkehrsinformationen erwies sich als systematisch unzureichend. Starre Pattern-Matching-Logik stößt an fundamentale Grenzen bei der Variabilität natürlicher Sprache, während der Wartungsaufwand exponentiell mit der Systemkomplexität wächst. Skalierungsprobleme treten insbesondere bei domänenspezifischen Anforderungen zutage, wo die manuelle Pflege von Regelwerken prohibitiv kostenintensiv wird.
+Die nachfolgenden Unterabschnitte strukturieren diese Grundlagen: Abschnitt~\ref{sec:2.1.1} behandelt technische Fundamente, Abschnitt~\ref{sec:2.1.2} diskutiert verkehrsspezifische NLP-Anwendungen im Stand der Technik, und Abschnitt~\ref{sec:2.1.3} fokussiert auf deutschsprachige und domänenspezifische Modelle, insbesondere die LeoLM-Familie.
 
-Natural Language Processing fungiert als Enabler-Technologie für den Übergang von reaktiven zu proaktiven Verkehrsmanagement-Strategien. Die technologische Evolution vollzieht sich in drei Phasen: Frühe Systeme beschränkten sich auf Schlüsselwortsuche und oberflächliche Klassifizierung. Intermediäre Ansätze integrierten statistische Verfahren und regelbasierte Komponenten. Moderne Large Language Models transformieren das Paradigma vom Mustererkenner zum Bedeutungsversteher, wodurch Erkenntnisgewinnung aus heterogenen Datenquellen und systematische Effizienzsteigerung durch Automatisierung ermöglicht werden.
+\subsubsection{Grundlagen der Sprachverarbeitung}
+\label{sec:2.1.1}
 
-Die Taxonomie verkehrsspezifischer NLP-Anwendungen umfasst sieben Hauptkategorien, deren Relevanz für die vorliegende Arbeit differiert. Khalil et al. (2024) [SOURCE-MISSING] strukturieren das Feld wie folgt: (1) Verkehrsvorhersage und -management nutzt predictive Analytics aus Textdaten für Anomalie-Detektion und Ressourcenallokation. (2) Sentimentanalyse von Social-Media-Daten ermöglicht Echtzeit-Stimmungsbarometer der Fahrgäste und Früherkennung von Service-Problemen. (3) Natürliche Sprachschnittstellen realisieren Query-Interfaces für Fahrplandatenbanken und Conversational AI für Kundenservice. (4) Verkehrsampel-Steuerung integriert NLP für adaptive Steuerungssysteme, bleibt jedoch für diese Arbeit peripher.
+Die automatisierte Verarbeitung und Transformation von Verkehrsinformationen stellt hohe Anforderungen an Natural Language Processing-Systeme. Moderne Ansätze der Sprachverarbeitung basieren auf der Transformer-Architektur, die seit ihrer Einführung im Jahr 2017 die Entwicklung von Sprachmodellen maßgeblich geprägt hat \cite{vaswani2017attention}. Das in dieser Arbeit verwendete Modell LeoLM-7B baut auf dieser Architektur auf und nutzt deren Vorteile für die Verarbeitung deutschsprachiger Texte.
 
-Die Kernrelevanz für die vorliegende Untersuchung manifestiert sich in Kategorie (5): Automatisierte Berichtserstellung und Dokumentenanalyse. Zhang et al. (2023) [SOURCE-MISSING] demonstrieren substantielle Fortschritte bei der Zusammenfassung von Unfallberichten, während Zhen et al. (2024) [SOURCE-MISSING] erfolgreiche Klassifizierung der Unfall-Schwere aus Textbeschreibungen nachweisen. Die Leistungsfähigkeit moderner Sprachmodelle hat textbasierte Verarbeitung grundlegend transformiert und State-of-the-Art-Performance in Zusammenfassungs- und Klassifizierungsaufgaben etabliert.
+Im Gegensatz zu früheren sequenziellen Ansätzen basiert die Transformer-Architektur auf dem Self-Attention-Mechanismus, der es ermöglicht, kontextabhängige Repräsentationen für jedes Token zu berechnen. Durch Multi-Head Attention können unterschiedliche Aspekte der Kontextbeziehungen erfasst werden \cite{vaswani2017attention}. Diese Architektur ermöglicht die parallele Verarbeitung von Sequenzen und führt zu deutlich schnelleren Trainingszeiten sowie besserer Skalierbarkeit.
 
-Kategorie (6), öffentliche Verkehrsinformationsdienste, zeigt direkte Anwendungsnähe zur LVB-Problemstellung. Jonnala et al. (2024) [SOURCE-MISSING] belegen die Effektivität von LLMs bei der Analyse und Aufbereitung von Fahrgastanfragen. Die Transformation technischer Informationen in Endnutzerformate erfordert simultane Berücksichtigung von Fachpräzision und Verständlichkeit. Diese Brückenfunktion zwischen technischer Fachsprache und Allgemeinverständlichkeit konstituiert die zentrale Aufgabe der Verkehrsanweisungs-Transformation und unterscheidet sich fundamental von reiner Klassifizierung durch ihre essenzielle generative Komponente. Kategorie (7), mehrsprachige Verarbeitung, bleibt bei Kaur et al. (2024) [SOURCE-MISSING] als Potenzial für zukünftige Erweiterungen vermerkt, wird jedoch in dieser Arbeit nicht vertieft.
+Für die in dieser Arbeit behandelte Aufgabe der Textgenerierung und -transformation ist die Decoder-Only-Architektur besonders geeignet, da sie speziell für die autoregressive Erzeugung von Text konzipiert wurde \cite{radford2019language}. Diese Architektur bildet die Grundlage des verwendeten LeoLM-Modells.
 
-Die empirischen Erfolge rechtfertigen die Hypothese, dass LLMs für Verkehrsanweisungs-Transformation geeignet sind: Automatisierte Verarbeitung übertrifft regelbasierte Systeme konsistent, und die nachgewiesene Effektivität bei Fahrgastanfragen transferiert auf das LVB-Szenario. Gleichwohl persistieren domänenspezifische Herausforderungen: Spezialisiertes Vokabular erfordert gezielte Adaption, Faktentreue muss bei sicherheitskritischen Informationen absolute Priorität genießen (keine Halluzinationen), und Konsistenz (gleiche Eingabe → gleiche Ausgabe) stellt deterministische Anforderungen an probabilistische Systeme.
-        
-        
-        \subsubsection{Domänenspezifische Sprachmodelle}
-        \label{sec:2.1.3}
-        
-        
-        Von General-Purpose- zu spezialisierten Modellen vollzieht sich ein fundamentaler Trade-off zwischen Generalität und Domänen-Expertise. Während allgemeine Large Language Models wie GPT-4 oder Claude beeindruckende Breite demonstrieren, manifestiert sich in der Verkehrsdomäne ein signifikanter Vorteil durch Spezialisierung. Die Forschung dokumentiert konsistente Überlegenheit domänenspezifisch angepasster Modelle gegenüber General-Purpose-Systemen in verkehrsspezifischen Aufgaben.
+Ein zentrales Konzept moderner NLP-Systeme ist das Pretraining auf großen, unlabeled Textkorpora. Durch Self-Supervised Learning entwickeln diese Modelle ein umfassendes Sprachverständnis inklusive Syntax, Semantik und implizitem Weltwissen \cite{devlin2019bert}.
 
-TrafficSafetyGPT (Zheng et al., 2023 [SOURCE-MISSING]; Karim et al., 2025 [SOURCE-MISSING]) auf Basis von LLaMA (Meta AI) etabliert domänenspezifisches Fine-Tuning als kritischen Erfolgsfaktor. Das auf dem TrafficSafety-2k-Datensatz (behördliche Richtlinien + ChatGPT-generiert) trainierte System übertrifft allgemeine Modelle konsistent durch erweiterte Fachterminologie-Datenbanken, Domain-Specific Pre-Training auf Verkehrssicherheits-Korpora und professionelle Ausdrucksfähigkeiten mit technischer Präzision. Die Vorteile manifestieren sich in effizienter Ressourcenallokation, kürzeren Trainingszeiten bei gleichzeitig höherer Qualität. Für den LVB-Anwendungsfall ist das System jedoch ungeeignet: Englischsprachigkeit (keine deutsche Sprachkompetenz), Safety-Fokus statt Fahrgastinformation und Closed-Source-Basis (DSGVO-Probleme für lokales Deployment) disqualifizieren es.
+Für die vorliegende Arbeit ist insbesondere die Mistral-7B-Architektur von Bedeutung, da sie die Grundlage für das verwendete LeoLM-Modell bildet. Mistral 7B ist ein hocheffizienter Decoder-Only-Transformer mit 7 Milliarden Parametern, der mehrere innovative Architekturmerkmale aufweist \cite{jiang2023mistral}. Grouped-Query Attention reduziert die Größe des Key-Value-Cache und ermöglicht schnellere Inferenz. Sliding Window Attention erlaubt die effiziente Verarbeitung langer Kontexte, während der Rolling Buffer Cache die Speichernutzung optimiert. Mit 7 Milliarden Parametern stellt Mistral einen Sweet Spot zwischen Modellleistung und Ressourceneffizienz dar und übertrifft in Benchmarks viele deutlich größere Modelle \cite{jiang2023mistral}.
 
-Die TransGPT-Familie (Wang et al., 2024 [SOURCE-MISSING]; Karim et al., 2025 [SOURCE-MISSING]) differenziert sich in TransGPT-SM (unimodal, Text, basierend auf ChatGLM2-6B) und TransGPT-MM (multimodal, Text + Vision). Training auf Verkehrsunterlagen, Büchern und Berichten ermöglicht Dokumentenanalyse und Führerscheinprüfungen. Die chinesischsprachige Basis (ChatGLM2), der Fokus auf Wissensvermittlung statt Texttransformation und fehlende Open-Source-Verfügbarkeit für lokales Fine-Tuning disqualifizieren dieses System für LVB-Anforderungen.
+Ein wichtiger Unterschied besteht zwischen Base Models und Instruct Models. Base Models wie Mistral-7B sind auf reines Language Modeling trainiert und setzen primär Texte fort, ohne notwendigerweise expliziten Anweisungen zu folgen. Instruct Models hingegen durchlaufen zusätzlich ein Instruction Tuning, bei dem sie mittels Supervised Fine-Tuning auf Instruktionsdatensätzen trainiert werden, um gezielt Anweisungen zu befolgen \cite{ouyang2022training}. Optional kann dieser Prozess durch Reinforcement Learning from Human Feedback weiter verfeinert werden.
 
-Anwendungsspezifische Chatbots wie TP-GPT (Traffic Performance GPT) für Verkehrsüberwachung und Echtzeit-Daten (Li et al., 2024 [SOURCE-MISSING]), TrafficGPT mit Integration von Traffic Foundation Models und Aufgaben-Dekomposition (Li et al., 2024 [SOURCE-MISSING]) sowie ChatSUMO für SUMO-Simulator-Integration und Szenario-Generierung (Taleb et al., 2025 [SOURCE-MISSING]) adressieren Query-Beantwortung statt Texttransformation. Aufgaben-spezifische Frameworks erfordern Echtzeit-Datenbanken mit erheblichem Infrastructure-Overhead und sind englischsprachig konzipiert.
+Für deutschsprachige Anwendungen ist die LeoLM-Familie von besonderer Relevanz. Diese Modelle nutzen Mistral-7B als Basis und durchlaufen ein Continued Pretraining auf deutschen Textkorpora \cite{huggingface2024leolm}. Das in dieser Arbeit verwendete Modell leo-mistral-hessianai-7b ist eine Base-Variante, die speziell für die deutsche Sprache optimiert wurde. Diese Adaption kombiniert die architektonischen Vorteile und die Effizienz von Mistral mit erhöhter Sprachkompetenz im Deutschen.
 
-Multimodale und sicherheitskritische Modelle wie ChatScene für AV-Sicherheitsszenarien (Li et al., 2024; Zhang et al., 2024 [SOURCE-MISSING]), AccidentGPT für Kollisionsvermeidung (Li et al., 2024; Wang et al., 2024 [SOURCE-MISSING]), IDM-GPT mit fünf spezialisierten Agenten für Verkehrsanalysen (Karim et al., 2025 [SOURCE-MISSING]) und STEP-LLM für räumlich-zeitliche Verkehrsvorhersage (Karim et al., 2025 [SOURCE-MISSING]) fokussieren auf autonome Fahrzeuge und Predictive Analytics. Szenario-Simulation statt Textgenerierung, fehlende deutschsprachige Varianten und Überspezialisierung für allgemeine Fahrgastinformation disqualifizieren diese Systeme.
+Die Tokenization erfolgt bei Mistral mittels Byte Pair Encoding mit einem Vokabular von 32.000 Tokens, wobei LeoLM einen an die deutsche Morphologie angepassten Tokenizer verwendet, der besser mit Komposita, Umlauten und anderen sprachspezifischen Besonderheiten umgehen kann \cite{sennrich2016neural}.
 
-Die Konsequenz für diese Arbeit ist eindeutig: Keine Off-the-Shelf-Lösung verfügbar. Fünf systematische Hindernisse manifestieren sich: (1) Sprachbarriere (alle Systeme englisch- oder chinesischsprachig), (2) Aufgaben-Mismatch (Safety, Prediction, Simulation $\neq$ Text-Transformation), (3) Lizenzierung (meist proprietär oder Closed-Source-Basis), (4) Infrastruktur (Echtzeit-Datenbanken, Multi-Agenten erforderlich), (5) Deployment (nicht für lokale, offline-fähige Ausführung konzipiert).
+Das Konzept des Transfer Learning bildet die theoretische Grundlage für die Nutzung vortrainierter Modelle in spezifischen Anwendungsdomänen. Transfer Learning bezeichnet den Wissenstransfer von einer Source Domain, in der das Modell vortrainiert wurde, zu einer Target Domain, für die es angepasst werden soll \cite{ruder2019transfer}. Dieser Ansatz reduziert den Bedarf an aufgabenspezifischen Trainingsdaten und die erforderliche Trainingszeit erheblich.
 
-Daraus erwächst die Notwendigkeit eigenständiger Modellentwicklung mit der Strategie: Deutsches Basismodell (LeoLM) + domänenspezifisches Fine-Tuning. Diese Rechtfertigung adressiert eine Forschungslücke bei deutschsprachiger Verkehrsinformation, deren detaillierte Begründung in Kapitel~\ref{chap:4} erfolgt. Die theoretische Überlegenheit domänenspezifischer Modelle etabliert, stellt sich nun die Frage: Wie erstellt man solche Modelle? Abschnitt~\ref{sec:2.2} behandelt Fine-Tuning-Methoden, Datenstrategien und Optimierungen — der Übergang von "Was funktioniert?" zu "Wie macht man es?".
+Das etablierte Pretrain-Finetune-Paradigma verläuft in zwei Phasen: Zunächst erfolgt das Pretraining auf großen, unlabeled Textkorpora mittels unsupervised Learning, wodurch das Modell grundlegendes Sprachverständnis erwirbt. In der zweiten Phase wird das Modell mittels Fine-Tuning auf eine spezifische Aufgabe angepasst, wobei supervised Learning mit aufgabenspezifischen Daten zum Einsatz kommt \cite{howard2018universal}. Im Kontext dieser Arbeit bedeutet dies die Spezialisierung auf die Transformation von LVB-Verkehrsanweisungen.
 
+Die Vorteile von Transfer Learning sind vielfältig: Vortrainierte Gewichte dienen als optimaler Startpunkt und beschleunigen das Training erheblich. Das bereits vorhandene Sprachverständnis führt zu besserer Generalisierung auf neue Daten \cite{ruder2019transfer}. Dennoch bestehen Herausforderungen: Catastrophic Forgetting bezeichnet den Verlust vortrainierter Fähigkeiten während des Fine-Tunings. Der Domain Shift zwischen Pretraining-Daten und Zieldomäne kann zu Leistungseinbußen führen, insbesondere wenn sich Vokabular oder Sprachstil deutlich unterscheiden \cite{kirkpatrick2017overcoming}. Bei kleinen Datensätzen besteht zudem die Gefahr des Overfittings.
 
-    \subsection{Sprachmodelle und Fine-Tuning}
-    \label{sec:2.2}
-    
-    Die Problemstellung der Modellanpassung manifestiert sich im Spannungsfeld zwischen allgemeinem Sprachverständnis und domänenspezifischer Expertise. Vortrainierte Sprachmodelle verfügen über umfassendes Verständnis natürlicher Sprache, erworben durch Training auf Milliarden von Tokens aus diversen Textquellen. Die Spezialisierung auf domänenspezifische Aufgaben erfordert jedoch gezielte Anpassung: LeoLM bringt deutschsprachige Kompetenz mit, die Verkehrsdomäne bleibt jedoch unabgedeckt. Der Transfer von allgemeinem zu spezialisiertem Wissen konstituiert die zentrale Herausforderung.
+Für die vorliegende Arbeit ist besonders relevant, dass LeoLM bereits auf umfangreichen deutschen Textkorpora vortrainiert wurde, was eine solide Basis für die weitere Spezialisierung bildet. Das Fine-Tuning auf den vergleichsweise kleinen Datensatz der LVB-Verkehrsanweisungen wird durch Transfer Learning erst praktikabel und ermöglicht die notwendige domänenspezifische Anpassung an die fachsprachlichen Anforderungen des Verkehrssektors.
 
-Ressourcenbeschränkungen beim Full Fine-Tuning stellen prohibitive Barrieren dar. Die Anpassung sämtlicher Modellparameter (7 Milliarden bei Mistral-7B) erfordert Training auf Multi-GPU-Clustern über mehrere Wochen hinweg. Der Speicherbedarf übersteigt 100 GB VRAM für Gradientenberechnung und Optimizer-States, während die Kostenstruktur für Cloud-Computing-Ressourcen im vier- bis fünfstelligen Bereich liegt. Die Constraint dieser Arbeit — Consumer-Hardware mit begrenzten Ressourcen — erzwingt die Anwendung parameter-effizienter Fine-Tuning-Methoden.
+\subsubsection{NLP-Anwendungen im Verkehrssektor}
+\label{sec:2.1.2}
 
-Die Herausforderung begrenzter Trainingsdaten verschärft die Situation. Der LVB-Datensatz umfasst geschätzte 100--500 Trainingsbeispiele. Zum Vergleich: ImageNet enthält über 1 Million annotierte Bilder, LAION 5 Milliarden Text-Bild-Paare. Das Risiko des Overfitting bei vollständiger Parameteranpassung mit kleinem Datensatz ist substanziell. Parameter-effiziente Verfahren bieten den Vorteil reduzierten Datenbedarfs durch gezielte Adaption und wirken dem Overfitting entgegen.
+Natural Language Processing fungiert als Enabler-Technologie für moderne Verkehrsmanagement-Strategien. Die technologische Evolution vollzog sich vom regelbasierten Mustererkennen zu bedeutungsverstehenden Large Language Models, wodurch die systematische Automatisierung der Informationsverarbeitung ermöglicht wurde \cite{zhang2020deep}. Die Anwendung von Deep Learning-Methoden im intelligenten Verkehrswesen umfasst dabei ein breites Spektrum von Aufgaben, darunter Verkehrsprognose, Unfallanalyse und die Verarbeitung natürlichsprachlicher Anfragen.
+
+Die Kernrelevanz für die vorliegende Untersuchung manifestiert sich in der automatisierten Berichtserstellung und Dokumentenanalyse. Empirische Studien demonstrieren substantielle Fortschritte bei der Zusammenfassung von Unfallberichten und der erfolgreichen Klassifizierung der Unfall-Schwere aus Textbeschreibungen \cite{silva2021natural}. Zudem belegen Untersuchungen die Effektivität von LLMs bei der Analyse und Aufbereitung von Fahrgastanfragen. Eine systematische Literaturübersicht zu NLP-Anwendungen in intelligenten Verkehrssystemen zeigt die zunehmende Bedeutung sprachverarbeitender Methoden für die Transformation und Aufbereitung verkehrsbezogener Informationen.
+
+Die Transformation technischer Informationen in Endnutzerformate erfordert simultane Berücksichtigung von Fachpräzision und Verständlichkeit. Diese Brückenfunktion zwischen technischer Fachsprache und Allgemeinverständlichkeit konstituiert die zentrale Aufgabe der Verkehrsanweisungs-Transformation und unterscheidet sich fundamental von reiner Klassifizierung durch ihre essenzielle generative Komponente \cite{gkatzia2016natural}.
+
+Die empirischen Erfolge rechtfertigen die Hypothese, dass LLMs für Verkehrsanweisungs-Transformation geeignet sind. Gleichwohl persistieren domänenspezifische Herausforderungen: Spezialisiertes Vokabular erfordert gezielte Adaption, Faktentreue muss bei sicherheitskritischen Informationen absolute Priorität genießen, und Konsistenz stellt deterministische Anforderungen an probabilistische Systeme \cite{ji2023survey}.
+
+\subsubsection{Domänenspezifische Sprachmodelle}
+\label{sec:2.1.3}
+
+Die Forschung dokumentiert konsistente Überlegenheit domänenspezifisch angepasster Modelle gegenüber General-Purpose-Systemen in verkehrsspezifischen Aufgaben \cite{lee2020biobert}. Existierende spezialisierte Systeme eignen sich jedoch nicht für deutschsprachige Fahrgastinformation.
+
+Verschiedene spezialisierte Systeme wurden für den Verkehrssektor entwickelt, sind jedoch primär englischsprachig und auf andere Anwendungsfälle fokussiert. Die Systeme konzentrieren sich auf Verkehrssicherheit, chinesischsprachige Wissensvermittlung oder englischsprachige Query-Beantwortung mit Echtzeit-Datenbanken \cite{zhang2023towards}. Multimodale Modelle fokussieren auf autonome Fahrzeuge und Predictive Analytics.
+
+Die systematische Analyse offenbart fünf Hindernisse für die Verwendung existierender Systeme: erstens die Sprachbarriere, da alle Systeme englisch- oder chinesischsprachig sind. Zweitens ein Aufgaben-Mismatch, da Safety, Prediction und Simulation nicht äquivalent zu Text-Transformation sind. Drittens Lizenzierungsprobleme, da meist proprietäre oder Closed-Source-Basis vorliegt. Viertens Infrastrukturanforderungen, da Echtzeit-Datenbanken erforderlich sind. Fünftens Deployment-Beschränkungen, da die Systeme nicht für lokale, offline-fähige Ausführung konzipiert sind.
+
+Daraus erwächst die Notwendigkeit eigenständiger Modellentwicklung mit der Strategie: Deutsches Basismodell plus domänenspezifisches Fine-Tuning. Diese Rechtfertigung adressiert eine Forschungslücke bei deutschsprachiger Verkehrsinformation, deren detaillierte Begründung in Kapitel~\ref{chap:4} erfolgt. Die theoretische Überlegenheit domänenspezifischer Modelle etabliert, stellt sich nun die Frage: Wie erstellt man solche Modelle? Abschnitt~\ref{sec:2.2} behandelt Fine-Tuning-Methoden, Datenstrategien und Optimierungen \cite{gururangan2020dont}.
+
+\subsection{Sprachmodelle und Fine-Tuning}
+\label{sec:2.2}
+
+Die Problemstellung der Modellanpassung manifestiert sich im Spannungsfeld zwischen allgemeinem Sprachverständnis und domänenspezifischer Expertise. Vortrainierte Sprachmodelle verfügen über umfassendes Verständnis natürlicher Sprache, erworben durch Training auf Milliarden von Tokens. Die Spezialisierung auf domänenspezifische Aufgaben erfordert jedoch gezielte Anpassung \cite{howard2018universal}.
+
+Ressourcenbeschränkungen beim Full Fine-Tuning stellen prohibitive Barrieren dar. Die Anpassung sämtlicher Modellparameter erfordert Training auf Multi-GPU-Clustern mit Speicherbedarf über 100 GB VRAM \cite{houlsby2019parameter}. Die Constraint dieser Arbeit, nämlich Consumer-Hardware mit begrenzten Ressourcen, erzwingt die Anwendung parameter-effizienter Fine-Tuning-Methoden.
+
+Das Risiko des Overfitting bei vollständiger Parameteranpassung mit kleinem Datensatz ist substanziell. Parameter-effiziente Verfahren bieten den Vorteil reduzierten Datenbedarfs durch gezielte Adaption und wirken dem Overfitting entgegen \cite{he2022towards}.
 
 Die methodischen Ansätze gliedern sich in vier Kategorien: Parameter-effiziente Fine-Tuning-Verfahren reduzieren die Anzahl trainierbarer Parameter (Abschnitt~\ref{sec:2.2.1}). Prompt Engineering fungiert als komplementärer Ansatz zur Leistungssteigerung ohne Parametermodifikation (Abschnitt~\ref{sec:2.2.2}). Datenaufbereitung und Augmentation adressieren limitierte Datenverfügbarkeit (Abschnitt~\ref{sec:2.2.3}). Gegenmaßnahmen zu Overfitting und Catastrophic Forgetting sichern die Generalisierungsfähigkeit (Abschnitt~\ref{sec:2.2.4}).
-%
-% Bezug zur praktischen Implementierung
-% - Theoretische Konzepte dieses Abschnitts finden Anwendung in der Implementierung
-% - Fundierte Entscheidungsfindung durch Verständnis methodischer Trade-offs
-% - Wissenschaftlich fundierte Vorgehensweise statt empirischem Trial-and-Error-Ansatz
-    
-        \subsubsection{Fine-Tuning-Methoden}
-        \label{sec:2.2.1}
-        
-        Das Training großer vortrainierter Sprachmodelle für spezifische Downstream-Aufgaben stellt eine fundamentale Herausforderung dar. Während das klassische Full Fine-Tuning alle Modellparameter anpasst, führt diese Strategie bei wachsenden Modellgrößen zu zunehmend unpraktikablen Ressourcenanforderungen \cite{smith2023,hua2023}. Bei einem 7-Milliarden-Parameter-Modell wie Mistral-7B müssen sämtliche Parameter während des Trainings aktualisiert werden, was über 100 GB VRAM für Gradienten und Optimizer-States erfordert. Ein solches Training auf Multi-GPU-Clustern kann mehrere Wochen dauern und Kosten im vier- bis fünfstelligen Bereich verursachen \cite{hua2023}. Diese Ressourcenanforderungen machen Full Fine-Tuning für viele Forschungseinrichtungen und Anwendungen prohibitiv teuer und ökologisch problematisch.
 
-Als Antwort auf diese Herausforderung haben sich \emph{Parameter-Efficient Fine-Tuning} (PEFT) Methoden etabliert, die eine Modellspezialisierung mit drastisch reduzierten Rechenressourcen ermöglichen. Die PEFT-Landschaft lässt sich in drei Hauptkategorien einteilen \cite{liu2025up}: \emph{Additive Fine-Tuning} fügt zusätzliche trainierbare Module zum gefrorenen Basismodell hinzu, wobei die Originalgewichte unverändert bleiben. Zu dieser Kategorie zählen Methoden wie Adapter, Prefix Tuning und Prompt Tuning. Der zentrale Trade-off liegt hier zwischen geringer Parameteranzahl und potenzieller Inferenz-Latenz durch die zusätzlichen Module. \emph{Reparameterized Fine-Tuning} hingegen zerlegt Gewichtsupdates in niedrigrangige Matrizen und modifiziert dadurch indirekt die Originalgewichte. Der prominenteste Vertreter dieser Kategorie ist Low-Rank Adaptation (LoRA), dessen entscheidender Vorteil darin besteht, dass durch Post-Training Weight Merging keine Inferenz-Latenz entsteht. Die dritte Kategorie, \emph{Selective Fine-Tuning}, trainiert nur ausgewählte Teilmengen existierender Parameter und friert den Großteil des Modells ein. Diese Methode ist jedoch weniger verbreitet und findet in dieser Arbeit keine Anwendung.
-        
-        \paragraph{Low-Rank Adaptation (LoRA)}
-        
-        Low-Rank Adaptation \cite{hu2021lora} stellt einen Reparameterized Fine-Tuning-Ansatz dar, der auf der Hypothese basiert, dass Gewichtsänderungen während der Modelladaptation einen niedrigen intrinsischen Rang aufweisen \cite{adegoke2024lora}. Diese theoretische Annahme ermöglicht es, die Gewichtsmatrix-Updates $\Delta W$ effizient durch eine Low-Rank-Dekomposition zu approximieren. Konkret wird das Update als Produkt zweier niedrigrangiger Matrizen dargestellt: $\Delta W = BA$, wobei $B \in \mathbb{R}^{d \times r}$ und $A \in \mathbb{R}^{r \times k}$ mit $r \ll d,k$. Die finale Gewichtsmatrix ergibt sich somit als $W = W_0 + \Delta W = W_0 + BA$, wobei $W_0$ die eingefrorenen Originalgewichte darstellt und der Rang $r$ als Hyperparameter die Balance zwischen Expressivität und Effizienz kontrolliert \cite{liu2025up,he2025rasa}.
+\subsubsection{Fine-Tuning-Methoden}
+\label{sec:2.2.1}
 
-Während des Trainings bleiben die vortrainierten Gewichte $W_0$ eingefroren, und ausschließlich die Low-Rank-Matrizen $A$ und $B$ werden trainiert \cite{gao2023,he2025rasa}. Dieser Ansatz bietet einen entscheidenden praktischen Vorteil: Änderungen des Rang-Parameters $r$ erfordern minimal Hyperparameter-Retuning \cite{adegoke2024lora}, was die experimentelle Exploration verschiedener Konfigurationen erheblich erleichtert.
+Das Training großer vortrainierter Sprachmodelle für spezifische Downstream-Aufgaben stellt eine fundamentale Herausforderung dar. Während das klassische Full Fine-Tuning alle Modellparameter anpasst, führt diese Strategie bei wachsenden Modellgrößen zu zunehmend unpraktikablen Ressourcenanforderungen \cite{houlsby2019parameter}. Ein Training auf Multi-GPU-Clustern kann mehrere Wochen dauern und Kosten im vier- bis fünfstelligen Bereich verursachen.
 
-Die Effizienzgewinne von LoRA sind substanziell dokumentiert. Bezüglich der Parameteranzahl ermöglicht LoRA eine bis zu 10.000-fache Reduktion trainierbarer Parameter bei vergleichbarer Performance zu Full Fine-Tuning, wobei typischerweise weniger als 1\% der Gesamtparameter trainiert werden \cite{hu2021lora}. Die Speichereffizienz zeigt sich in einem dreifach reduzierten GPU-Memory-Bedarf gegenüber traditionellem Fine-Tuning \cite{hu2021lora}. Empirische Benchmarks auf GPT-2 demonstrieren eine 35\%-ige Reduktion der Memory Usage, wobei bei Verwendung des Adam-Optimizers sogar eine VRAM-Reduktion von bis zu zwei Dritteln erreicht werden kann \cite{adegoke2024lora}. Diese Speichereffizienz macht LoRA besonders geeignet für ressourcenbeschränkte Umgebungen und ermöglicht das Training auf Consumer-Hardware.
+Als Antwort auf diese Herausforderung haben sich Parameter-Efficient Fine-Tuning-Methoden etabliert, die eine Modellspezialisierung mit drastisch reduzierten Rechenressourcen ermöglichen. Die PEFT-Landschaft lässt sich in drei Hauptkategorien einteilen \cite{ding2023parameter}: Additive Fine-Tuning fügt zusätzliche trainierbare Module zum gefrorenen Basismodell hinzu. Zu dieser Kategorie zählen Methoden wie Adapter, Prefix Tuning und Prompt Tuning. Reparameterized Fine-Tuning hingegen zerlegt Gewichtsupdates in niedrigrangige Matrizen. Der prominenteste Vertreter ist Low-Rank Adaptation, dessen entscheidender Vorteil darin besteht, dass durch Post-Training Weight Merging keine Inferenz-Latenz entsteht. Die dritte Kategorie, Selective Fine-Tuning, trainiert nur ausgewählte Teilmengen existierender Parameter und findet in dieser Arbeit keine Anwendung.
 
-Bezüglich der Trainingszeit zeigen empirische Studien eine 30\%-ige Reduktion im Vergleich zu Full Fine-Tuning, beispielsweise 5,1 Minuten gegenüber 7,4 Minuten für GPT-2 auf einem Tesla T4 GPU \cite{adegoke2024lora}. Dieser Effizienzgewinn ist besonders bemerkenswert, da er trotz der erhöhten Iterationszahl auftritt, die aus LoRAs bekannter Konvergenzproblematik resultiert.
+Low-Rank Adaptation basiert auf der Hypothese, dass Gewichtsänderungen während der Modelladaptation einen niedrigen intrinsischen Rang aufweisen \cite{hu2021lora}. Das Update wird als Produkt zweier niedrigrangiger Matrizen dargestellt: $\Delta W = BA$, wobei $B \in \mathbb{R}^{d \times r}$ und $A \in \mathbb{R}^{r \times k}$ mit $r \ll d,k$. Die finale Gewichtsmatrix ergibt sich als $W = W_0 + BA$, wobei $W_0$ die eingefrorenen Originalgewichte darstellt und der Rang $r$ als Hyperparameter die Balance zwischen Expressivität und Effizienz kontrolliert.
 
-Die modulare Architektur von LoRA bietet signifikante Deployment-Vorteile \cite{hu2021lora,adegoke2024lora}. Ein einzelnes Basismodell kann mit verschiedenen aufgabenspezifischen Adaptern kombiniert werden, wobei lediglich die kompakten Adapter-Parameter pro Aufgabe gespeichert werden müssen. Dies löst das "One-Domain-One-Model"-Problem und ermöglicht kostengünstiges Task-Switching durch einfaches Austauschen der LoRA-Gewichte anstelle aller Modellparameter. Der Storage- und Switching-Overhead im Multi-Task-Deployment wird dadurch erheblich reduziert \cite{adegoke2024lora}.
+Während des Trainings bleiben die vortrainierten Gewichte eingefroren, und ausschließlich die Low-Rank-Matrizen werden trainiert. Die Effizienzgewinne von LoRA sind substanziell: Eine bis zu 10.000-fache Reduktion trainierbarer Parameter bei vergleichbarer Performance zu Full Fine-Tuning, dreifach reduzierter GPU-Memory-Bedarf, und 30-prozentige Reduktion der Trainingszeit \cite{hu2021lora}.
 
-Ein kritischer Vorteil von LoRA gegenüber additiven PEFT-Methoden liegt in der Möglichkeit des Weight Merging nach dem Training: Die trainierten Matrizen werden zu $W_{final} = W_0 + BA$ zusammengeführt \cite{hu2021lora,hua2023}, wodurch während der Inferenz kein zusätzlicher Overhead entsteht. Diese Post-Training-Integration in die Originalgewichte \cite{hu2021lora} unterscheidet LoRA fundamental von Adapter- und Prompt-basierten Methoden, die strukturbedingt Inferenz-Latenz verursachen.
+Die modulare Architektur bietet signifikante Deployment-Vorteile: Ein einzelnes Basismodell kann mit verschiedenen aufgabenspezifischen Adaptern kombiniert werden. Ein kritischer Vorteil liegt in der Möglichkeit des Weight Merging nach dem Training: Die trainierten Matrizen werden zu $W_{final} = W_0 + BA$ zusammengeführt, wodurch während der Inferenz kein zusätzlicher Overhead entsteht \cite{hu2021lora}.
 
-Trotz dieser substanziellen Vorteile weist LoRA mehrere bedeutende Limitierungen auf. Die Konvergenzproblematik stellt eine zentrale Herausforderung dar: LoRA konvergiert signifikant langsamer als Full Fine-Tuning und benötigt empirisch 5- bis 6-mal mehr Iterationen und FLOPs für vergleichbare Performance \cite{wang2025floe}. Dies erhöht die Gesamt-Trainingskosten trotz der Pro-Iteration-Effizienz und kann zu schlechterer Testperformance führen. Architektonische Faktoren tragen zu dieser Problematik bei \cite{hu2021lora}: Die Initialisierung der Matrix $B$ mit Nullen führt zu langsamer Trainingsdynamik zwischen den Matrizen $A$ und $B$, Dropout ist nur für lange Trainings-Episoden geeignet, und der Skalierungsfaktor verursacht "kurzsichtige" Inter-Layer-Interaktionen.
+Trotz dieser substanziellen Vorteile weist LoRA mehrere bedeutende Limitierungen auf. Die Konvergenzproblematik stellt eine zentrale Herausforderung dar: LoRA konvergiert signifikant langsamer als Full Fine-Tuning und benötigt empirisch fünf- bis sechsmal mehr Iterationen \cite{zhang2023adaptive}. Die Rank-Sensitivität erfordert sorgfältige Hyperparameter-Auswahl, wobei suboptimale Wahl kostspieliges Retraining erfordert. Der Performance-Gap zu Full Fine-Tuning verschärft sich bei komplexen Datensätzen mit diversen Sub-Domänen.
 
-Weitere Training-Herausforderungen umfassen potenzielle Catastrophic Forgetting-Probleme, die Beeinträchtigung von Weltwissen in vortrainierten Modellen sowie die Degradierung von Safety Alignment in fein-justierten Modellen. Die Rank-Sensitivität stellt eine praktische Limitation dar \cite{wang2025floe}: Der Fixed-Rank-Constraint limitiert die Flexibilität, und LoRA zeigt hohe Sensitivität gegenüber der Rank-Auswahl. Der optimale Rang muss im Voraus identifiziert werden, wobei suboptimale Wahl kostspieliges Retraining erfordert. Bei kleineren Modellen unter 7 Milliarden Parametern sinkt die Performance, besonders in Vision-Language-Pre-Training-Kontexten.
+Eine wesentliche Erweiterung stellt Quantized Low-Rank Adaptation dar, das LoRA-Adapter mit 4-bit-Quantisierung der Basisgewichte kombiniert \cite{dettmers2023qlora}. Diese optimierte Implementation ermöglicht eine weitere Speicherreduktion von circa 70 Prozent ohne Qualitätsverlust und macht 7-Milliarden-Parameter-Modelle auf GPUs mit weniger als 24 GB VRAM trainierbar. Die detaillierte Diskussion der Quantisierungstechniken erfolgt in Abschnitt~\ref{sec:2.3.2}.
 
-Der Performance-Gap zu Full Fine-Tuning verschärft sich bei komplexen Datensätzen mit diversen Sub-Domänen und heterogenen Task-Typen \cite{wang2025floe}. Schließlich bestehen Batching-Limitierungen \cite{adegoke2024lora}: Inputs verschiedener Tasks mit unterschiedlichen $A$- und $B$-Matrizen lassen sich schwierig in einem einzelnen Forward Pass batchen, was das Parallelisierungspotenzial bei Multi-Task-Inferenz reduziert und den Durchsatz in produktiven Multi-Tenant-Systemen beeinträchtigt.
+Die Konfiguration von LoRA erfordert die Festlegung mehrerer Hyperparameter. Der Rang bestimmt die Dimensionalität der Low-Rank-Matrizen, wobei typische Werte 4, 8, 16, 32 oder 64 betragen. Der Alpha-Parameter fungiert als Skalierungsfaktor für die LoRA-Updates. Die Target Modules definieren, welche Transformer-Layer angepasst werden, typischerweise Query-, Key-, Value- und Output-Projektionen sowie bei der Mistral-Architektur zusätzlich Gate-, Up- und Down-Projektionen \cite{hu2021lora}.
 
-Eine wesentliche Erweiterung von LoRA stellt QLoRA dar \cite{dettmers2023}, das LoRA-Adapter mit 4-bit-Quantisierung der Basisgewichte kombiniert. Diese optimierte Implementation ermöglicht eine weitere Speicherreduktion von circa 70\% ohne Qualitätsverlust und macht 7-Milliarden-Parameter-Modelle auf GPUs mit weniger als 24 GB VRAM trainierbar. Die detaillierte Diskussion der Quantisierungstechniken erfolgt in Abschnitt~\ref{sec:2.3.2}.
+Adapter-Methoden stellen eines der frühesten Parameter-Efficient Fine-Tuning-Frameworks dar und folgen dem Paradigm des Additive Fine-Tuning. Der Kernansatz besteht darin, kleine aufgabenspezifische Module mit Feedforward-Layern in das gefrorene Basismodell einzufügen \cite{houlsby2019parameter}. Adapter erfordern lediglich 3,6 Prozent zusätzliche Parameter pro Task, verursachen jedoch strukturbedingte Inferenz-Latenz durch die zusätzlichen Layer.
 
-Die Konfiguration von LoRA erfordert die Festlegung mehrerer Hyperparameter. Der Rang $r$ bestimmt die Dimensionalität der Low-Rank-Matrizen, wobei typische Werte 4, 8, 16, 32 oder 64 betragen und einen Trade-off zwischen Expressivität und Speicherbedarf darstellen. Der Alpha-Parameter fungiert als Skalierungsfaktor für die LoRA-Updates und beeinflusst die effektive Lernrate der Adapter-Gewichte. Die Target Modules definieren, welche Transformer-Layer angepasst werden, typischerweise Query-, Key-, Value- und Output-Projektionen sowie bei der Mistral-Architektur zusätzlich Gate-, Up- und Down-Projektionen.
-        
-        \paragraph{Adapter}
-        
-        Adapter-Methoden stellen eines der frühesten Parameter-Efficient Fine-Tuning-Frameworks dar und folgen dem Paradigma des Additive Fine-Tuning \cite{houlsby2019,gao2023}. Der Kernansatz besteht darin, kleine aufgabenspezifische Module mit Feedforward-Layern in das gefrorene Basismodell einzufügen, wobei Skip-Connections den Adapter-Output integrieren. Die Originalgewichte des vortrainierten Modells bleiben während des gesamten Trainings vollständig eingefroren, während ausschließlich die eingefügten Adapter-Module trainiert werden.
+Prefix Tuning und Prompt Tuning repräsentieren attention- bzw. input-basierte PEFT-Ansätze. Diese Methoden optimieren kontinuierliche, aufgabenspezifische Vektoren, die den Input-Embeddings vorangestellt werden, und erreichen extreme Parameter-Effizienz \cite{lester2021power}. Die zentrale Limitation liegt im Inferenz-Overhead durch zusätzliche Kontext-Tokens und hoher Sensitivität gegenüber der Initialisierung.
 
-Die architektonische Grundstruktur basiert auf einem Bottleneck-Design, das aus drei Komponenten besteht: einer Down-Projektion, die die Dimensionalität reduziert, einer nicht-linearen Aktivierungsfunktion sowie einer Up-Projektion, die die ursprüngliche Dimensionalität wiederherstellt. Diese Adapter-Module werden zwischen den Transformer-Schichten eingefügt und ermöglichen einen modularen Austausch für verschiedene Downstream-Aufgaben.
+LoRA erzielt on-par oder bessere Performance als Full Fine-Tuning und übertrifft Prompt Tuning in Gesamtperformance, Memory-Effizienz und Flexibilität \cite{ding2023parameter}. Adapter zeigen konsistent starke Performance auf Benchmarks, leiden jedoch unter Inferenz-Latenz. Prefix Tuning demonstriert Superiorität in multilingualen Adaptations-Tasks, während Prompt Tuning Schwächen bei kleinen Modellen zeigt.
 
-Die Effizienzcharakteristika von Adaptern sind empirisch gut dokumentiert. [SOURCE-MISSING: Houlsby et al., 2019] demonstrierten, dass Adapter lediglich 3,6\% zusätzliche Parameter pro Task erfordern, während die Performance innerhalb von 0,4\% des Full Fine-Tuning liegt. Dies ermöglicht kompakte, erweiterbare Modellarchitekturen. Die Parameteranzahl skaliert mit $O(r(d_{in} + d_{out}))$ pro Layer [SOURCE-MISSING: Shen, 2025], wobei $r$ die Bottleneck-Dimension bezeichnet. Diese Parametrisierung ist jedoch weniger effizient als LoRAs Low-Rank-Dekomposition, da sie keine mathematische Dekomposition der Gewichtsmatrizen ausnutzt.
+Die Wahl von LoRA für diese Arbeit begründet sich durch sechs Faktoren: erstens kein Inferenz-Overhead durch Weight Merging, kritisch für Produktionsumgebung. Zweitens optimale Balance zwischen Parameter-Effizienz und Performance. Drittens ermöglicht Modularität mehrere Task-Adapter. Viertens Hardware-Feasibility durch Kombination mit QLoRA für Consumer-GPUs. Fünftens bewährte Performance in ähnlichen Domänen-Adaptionen. Sechstens umfangreicher Community-Support mit etablierten Best Practices.
 
-Bezüglich des Deployments bieten Adapter signifikante Vorteile durch hohes Parameter-Sharing: Das gefrorene Basismodell wird über alle Tasks hinweg geteilt [SOURCE-MISSING: Houlsby et al., 2019], während lediglich die kompakten, aufgabenspezifischen Adapter-Parameter gespeichert werden müssen. Dies ermöglicht das Training neuer Tasks ohne Revisitation vorheriger Aufgaben und erleichtert Multi-Task-Szenarien.
+Auch PEFT-Methoden wie LoRA erfordern bei 7-Milliarden-Parameter-Modellen erhebliche Ressourcen. Unsloth adressiert diese Herausforderungen durch drei technische Optimierungskategorien \cite{unsloth2024github}. Erstens Speichereffizienz mit 50 bis 80 Prozent Reduktion des VRAM-Bedarfs: 4-bit Quantization der Base-Model-Weights erzielt circa 70 Prozent Memory-Reduktion. Die optimierte QLoRA-Implementation kombiniert LoRA-Adapter mit 4-bit Quantization. Dies ermöglicht 7-Milliarden-Parameter-Modelle auf Consumer-GPUs ohne Qualitätsverlust.
 
-Die zentrale Limitation von Adaptern manifestiert sich jedoch in der Inferenz-Latenz. Da Adapter zusätzliche Layer zum Modell hinzufügen, erhöhen sie die effektive Modelltiefe und verursachen dadurch strukturbedingte Latenz während der Inferenz [SOURCE-MISSING: Ding et al., 2024; Li et al., 2021; Hu et al., 2021]. Dies macht Adapter weniger geeignet für latenz-sensitive Produktionsanwendungen [SOURCE-MISSING: Li et al., 2025]. Im Gegensatz zu LoRA, wo Post-Training Weight Merging die zusätzlichen Parameter in die Originalgewichte integriert, bleibt diese strukturelle Limitation bei Adaptern bestehen, da die zusätzlichen Layer architektonisch erforderlich sind.
-        
-        \paragraph{Prefix Tuning}
-        
-        Prefix Tuning repräsentiert einen attention-basierten PEFT-Ansatz, der ebenfalls zur Kategorie des Additive Fine-Tuning gehört [SOURCE-MISSING: Li et al., 2021]. Die Methode optimiert kontinuierliche, aufgabenspezifische Vektoren, die als trainierbare Prefixes den Input-Embeddings vorangestellt werden. Diese Prefix-Vektoren modifizieren die Attention-Mechanismen des Transformers, indem sie die Attention-Keys und -Values beeinflussen, während nachfolgende Tokens auf diese Prefixes "attenden" können. Das zugrundeliegende Basismodell bleibt dabei vollständig eingefroren.
+Zweitens Training-Beschleunigung durch Flash Attention 2 und Custom Kernel Implementations in OpenAI Triton \cite{dao2022flashattention}. Drittens numerische Stabilität durch Gradient Clipping, Layer Normalization Calibration und Multi-Precision Support.
 
-Die Parameter-Effizienz von Prefix Tuning ist außerordentlich: Die Methode trainiert lediglich 0,1\% der Originalparameter und stellt damit die extremste Parameter-Reduktion aller etablierten PEFT-Methoden dar [SOURCE-MISSING: Li et al., 2021; Eyuboglu et al., 2025; Shen, 2025]. Trotz dieser drastischen Parameterreduktion wird bei ausreichend großen Modellen eine vergleichbare Performance zu umfangreicheren Ansätzen erzielt. Der fundamentale Unterschied zu gewichtsbasierten Methoden liegt darin, dass Prefix Tuning Input-Repräsentationen modifiziert, anstatt Modellgewichte anzupassen.
+Die Demokratisierung des Zugangs manifestiert sich in Hardware-Accessibility auf Single-GPU statt Multi-GPU, Consumer-Grade Hardware und Free Cloud Platforms. Praktische Implikationen für diese Arbeit umfassen: Iterationsgeschwindigkeit, Hardware-Feasibility und Stabilität.
 
-Empirische Studien zeigen spezifische Kontexte, in denen Prefix Tuning besondere Stärken aufweist. In multilingualen Adaptations-Tasks demonstriert die Methode Überlegenheit gegenüber LoRA [SOURCE-MISSING: Snegha et al., 2025]: Auf dem XNLI-Benchmark werden bis zu 28\% höhere Accuracy-Werte erreicht, auf XQUAD zeigt sich eine 13\% höhere F1-Metrik, und der Belebele-Benchmark weist 18\% höhere Accuracy gegenüber Basis-Modellen auf. Gegenüber LoRA ergibt sich in diesen mehrsprachigen Szenarien eine zusätzliche Verbesserung von 4--6\%. Diese Ergebnisse legen nahe, dass Prefix Tuning besonders effektiv ist, wenn sprachübergreifende Repräsentationen angepasst werden müssen.
+\subsubsection{Prompt Engineering}
+\label{sec:2.2.2}
 
-Die Methode weist jedoch mehrere substantielle Limitierungen auf. Prefix-Tokens reduzieren die effektive Sequenzlänge, die für die eigentliche Input-Sequenz verfügbar ist. Dies verursacht einen Inferenz-Overhead, da zusätzliche Kontext-Tokens während jeder Vorhersage verarbeitet werden müssen [SOURCE-MISSING: Li et al., 2025; Diep et al., 2025], was den Computational Cost während der Inferenz erhöht. Die Methode zeigt zudem hohe Sensitivität gegenüber der Initialisierung der Prefix-Parameter [SOURCE-MISSING: Huang et al., 2024]. Praktische Herausforderungen manifestieren sich im Training, das als anspruchsvoll charakterisiert wird, sowie in der reduzierten verfügbaren Sequenzlänge für die tatsächliche Aufgabenstellung [SOURCE-MISSING: Ding et al., 2024].
-        
-        \paragraph{Prompt Tuning}
-        
-        Prompt Tuning stellt eine konzeptionell verwandte, jedoch methodisch distinkte Variante des input-basierten Fine-Tuning dar [SOURCE-MISSING: Lester et al., 2021]. Die Methode verwendet lernbare "Soft Prompts" in Form kontinuierlicher Embeddings, die im Gegensatz zu diskreten Token-Sequenzen direkt via Backpropagation optimiert werden. Während des Trainings bleiben sämtliche Modellparameter eingefroren, und ausschließlich die Prompt-Embeddings werden als trainierbare Parameter behandelt.
+Fine-Tuning realisiert permanente Modellanpassung durch Parameteränderung, während Prompt Engineering Verhaltenssteuerung ohne Gewichtsänderungen ermöglicht. Der Synergieeffekt manifestiert sich in der Kombination: Fine-Tuning etabliert domänenspezifische Fähigkeiten, Prompts steuern aufgabenspezifische Kontrolle \cite{reynolds2021prompt}.
 
-Ein charakteristisches Merkmal von Prompt Tuning ist dessen Skalierungsverhalten in Abhängigkeit von der Modellgröße [SOURCE-MISSING: Lester et al., 2021]. Die Methode wird zunehmend kompetitiver mit steigenden Modellparameterzahlen und erreicht ab mehreren Milliarden Parametern Performance-Niveaus, die Full Fine-Tuning entsprechen. Bei kleineren Modellen unterhalb von 11 Milliarden Parametern manifestiert sich jedoch eine signifikant geringere Performance, was die Anwendbarkeit in ressourcenbeschränkten Szenarien limitiert.
+Zero-Shot Prompting beschränkt sich auf reine Instruktion ohne Demonstrationen. Base Models wie LeoLM-7B zeigen jedoch schwache Zero-Shot-Fähigkeiten. Few-Shot Learning integriert Aufgabenbeschreibung und demonstrative Beispiele im Prompt \cite{brown2020language}. Der Mechanismus ist In-Context Learning: Das Modell erkennt Muster aus Input-Output-Paaren ohne Gewichtsanpassung. Empirische Evidenz dokumentiert dramatische Leistungssteigerung gegenüber Zero-Shot.
 
-Bezüglich der Parameter-Effizienz zeigt Prompt Tuning extreme Sparsamkeit [SOURCE-MISSING: Lester et al., 2021; Eyuboglu et al., 2025]. Die diskrete Token-Level-Optimierung ermöglicht minimale Speicheranforderungen, wobei ähnlich wie bei Prefix Tuning Input-Repräsentationen modifiziert werden, anstatt Gewichtsmatrizen anzupassen.
+Die Beispielauswahl folgt spezifischen Prinzipien: Diversität gewährleistet Abdeckung verschiedener Störungstypen. Qualität dominiert Quantität, drei perfekte Beispiele übertreffen zehn durchschnittliche. Die Beispielreihenfolge berücksichtigt Recency Bias: Letzte Beispiele haben den stärksten Einfluss auf das Modellverhalten \cite{zhao2021calibrate}.
 
-Die methodischen Limitierungen überlappen weitgehend mit denen von Prefix Tuning. Das Prepending aufgabenspezifischer Tokens verursacht Inferenz-Overhead [SOURCE-MISSING: Li et al., 2025], der sich in zusätzlichem Computational Cost manifestiert. Im Vergleich zu Modellen mit vollständig gefrorenen Backbone-Parametern resultiert dies in erhöhter Latenz [SOURCE-MISSING: Diep et al., 2025; Lester et al., 2021]. Zudem zeigt die Methode hohe Sensitivität gegenüber der Initialisierung der Prompt-Embeddings [SOURCE-MISSING: Huang et al., 2024], was eine sorgfältige Hyperparameter-Exploration erforderlich macht.
-        
-        
-        \paragraph{Vergleichende Bewertung}
-        
-        Die Parameter-Effizienz differenziert sich über vier Größenordnungen: Prompt Tuning repräsentiert die extremste Reduktion mit ~0,01\% trainierbaren Parametern, gefolgt von Prefix Tuning (~0,1\%), LoRA (~0,1--1\%, abhängig vom Rank-Parameter) und Adaptern (~3,6\%). Der Inferenz-Overhead zeigt inverse Charakteristika: LoRA ermöglicht Weight Merging und erreicht damit nahezu nullten Overhead, während Prefix und Prompt Tuning geringen Overhead durch zusätzliche Tokens verursachen. Adapter manifestieren problematischen hohen Overhead durch zusätzliche Layer, der strukturbedingt nicht eliminierbar ist.
+Instruction Prompting definiert sich als explizite Aufgabenbeschreibung vor den Beispielen. Effektive Instructions umfassen Rollenspezifikation, präzise Aufgabendefinition, Constraints bezüglich unerwünschten Verhaltens, Stilrichtlinien und Ausgabeformat \cite{ouyang2022training}.
 
-Die Performance-Charakteristika variieren kontextabhängig. LoRA \cite{hu2021lora,adegoke2024lora} erzielt on-par oder bessere Performance als Full Fine-Tuning auf RoBERTa, DeBERTa, GPT-2 und GPT-3 und übertrifft Prompt Tuning in Gesamtperformance, Memory-Effizienz und Flexibilität. Ein Performance-Gap manifestiert sich jedoch bei komplexen, heterogenen Datensätzen [SOURCE-MISSING: Wang et al., 2025]. Adapter [SOURCE-MISSING: Houlsby et al., 2019] zeigen konsistent starke Performance auf Benchmarks (GLUE: innerhalb 0,4\% von Full Fine-Tuning) und zuverlässige Resultate über verschiedene Tasks hinweg. Prefix Tuning [SOURCE-MISSING: Snegha et al., 2025; Kim et al., 2023] demonstriert Superiorität in multilingualen Adaptations-Tasks und zeit-beschränkten Szenarien (3--5 Minuten Training) und übertrifft LoRA in spezifischen Kontexten. Prompt Tuning zeigt Schwächen bei kleinen Modellen, wird jedoch konkurrenzfähig ab >11 Milliarden Parametern.
+Template-Strukturen umfassen vier Komponenten: System Prompt, Few-Shot Examples, User Prompt und optional Knowledge Context. Die Differenzierung zwischen Base Models und Instruction-Tuned Models ist essenziell: Base Models wie LeoLM-7B zeigen schwache Instruktionsbefolgung ohne Fine-Tuning, tendieren zur Textkontinuation statt Aufgabenlösung und benötigen Few-Shot Examples essentiell \cite{wei2022finetuned}.
 
-Die Training-Dynamik offenbart methodenspezifische Charakteristika: LoRA konvergiert langsam (5--6× mehr Iterationen erforderlich [SOURCE-MISSING: Wang et al., 2024]), Prompt und Prefix Tuning zeigen hohe Initialisierungs-Sensitivität [SOURCE-MISSING: Huang et al., 2024], während Adapter stabile Konvergenz bei höherem Speicherbedarf aufweisen.
+Der Synergieeffekt mit Fine-Tuning manifestiert sich: Fine-Tuning lernt domänenspezifisches Vokabular und Muster, Prompts steuern aufgabenspezifische Nuancen. Die Kombination ist robuster als jede Methode einzeln und reduziert Overfitting-Risiko durch flexible Steuerung.
 
-Die Wahl von LoRA für diese Arbeit begründet sich durch sechs Faktoren: (1) Kein Inferenz-Overhead durch Weight Merging, kritisch für Produktionsumgebung. (2) Optimale Balance zwischen Parameter-Effizienz und Performance. (3) Modularität ermöglicht mehrere Task-Adapter. (4) Hardware-Feasibility durch Kombination mit QLoRA für Consumer-GPUs. (5) Bewährte Performance in ähnlichen Domänen-Adaptionen. (6) Umfangreicher Community-Support mit etablierten Best Practices. Die Konvergenz-Limitation ist akzeptabel aufgrund des kleinen Datensatzes (kurze Trainings-Episoden weniger kritisch), Unsloth-Optimierungen, die teilweise kompensieren (siehe unten), und Priorisierung von Quality over Speed (finale Performance wichtiger als Trainingszeit).
-        
-        \paragraph{Unsloth: Optimierungsframework für effizientes Training}
-        
-        Die Problemstellung persistiert: Auch PEFT-Methoden wie LoRA erfordern bei 7B-Modellen erhebliche Ressourcen. Traditionelle Frameworks (Hugging Face Transformers, PyTorch) stoßen an Hardware-Limitierungen, insbesondere bei Consumer-Grade-Hardware. Instabilitäten beim LoRA-Training manifestieren sich in Gradient Explosion und numerischer Instabilität \cite{zhong2025}. Zugangshürden durch Anforderungen an Enterprise-Grade-GPUs oder Multi-GPU-Setups motivieren Optimierungsansätze.
+\subsubsection{Datensätze für Fine-Tuning}
+\label{sec:2.2.3}
 
-Unsloth adressiert diese Herausforderungen durch drei technische Optimierungskategorien. Erstens Speichereffizienz mit 50--80\% Reduktion des VRAM-Bedarfs \cite{hasan2025,pingua2025,lu2025}: 4-bit Quantization der Base-Model-Weights erzielt ~70\% Memory-Reduktion \cite{zhong2025}. Die optimierte QLoRA-Implementation kombiniert LoRA-Adapter mit 4-bit Quantization \cite{dettmers2023}. Gradient Checkpointing reduziert Aktivierungs-Speicherung. Dies ermöglicht 7B-Modelle auf Consumer-GPUs (RTX 3090, Tesla T4) \cite{tahir2024,phan2025,bandara2025} ohne Qualitätsverlust bei drastisch reduziertem VRAM.
+Qualität und Zusammenstellung von Trainingsdaten konstituieren kritische Erfolgsfaktoren beim Fine-Tuning. Besondere Herausforderungen manifestieren sich bei kleinen domänenspezifischen Datensätzen, wie sie in dieser Arbeit vorliegen \cite{kaplan2020scaling}. Transfer Learning reduziert den Datenbedarf substanziell, ausreichende Qualität bleibt jedoch essentiell für erfolgreiche Adaption.
 
-Zweitens Training-Beschleunigung (2--5× schneller) \cite{hasan2025,lu2025,pingua2025}: Flash Attention 2 \cite{dao2022} bietet IO-optimierte Attention-Berechnung mit reduzierten Transfers zwischen GPU-Memory-Komponenten \cite{lea2025} und effizienteren Key-Value-Query-Matrix-Operationen. Custom Kernel Implementations in OpenAI Triton \cite{lea2025} realisieren Fused Operations (weniger Speicherzugriffe), optimierte Matrix-Multiplikationen für LoRA und Custom PyTorch Autograd-Funktionen. Training-Epochen werden in 26 Minuten absolviert (statt Stunden) \cite{mohammadi2025}.
+Supervised Fine-Tuning erfordert strukturierte Input-Output-Paare. Format-Anforderungen variieren zwischen JSON, JSONL und modellspezifischen Formaten. Konsistenz in Struktur und Formatierung ist obligatorisch. Prompt-Template-basiertes Format-Design folgt dem Prinzip, dass Training-Daten das Inference-Format widerspiegeln sollten \cite{sanh2022multitask}.
 
-Drittens numerische Stabilität: Gradient Clipping gegen Gradient Explosion \cite{zhong2025}, Layer Normalization Calibration für LoRA-spezifische Instabilitäten \cite{zhong2025}, Multi-Precision Support (8-bit, bfloat16) für Hardware-Flexibilität \cite{upadhyay2025,pourcel2025}. Dies verhindert Training-Abbrüche durch Overflow. Die PEFT-Integration unterstützt LoRA-Target-Modules: q\_proj, k\_proj, v\_proj, o\_proj, gate\_proj, up\_proj, down\_proj \cite{upadhyay2025,rao2025}, ist vollständig kompatibel mit Hugging Face PEFT und ermöglicht nahtlose Integration in bestehende Workflows.
+Data Augmentation zielt auf Vergrößerung des Datensatzes ohne zusätzliche manuelle Annotation. Die Ziele umfassen Verbesserung der Generalisierung, Reduktion von Overfitting und Erhöhung der Robustheit \cite{wei2019eda}. Drei methodische Kategorien existieren.
 
-Die Demokratisierung des Zugangs manifestiert sich in Hardware-Accessibility (Single-GPU statt Multi-GPU \cite{lea2025}), Consumer-Grade Hardware (RTX 3090, NVIDIA A40, Tesla T4 \cite{tahir2024,bandara2025,phan2025}), Free Cloud Platforms (Google Colab mit T4/TPU, Kaggle mit P100 \cite{phan2025,bandara2025}) und strukturierten Templates durch Guided Notebooks für niedrige Einstiegshürde \cite{jimenez2025}. Dies ermöglicht Forschung ohne Enterprise-Budget \cite{huang2025,machlovi2025}.
+Rule-Based Augmentation umfasst Synonym Replacement, Random Insertion, Random Swap und Random Deletion. Easy Data Augmentation kombiniert diese Techniken und ist effektiv bei kleinen Datensätzen \cite{wei2019eda}. Die empirische Evaluation zeigt, dass bereits einfache regelbasierte Augmentierungstechniken die Performance deutlich steigern können.
 
-Synergieeffekte entstehen durch Kombination: LoRA reduziert trainierbare Parameter und damit Rechenaufwand, Unsloth optimiert verbleibende Operationen für schnellere Ausführung, QLoRA + Unsloth vereinen Memory-Effizienz und Speed-Optimierung \cite{dettmers2023}, ohne Qualitätseinbußen gegenüber Standard-Fine-Tuning.
+Model-Based Augmentation nutzt Back-Translation, Paraphrasing mit vortrainierten Modellen und template-basierte Generierung. Diese Methoden bieten höhere Qualität bei erhöhtem Rechenaufwand \cite{sennrich2016improving}.
 
-Die Abgrenzung zu DeepSpeed ist essenziell: DeepSpeed fokussiert auf Multi-GPU-verteiltes Training, Unsloth auf Single-GPU-Optimierung. Unsloth ist komplementär zu PEFT, nicht alternatives Verfahren. Der Fokus liegt auf Accessibility statt Scale.
+Synthetic Data Generation erzeugt komplett neue Beispiele durch LLMs. Constraint-basierte Generation mit validierten Entitäten ermöglicht Kontrolle über Diversität und Abdeckung \cite{dai2023chataug}. Das Risiko liegt in Halluzinationen und unrealistischen Beispielen. Best Practice empfiehlt Kombination aus realen und synthetischen Daten.
 
-Praktische Implikationen für diese Arbeit umfassen: Iterationsgeschwindigkeit (mehr Experimente in gleicher Zeit), Hardware-Feasibility (Training auf verfügbarer Hardware möglich), Energieeffizienz (reduzierte Trainingszeit → geringerer Energieverbrauch) und Stabilität (zuverlässigere Training-Runs in Constrained Environments \cite{mansha2025}).
-        
-        
-        \subsubsection{Prompt Engineering}
-        \label{sec:2.2.2}
-        
-        Fine-Tuning realisiert permanente Modellanpassung durch Parameteränderung, während Prompt Engineering Verhaltenssteuerung ohne Gewichtsänderungen ermöglicht. Der Synergieeffekt manifestiert sich in der Kombination: Fine-Tuning etabliert domänenspezifische Fähigkeiten, Prompts steuern aufgabenspezifische Kontrolle. Für diese Arbeit ist Prompt Engineering relevant für Stilrichtlinien, Formatvorgaben und Konsistenz-Enforcement.
-        
-        \paragraph{Von Zero-Shot zu Few-Shot}
-        
-        Zero-Shot Prompting beschränkt sich auf reine Instruktion ohne Demonstrationen. Das Modell erhält lediglich eine Aufgabenbeschreibung ohne Beispiele. Diese Methode funktioniert bei großen instruction-tuned Modellen (GPT-4, Claude) mit hinreichender Performanz, Base Models wie LeoLM-7B zeigen jedoch schwache Zero-Shot-Fähigkeiten. Bei komplexen Transformationsaufgaben ist Zero-Shot nicht ausreichend: Eine Instruktion wie "Schreibe diese Verkehrsanweisung verständlich um" resultiert in unpräzisen Ergebnissen, da "verständlich" interpretationsoffen bleibt.
+Empirische Erkenntnisse zeigen: EDA ermöglicht mit 50 Prozent der Daten gleiche Accuracy wie 100 Prozent ohne Augmentierung \cite{wei2019eda}. Der Effekt verstärkt sich bei kleineren Datensätzen. Qualität dominiert Quantität bei synthetischen Daten.
 
-Few-Shot Learning integriert Aufgabenbeschreibung und demonstrative Beispiele im Prompt \cite{wei2021finetuned,berryman2024prompt}. Der Mechanismus ist In-Context Learning: Das Modell erkennt Muster aus Input-Output-Paaren ohne Gewichtsanpassung. Typischerweise werden 1--10 Shots verwendet, limitiert durch das Context-Window \cite{berryman2024prompt}. Empirische Evidenz dokumentiert dramatische Leistungssteigerung gegenüber Zero-Shot \cite{wei2021finetuned}, wobei Performance mit Beispielanzahl skaliert bis zu einem Plateau-Effekt \cite{berryman2024prompt}.
-
-Der Vergleich zwischen Few-Shot und Fine-Tuning offenbart komplementäre Charakteristika \cite{berryman2024prompt}: Few-Shot verursacht keine permanenten Modellveränderungen und ist flexibel anpassbar, während Fine-Tuning Modellgewichte modifiziert und domänenspezifische Expertise etabliert. Der Trade-off manifestiert sich in längeren Prompts beim Few-Shot-Ansatz (Kontext-Token-Kosten). Die optimale Strategie kombiniert Fine-Tuning für Grundfähigkeiten mit Few-Shot für aufgabenspezifische Nuancen.
-
-Die Beispielauswahl (Example Selection) folgt spezifischen Prinzipien \cite{berryman2024prompt}: Diversität gewährleistet Abdeckung verschiedener Störungstypen (Bauarbeiten, technische Störungen, Umleitungen). Repräsentativität priorisiert häufigste Fälle vor Edge Cases. Qualität dominiert Quantität — drei perfekte Beispiele übertreffen zehn durchschnittliche \cite{berryman2024prompt}. Balancierung sollte die Verteilung des Datensatzes widerspiegeln.
-
-Die Beispielreihenfolge (Example Ordering) berücksichtigt Recency Bias \cite{berryman2024prompt}: Letzte Beispiele haben den stärksten Einfluss auf das Modellverhalten. Die Strategie ordnet Komplexität aufsteigend (einfach → schwierig). Ähnlichkeitsbasierte Sortierung platziert relevanteste Beispiele zuerst. Formatierung und Struktur erfordern klare Trennung zwischen Input und Output (z.B. "Input:", "Output:"), konsistente Formatierung über alle Beispiele hinweg, explizite Delimiter zwischen Beispielen (z.B. "---", "\textbackslash n\textbackslash n") und Template-Konsistenz mit der Inferenz-Struktur \cite{berryman2024prompt}.
-        
-        \paragraph{Instruction Prompting}
-        
-        Instruction Prompting definiert sich als explizite Aufgabenbeschreibung vor den Beispielen. Effektive Instructions umfassen fünf Komponenten \cite{berryman2024prompt,ouyang2022training}: Rollenspezifikation ("Du bist ein Experte für Fahrgastinformation im ÖPNV"), präzise Aufgabendefinition, Constraints bezüglich unerwünschten Verhaltens (keine Halluzinationen, keine Informationsweglassung), Stilrichtlinien (Tonalität, Formalität, Zielgruppe) und Ausgabeformat (erwartete Struktur des generierten Texts).
+Unbalancierte Datensätze verursachen systematische Probleme: Modelle tendieren zu häufigen Klassen und zeigen schlechtere Performance auf seltenen aber wichtigen Fällen. Strategien für Balance umfassen Oversampling unterrepräsentierter Kategorien, SMOTE-ähnliche Ansätze und class-weighted Loss Functions \cite{chawla2002smote}. Empfohlen ist ein maximales Verhältnis von 1:3 zwischen seltenster und häufigster Kategorie.
 
-Die Instruction-Länge und -Spezifität involviert einen Trade-off zwischen Detaillierung und Flexibilität \cite{berryman2024prompt}. Zu vage Formulierungen wie "Schreibe verständlich" erlauben variable Interpretation. Zu spezifische Constraints wie "Nutze genau 2 Sätze mit maximal 15 Wörtern" erzeugen unnatürliche Outputs. Optimal sind Prinzipien statt starre Regeln: "Bevorzuge aktive Formulierungen" bietet Guidance ohne Rigidität.
+Als klein gelten Datensätze mit typischerweise weniger als 1000 Beispielen für Fine-Tuning. Data Efficiency Techniques umfassen aggressive Augmentierung unter Wahrung der Qualität, parameter-effiziente Methoden wie LoRA zur Reduktion des Overfitting-Risikos, niedrigere Learning Rates und Early Stopping basierend auf Validation Loss \cite{dodge2020fine}.
 
-Negativbeispiele und Abgrenzungen verstärken die Effektivität \cite{berryman2024prompt}. Negativ formulierte Constraints wie "Schreibe NICHT im Telegrammstil" wirken effektiver als rein positive Vorgaben. Anti-Halluzination-Direktiven wie "Erfinde KEINE Details, die nicht in der Eingabe stehen" reduzieren Fabrikationsfehler. Empirische Studien dokumentieren, dass die Kombination aus positiven und negativen Constraints die höchste Effektivität erzielt.
-        
-        \paragraph{Chain-of-Thought Prompting}
-        
-        Das Grundkonzept von Chain-of-Thought (CoT) differenziert sich fundamental von Standard-Prompting \cite{berryman2024prompt,bonstra2024prompt}: Während Standard-Prompting direkte Input-Output-Zuordnung anstrebt, expliziert CoT Zwischenschritte des Reasoning-Prozesses. Der Mechanismus instruiert das Modell, den Denkprozess zu verbalisieren ("Lass uns Schritt für Schritt denken" \cite{bonstra2024prompt}). CoT ist besonders effektiv bei Multi-Hop-Reasoning und komplexen Transformationen \cite{berryman2024prompt}.
+Mixed Task Training kombiniert domänenspezifische und allgemeine Daten. Das Verhältnis liegt typisch bei 85 bis 90 Prozent spezifisch, 10 bis 15 Prozent allgemein. Dies verhindert Catastrophic Forgetting und erhält Generalisierungsfähigkeit \cite{mccloskey1989catastrophic}.
 
-Die Anwendung auf Verkehrsanweisungs-Transformation strukturiert sich in vier Schritte: Schritt 1 identifiziert die Kernaussage (welche Linie, welche Störung). Schritt 2 extrahiert Entitäten (Liniennummern, Haltestellen, Zeitangaben). Schritt 3 bestimmt den Fahrzeugtyp aus der Knowledge Base. Schritt 4 formuliert einen verständlichen Satz mit allen Informationen. Der Vorteil liegt in Fehlerreduktion durch strukturierten Prozess.
+Standard-Aufteilung: 70 bis 80 Prozent Training, 10 bis 15 Prozent Validation, 10 bis 15 Prozent Test. Bei kleinen Datensätzen: 80-10-10 oder Cross-Validation. Stratified Split bei kategorischen Daten erhält Balance. Vermeidung von Data Leakage zwischen Splits ist kritisch.
 
-Zero-Shot-CoT differenziert sich von Few-Shot-CoT \cite{bonstra2024prompt}: Zero-Shot-CoT nutzt "Lass uns Schritt für Schritt denken" als generischen Trigger. Few-Shot-CoT demonstriert Beispiele mit expliziten Reasoning-Schritten. Few-Shot-CoT zeigt Überlegenheit bei domänenspezifischen Aufgaben und ist für strukturierte Transformation mit Reasoning relevant.
+Qualitätssicherung umfasst automatisierte Validierung, manuelle Stichprobenprüfung und iterative Verbesserung basierend auf Modellfehlern \cite{sambasivan2021everyone}.
 
-Limitierungen manifestieren sich in erhöhtem Token-Verbrauch durch Zwischenschritte \cite{berryman2024prompt}. CoT ist nicht notwendig bei einfachen Transformationen. In Produktionsumgebungen entfernt Post-Processing das Reasoning, um ausschließlich Endergebnisse auszugeben.
-        
-        \paragraph{Prompt Template Design}
-        
-        Die Motivation differenziert zwischen manuellen Prompts für einzelne Anfragen und Templates für Batch-Verarbeitung \cite{berryman2024prompt}. Template-Strukturen umfassen vier Komponenten \cite{berryman2024prompt}: System Prompt (statisch, enthält Rollenspezifikation und Grundregeln), Few-Shot Examples (statisch oder dynamisch selektiert), User Prompt (variabel, enthält konkrete Verkehrsanweisung) und optional Knowledge Context (Linien-Fahrzeug-Zuordnungen als JSON).
+\subsubsection{Herausforderungen beim Fine-Tuning}
+\label{sec:2.2.4}
 
-Variablen-Substitution \cite{berryman2024prompt} nutzt Platzhalter für dynamische Inhalte (\{INPUT\_INSTRUCTION\}, \{KNOWLEDGE\_BASE\}). Formatierung erfordert JSON-Escaping und Whitespace-Normalisierung. Validierung prüft vollständige Substitution vor Inferenz. Template-Typen differenzieren sich nach Störungskategorien: Typ A für Bauarbeiten (erfordert Alternativrouten-Information), Typ B für technische Störungen (erfordert Fahrzeugtyp-Präzision), Typ C für Umleitungen (erfordert geografische Klarheit). Adaptive Template-Auswahl basiert auf Input-Klassifizierung.
-        
-        \paragraph{Prompt Optimization und kontextspezifische Anwendung}
-        
-        Systematische Optimierung \cite{berryman2024prompt} folgt fünf Schritten: Baseline-Erstellung mit einfachem Prompt als Ausgangspunkt, Fehleranalyse zur Identifikation von Fehlertypen, gezielte Constraint-Integration zur Adressierung spezifischer Fehlerklassen, A/B-Testing zum Vergleich verschiedener Prompt-Varianten und iterative Refinement zur schrittweisen Verbesserung.
+Fine-Tuning vortrainierter Modelle manifestiert spezifische Herausforderungen im Spannungsfeld zwischen Spezialisierung auf neue Aufgaben und Erhalt allgemeiner Fähigkeiten. Besonders kritisch sind diese bei kleinen domänenspezifischen Datensätzen \cite{mosbach2021stability}.
 
-Automatische Prompt Optimization \cite{berryman2024prompt} umfasst APE (Automatic Prompt Engineering), wobei LLMs Prompt-Varianten generieren und evaluieren. Diese Methode wird in dieser Arbeit nicht verwendet (zu ressourcenintensiv). Manuelle Optimierung ist praktikabler bei kleinem Anwendungsbereich.
+Overfitting manifestiert sich, wenn das Modell Trainingsdaten auswendig lernt statt Muster zu generalisieren. Charakteristische Symptome sind hohe Training Accuracy bei niedriger Validation bzw. Test Accuracy. Besonders ausgeprägt ist Overfitting bei kleinen Datensätzen. LoRA reduziert das Overfitting-Risiko gegenüber Full Fine-Tuning, eliminiert es jedoch nicht \cite{hu2021lora}.
 
-Metrik-gesteuerte Optimierung \cite{berryman2024prompt} evaluiert vier Dimensionen: Faktentreue (Prüfung gegen strukturierte Eingabedaten), Stilkonformität, Konsistenz (gleiche Eingaben → identische Ausgaben bei deterministischer Temperatur) und Effizienz (Token-Länge minimieren bei gleichbleibender Qualität).
+Die Ursachen umfassen: Modellkomplexität übersteigt Informationsgehalt der Trainingsdaten, zu viele Trainings-Epochen, unbalancierte Datensätze und zu hohe Learning Rate. Bei LoRA-Fine-Tuning spezifisch: Höherer Rank erhöht trainierbare Parameter und damit Overfitting-Risiko.
 
-Self-Consistency \cite{bonstra2024prompt} generiert mehrfach mit Sampling und bildet Mehrheitsentscheidung. Dies reduziert Halluzinationen durch Konsensbildung, verursacht jedoch Trade-off durch mehrfache Inferenz-Kosten. Die Methode ist anwendbar bei kritischen Transformationen. Least-to-Most Prompting \cite{berryman2024prompt} zerlegt komplexe Aufgaben in einfachere Teilschritte, wobei jeder Schritt auf vorherigem aufbaut. Dies ist ähnlich zu Chain-of-Thought, jedoch strukturierter. ReAct (Reasoning + Acting) \cite{berryman2024prompt} kombiniert Reasoning mit Tool-Use, wobei das Modell entscheidet, wann externe Informationen benötigt werden. Dies ist für diese Arbeit nicht direkt relevant (keine externen Tools).
+Vermeidungsstrategien gliedern sich in fünf Kategorien: Regularisierung nutzt L2-Regularisierung zur Bestrafung großer Gewichtswerte und Dropout \cite{srivastava2014dropout}. Early Stopping monitort kontinuierlich Validation Loss während Training und stoppt Training wenn Validation Loss stagniert oder ansteigt \cite{prechelt1998early}. Datenaugmentierung vergrößert den effektiven Datensatz künstlich und reduziert Overfitting durch erhöhte Variabilität. Cross-Validation nutzt K-Fold Cross-Validation bei sehr kleinen Datensätzen für robustere Schätzung der Generalisierungsfähigkeit. PEFT-spezifische Strategien: Niedrigerer LoRA-Rank reduziert trainierbare Parameter, selektive Target Modules passen nur kritische Layer an.
 
-Die Differenzierung zwischen Base Models und Instruction-Tuned Models ist essenziell \cite{berryman2024prompt,ouyang2022training}: Base Models wie LeoLM-7B zeigen schwache Instruktionsbefolgung ohne Fine-Tuning, tendieren zur Textkontinuation statt Aufgabenlösung, erfordern präzisere und strukturiertere Prompts, benötigen Few-Shot Examples essentiell (nicht optional) und funktionieren besser mit Completion-Framing ("Text: ... Umschreibung:" statt "Schreibe um:"). Instruction-Tuned Models wie LeoLM-7B-Instruct bieten bessere Zero-Shot-Performance, verstehen imperative Formulierungen ("Transformiere", "Schreibe"), akzeptieren flexiblere Prompt-Formate und profitieren von Few-Shot, wobei dies weniger kritisch ist.
+Catastrophic Forgetting beschreibt das Phänomen, dass Modelle während Fine-Tuning Fähigkeiten aus der Pretraining-Phase verlieren \cite{kirkpatrick2017overcoming}. Spezialisierung auf neue Aufgaben geht zu Lasten allgemeiner Kompetenzen. Bei LoRA ist dies weniger ausgeprägt als bei Full Fine-Tuning, aber vorhanden.
 
-Die Implikation für diese Arbeit \cite{berryman2024prompt}: Base Model gewählt, wodurch Prompt Engineering umso wichtiger wird. Fine-Tuning kann Prompt-Abhängigkeit reduzieren, nicht jedoch eliminieren. Post-Fine-Tuning Prompts können kürzer und direkter formuliert werden.
+Manifestationen umfassen Wissensverlust, Sprachkompetenz-Degradation und Task Interference. Gegenmaßnahmen umfassen niedrigere Learning Rates, LoRA als sanftere Alternative zu Full Fine-Tuning und Mixed Task Training \cite{mccloskey1989catastrophic}.
 
-Der Einsatz in verschiedenen Phasen gliedert sich: (1) Pre-Fine-Tuning zur Evaluation verschiedener Base Models, (2) Training mit Few-Shot Examples als Teil des Trainingsformats , (3) Post-Fine-Tuning mit Inference-Zeit-Prompts für Konsistenz.
+LoRA zeigt inhärente Konvergenz-Limitierungen: Langsame Konvergenz erfordert fünf- bis sechsmal mehr Iterationen als Full Fine-Tuning \cite{zhang2023adaptive}. Die Low-Rank-Constraint limitiert die Expressivität der Gewichtsanpassungen. Trade-off zwischen Rank und Konvergenzgeschwindigkeit ist omnipräsent.
 
-Spezifische Anwendungen umfassen System Prompt (LVB-Stilrichtlinien, Zielgruppendefinition als Fahrgäste), Knowledge Integration (Linien-Fahrzeug-Zuordnungen als strukturierter Kontext), Constraint Specification (keine Halluzinationen, vollständige Informationswiedergabe) und Format Control (einzelner Fließtext-Satz als Output).
+Performance-Gap zu Full Fine-Tuning ist konsistent dokumentiert, besonders ausgeprägt bei komplexen Datensätzen mit diversen Sub-Domänen. Der Gap verringert sich mit größeren Basismodellen, höherem LoRA-Rank und längeren Trainings-Episoden.
 
-Der Synergieeffekt mit Fine-Tuning manifestiert sich: Fine-Tuning lernt domänenspezifisches Vokabular und Muster, Prompts steuern aufgabenspezifische Nuancen und Edge Cases. Die Kombination ist robuster als jede Methode einzeln und reduziert Overfitting-Risiko (Abschnitt~\ref{sec:2.2.4}) durch flexible Steuerung. Prompt Engineering realisiert Verhaltenssteuerung zur Inferenzzeit, während der nächste Schritt Datenqualität und -struktur für Fine-Tuning adressiert. Das Zusammenspiel: Prompts definieren die Aufgabe, Daten trainieren die Fähigkeiten — der Übergang von "Wie kommuniziere ich die Aufgabe?" zu "Wie bereite ich Trainingsdaten auf?".
-        
-        
-        \subsubsection{Datensätze für Fine-Tuning}
-        \label{sec:2.2.3}
-        
-        Qualität und Zusammenstellung von Trainingsdaten konstituieren kritische Erfolgsfaktoren beim Fine-Tuning. Besondere Herausforderungen manifestieren sich bei kleinen domänenspezifischen Datensätzen, wie sie in dieser Arbeit vorliegen. Transfer Learning reduziert den Datenbedarf substanziell, ausreichende Qualität bleibt jedoch essentiell für erfolgreiche Adaption.
-        
-        \paragraph{Struktur von Trainingsdaten}
-        
-        Supervised Fine-Tuning erfordert strukturierte Input-Output-Paare. Format-Anforderungen variieren zwischen JSON, JSONL und modellspezifischen Formaten. Konsistenz in Struktur und Formatierung ist obligatorisch. Annotationsrichtlinien etablieren klare, eindeutige Vorgaben zur Qualitätssicherung, wobei Inter-Annotator Agreement als Qualitätsmetrik fungiert.
+\subsection{Ressourceneffizienz und Modelloptimierung}
+\label{sec:2.3}
 
-Prompt-Template-basiertes Format-Design \cite{berryman2024prompt} folgt dem Prinzip, dass Training-Daten das Inference-Format widerspiegeln sollten. Die Trainingsstruktur kombiniert Instruction + Few-Shot Examples + Task. Konsistente Delimiter und Formatierung zwischen Training und Inferenz sind kritisch. Der Vorteil manifestiert sich darin, dass das Modell nicht nur Inhalt, sondern auch Format-Erwartungen internalisiert.
-        
-        \paragraph{Data Augmentation Strategien}
-        
-        Data Augmentation zielt auf Vergrößerung des Datensatzes ohne zusätzliche manuelle Annotation. Die Ziele umfassen Verbesserung der Generalisierung, Reduktion von Overfitting und Erhöhung der Robustheit. Drei methodische Kategorien existieren \cite{feng2021survey}.
+Die in Abschnitt 2.2 dargestellten Fine-Tuning-Methoden ermöglichen die gezielte Anpassung von Large Language Models an spezifische Anwendungsdomänen. Während diese Verfahren die technische Grundlage schaffen, stellt sich unmittelbar die Frage nach der praktischen Realisierbarkeit: Wie können LLMs ressourceneffizient in produktiven Umgebungen deployed werden, insbesondere auf Consumer-Hardware mit begrenzten Ressourcen \cite{schwartz2020green}.
 
-Rule-Based Augmentation umfasst Synonym Replacement (Austausch von Wörtern durch Synonyme), Random Insertion (Einfügen zusätzlicher Wörter), Random Swap (Vertauschen von Wortpositionen) und Random Deletion (Entfernen einzelner Wörter). EDA (Easy Data Augmentation) \cite{wei2019eda} kombiniert diese Techniken und ist effektiv bei kleinen Datensätzen (50--500 Beispiele).
+Das Spannungsfeld zwischen Modellperformance und Ressourcenverbrauch prägt die praktische Anwendung von Large Language Models in erheblichem Maße. Die Balance zwischen Qualität und Effizienz berührt dabei nicht nur technische, sondern auch wirtschaftliche und ökologische Aspekte der Modellentwicklung und -nutzung \cite{strubell2019energy}.
 
-Model-Based Augmentation nutzt Back-Translation (Übersetzung in andere Sprache und zurück), Paraphrasing mit vortrainierten Modellen, Contextual Word Embeddings für kontextsensitive Ersetzungen und template-basierte Generierung \cite{kumar2020data}. Diese Methoden bieten höhere Qualität bei erhöhtem Rechenaufwand.
+Die Ressourceneffizienz lässt sich in drei wesentliche Dimensionen untergliedern: Computational Resources umfassen die hardwareseitigen Anforderungen an Arbeitsspeicher, Rechenleistung und spezialisierte Hardware-Komponenten. Environmental Impact bezieht sich auf den Energieverbrauch und die damit verbundene CO2-Bilanz. Economic Barriers manifestieren sich in den Kosten für Training, Inferenz und Deployment von Sprachmodellen \cite{bender2021dangers}.
 
-Synthetic Data Generation erzeugt komplett neue Beispiele durch LLMs. Constraint-basierte Generation mit validierten Entitäten \cite{kumar2020data} ermöglicht Kontrolle über Diversität und Abdeckung. Das Risiko liegt in Halluzinationen und unrealistischen Beispielen. Best Practice empfiehlt Kombination aus realen und synthetischen Daten (typisch 20--30\% synthetisch).
+\subsubsection{Problematik großer Sprachmodelle}
+\label{sec:2.3.1}
 
-Empirische Erkenntnisse zeigen: EDA ermöglicht mit 50\% der Daten gleiche Accuracy wie 100\% ohne Augmentierung \cite{wei2019eda}. Der Effekt verstärkt sich bei kleineren Datensätzen. Qualität dominiert Quantität bei synthetischen Daten.
-        
-        \paragraph{Balancierte Datensätze und Klassenverteilung}
-        
-        Unbalancierte Datensätze verursachen systematische Probleme: Modelle tendieren zu häufigen Klassen, zeigen schlechtere Performance auf seltenen aber wichtigen Fällen und produzieren verzerrte Vorhersagen.
+Große Sprachmodelle sind mit fundamentalen Ressourcenproblemen konfrontiert. Die Skalierung auf Milliarden von Parametern schafft signifikante Barrieren für Deployment und praktische Nutzung \cite{brown2020language}.
 
-Strategien für Balance \cite{feng2021survey} umfassen Oversampling unterrepräsentierter Kategorien, Undersampling überrepräsentierter Kategorien (mit Vorsicht anzuwenden), SMOTE-ähnliche Ansätze für synthetische Minderheiten-Überabtastung und class-weighted Loss Functions.
+Moderne große Sprachmodelle erfordern außergewöhnliche Speicherkapazitäten. GPT-3 mit 175 Milliarden Parametern benötigt über 326 Gigabyte Speicher im FP16-Format \cite{brown2020language}. Diese Anforderung überschreitet die Kapazität selbst fortgeschrittener Grafikprozessoren bei weitem. Der zusätzliche Speicheraufwand durch Backpropagation zur Gradientenberechnung stellt insbesondere für das Training auf Endgeräten ein erhebliches Problem.
 
-Empfohlene Verhältnisse: Ideale Balance erfordert gleiche Anzahl pro Kategorie. In der Praxis ist ein maximales Verhältnis von 1:3 zwischen seltenster und häufigster Kategorie akzeptabel. Bei stärkerer Imbalance ist gezielte Augmentierung erforderlich.
-        
-        \paragraph{Umgang mit kleinen Datensätzen}
-        
-        Als "klein" gelten Datensätze mit typischerweise <1000 Beispielen für Fine-Tuning. Few-Shot Learning fungiert als Alternative \cite{wei2021finetuned}. Data Efficiency Techniques umfassen aggressive Augmentierung (unter Wahrung der Qualität), parameter-effiziente Methoden wie LoRA zur Reduktion des Overfitting-Risikos, niedrigere Learning Rates und Early Stopping basierend auf Validation Loss.
+Die hohe Rechenkomplexität zeigt sich in Training und Inferenz. Bei verteiltem Training entsteht zusätzliche Komplexität durch die Vielzahl konfigurierbarer Strategien \cite{rajbhandari2020zero}. Konventionelle Optimierungsalgorithmen benötigen massive Rechenressourcen und weisen mangelnde Flexibilität bei der Parameteranpassung auf.
 
-Mixed Task Training kombiniert domänenspezifische und allgemeine Daten. Das Verhältnis liegt typisch bei 85--90\% spezifisch, 10--15\% allgemein \cite{raffel2020exploring}. Dies verhindert Catastrophic Forgetting und erhält Generalisierungsfähigkeit.
-        
-        \paragraph{Train-Validation-Test-Split und Qualitätssicherung}
-        
-        Standard-Aufteilung: 70--80\% Training, 10--15\% Validation, 10--15\% Test. Bei kleinen Datensätzen: 80--10--10 oder Cross-Validation. Stratified Split bei kategorischen Daten erhält Balance. Temporale Splits sind bei zeitabhängigen Daten erforderlich. Vermeidung von Data Leakage zwischen Splits ist kritisch.
-
-Qualitätssicherung umfasst automatisierte Validierung für praktische Umsetzung): Strukturprüfung (Format, Pflichtfelder), Konsistenzprüfung (Entitäten, Fakten) und Duplikatserkennung. Manuelle Stichprobenprüfung und iterative Verbesserung basierend auf Modellfehlern vervollständigen den Prozess. Diese theoretischen Grundlagen bilden die Basis für praktische Datensatzerstellung, angepasst an spezifische Anforderungen der Verkehrsanweisungstransformation.
-        
-        
-        \subsubsection{Herausforderungen beim Fine-Tuning}
-        \label{sec:2.2.4}
-        
-        Fine-Tuning vortrainierter Modelle manifestiert spezifische Herausforderungen im Spannungsfeld zwischen Spezialisierung auf neue Aufgaben und Erhalt allgemeiner Fähigkeiten. Besonders kritisch sind diese bei kleinen domänenspezifischen Datensätzen. Drei zentrale Problemfelder dominieren: Overfitting, Catastrophic Forgetting und Konvergenz-Limitierungen.
-        
-        \paragraph{Overfitting — Überanpassung an Trainingsdaten}
-        
-        Overfitting manifestiert sich, wenn das Modell Trainingsdaten auswendig lernt statt Muster zu generalisieren. Charakteristische Symptome sind hohe Training Accuracy bei niedriger Validation/Test Accuracy und Divergenz zwischen Training und Validation Loss. Besonders ausgeprägt ist Overfitting bei kleinen Datensätzen (<1000 Beispiele). LoRA reduziert das Overfitting-Risiko gegenüber Full Fine-Tuning, eliminiert es jedoch nicht.
-
-Die Ursachen umfassen: Modellkomplexität übersteigt Informationsgehalt der Trainingsdaten, zu hohe Anzahl trainierbarer Parameter relativ zur Datensatzgröße, zu viele Trainings-Epochen (Modell memoriert statt zu lernen), unbalancierte Datensätze (Bias zu überrepräsentierten Kategorien) und zu hohe Learning Rate (instabile, zu schnelle Anpassung).
-
-Bei LoRA-Fine-Tuning spezifisch: Höherer Rank $r$ erhöht trainierbare Parameter und damit Overfitting-Risiko. Mehr Target Modules vergrößern die Angriffsfläche für Überanpassung. Der Trade-off zwischen Expressivität und Generalisierung ist omnipräsent.
-
-Vermeidungsstrategien gliedern sich in fünf Kategorien: (a) Regularisierung [SOURCE-MISSING: Goodfellow et al., 2016] nutzt L2-Regularisierung (Weight Decay) zur Bestrafung großer Gewichtswerte (mathematisch: zusätzlicher Term $\lambda||w||^2$ zur Loss-Funktion, fördert kleinere, gleichmäßiger verteilte Gewichte), L1-Regularisierung für Sparsity (weniger relevant für LoRA) und Dropout [SOURCE-MISSING: Srivastava et al., 2014] (zufälliges Deaktivieren von Neuronen während Training, bei LoRA nur für lange Trainings-Episoden geeignet, , verhindert Co-Adaptationen).
-
-(b) Early Stopping [SOURCE-MISSING: Prechelt, 1998] monitort kontinuierlich Validation Loss während Training, stoppt Training wenn Validation Loss stagniert oder ansteigt, nutzt typische Patience-Strategie (3--5 Epochen ohne Verbesserung), verhindert Überanpassung in späten Trainingsphasen und erfordert separates Validation Set.
-
-(c) Datenaugmentierung vergrößert den effektiven Datensatz künstlich, reduziert Overfitting durch erhöhte Variabilität mittels EDA, Back-Translation, Synthetic Data Generation und erhöht Robustheit gegenüber Formulierungsvariationen.
-
-(d) Cross-Validation nutzt K-Fold Cross-Validation bei sehr kleinen Datensätzen für robustere Schätzung der Generalisierungsfähigkeit, ist rechenintensiv aber aussagekräftiger bei limitierten Daten.
-
-(e) PEFT-spezifische Strategien: Niedrigerer LoRA-Rank reduziert trainierbare Parameter, selektive Target Modules passen nur kritische Layer an, wobei Trade-off zwischen geringerer Expressivität und besserer Generalisierung besteht.
-
-Die Balancierung zwischen Underfitting und Overfitting: Underfitting (Modell zu einfach, erfasst Muster nicht durch zu niedrigen Rank, zu wenig Training) und Overfitting (Modell zu komplex, memoriert Daten durch zu hohen Rank, zu viel Training) erfordern optimalen Arbeitspunkt zwischen beiden Extremen. Empirische Bestimmung durch Validation-Set-Performance ist notwendig (Bias-Variance Trade-off [SOURCE-MISSING: Geman et al., 1992]).
-        
-        \paragraph{Catastrophic Forgetting — Verlust vortrainierter Fähigkeiten}
-        
-        Catastrophic Forgetting beschreibt das Phänomen, dass Modelle während Fine-Tuning Fähigkeiten aus der Pretraining-Phase verlieren. Spezialisierung auf neue Aufgaben geht zu Lasten allgemeiner Kompetenzen. Graduelle oder abrupte Verschlechterung auf Pretraining-Tasks manifestiert sich. Erstmals dokumentiert in neuronalen Netzen [SOURCE-MISSING: McCloskey \& Cohen, 1989], ist dies bei LoRA weniger ausgeprägt als bei Full Fine-Tuning, aber vorhanden [SOURCE-MISSING: Luo et al., 2025; Yang et al., 2024].
-
-Manifestationen umfassen Wissensverlust (Fakten aus Pretraining-Korpora nicht mehr abrufbar), Sprachkompetenz-Degradation (Verschlechterung grammatikalischer Fähigkeiten), Task Interference (neue Aufgabe überschreibt Wissen über alte Aufgaben) und Safety Alignment Degradation [SOURCE-MISSING: Qi et al., 2023; Hsu et al., 2024]: Fine-Tuning kann Safety Guardrails schwächen, betrifft alle PEFT-Methoden (LoRA, Adapter, Prefix Tuning) und ist selbst bei benign Training Data möglich (nicht nur adversarial).
-
-Theoretische Ursachen: Weight Interference (neue Gewichtsanpassungen überschreiben alte Repräsentationen), Gradient Descent Bias (Optimierung favorisiert aktuelle Task über vorherige), Representation Overlap (Shared Weights müssen beide Tasks gleichzeitig kodieren) und Distribution Shift (Trainingsverteilung unterscheidet sich stark von Pretraining-Daten).
-
-LoRA-spezifische Faktoren: Zero-Initialisierung der B-Matrix kann Konvergenz verlangsamen [SOURCE-MISSING: Luo et al., 2025], Low-Rank Updates können wichtige Pretraining-Repräsentationen nicht vollständig bewahren, und trotz eingefrorener Basisgewichte können Adapter-Outputs Aktivierungen verzerren.
-
-Gegenmaßnahmen umfassen: (a) Niedrigere Learning Rates [SOURCE-MISSING: Howard \& Ruder, 2018] (typisch: $1 \times 10^{-4}$ bis $5 \times 10^{-5}$ für LoRA vs. $1 \times 10^{-3}$ für Full Fine-Tuning, sanftere Anpassung erhält mehr Pretraining-Wissen, Trade-off: langsamere Konvergenz).
-
-(b) LoRA als sanftere Alternative zu Full Fine-Tuning: Originalgewichte bleiben eingefroren, nur Low-Rank-Adapter werden trainiert, reduziert Catastrophic Forgetting im Vergleich zu Full Fine-Tuning, aber nicht vollständig eliminiert [SOURCE-MISSING: Luo et al., 2025].
-
-(c) Mixed Task Training kombiniert domänenspezifische und allgemeine Daten (typisches Verhältnis: 85--90\% spezifisch, 10--15\% allgemein \cite{raffel2020exploring}), erhält Generalisierungsfähigkeit während Spezialisierung (Beispiel: LVB-Verkehrsanweisungen + allgemeine deutsche Texte).
-
-(d) Regularisierungstechniken: Elastic Weight Consolidation (EWC) [SOURCE-MISSING: Kirkpatrick et al., 2017], Knowledge Distillation vom Pretraining-Modell, bei LoRA weniger kritisch aufgrund gefrorener Basisgewichte.
-
-(e) Early Stopping basierend auf Generalisierungsmetriken: Monitoring nicht nur Task-Accuracy, sondern auch allgemeine Sprachfähigkeiten, Evaluation auf Out-of-Domain-Benchmarks während Training, Stoppen bei Degradation genereller Kompetenzen. Fine-Tuning kann Safety Guardrails schwächen [SOURCE-MISSING: Qi et al., 2023], selbst PEFT-Methoden sind betroffen [SOURCE-MISSING: Hsu et al., 2024]. Für Produktionssysteme ist kontinuierliches Safety-Monitoring relevant, für diese Arbeit jedoch weniger kritisch (Verkehrsanweisungen nicht safety-kritisch im Sinne von AI Alignment).
-        
-        \paragraph{Konvergenz-Limitierungen und Performance-Gaps}
-        
-        LoRA zeigt inhärente Konvergenz-Limitierungen: Langsame Konvergenz erfordert 5--6× mehr Iterationen als Full Fine-Tuning [SOURCE-MISSING: Wang et al., 2024]. Die Low-Rank-Constraint limitiert die Expressivität der Gewichtsanpassungen. Zero-Initialisierung der B-Matrix verlangsamt initiale Lernphasen [SOURCE-MISSING: Luo et al., 2025]. Trade-off zwischen Rank und Konvergenzgeschwindigkeit ist omnipräsent: Niedrigerer Rank konvergiert langsamer, höherer Rank erhöht Overfitting-Risiko.
-
-Performance-Gap zu Full Fine-Tuning ist konsistent dokumentiert über verschiedene Benchmarks [SOURCE-MISSING: Tastan et al., 2025; Biderman et al., 2024]. Besonders ausgeprägt bei komplexen Datensätzen mit diversen Sub-Domänen, Tasks mit hoher semantischer Variabilität und kleinen Modellen (<7B Parameter) [SOURCE-MISSING: Wang et al., 2025]. Der Gap verringert sich mit größeren Basismodellen, höherem LoRA-Rank und längeren Trainings-Episoden.
-
-Overfitting bei LoRA-Training zeigt widersprüchliche Phänomene [SOURCE-MISSING: Mao et al., 2024]: Höherer Rank bringt nicht zwingend bessere Performance, kann zu Overfitting führen (besonders bei kleinen Datensätzen), und non-monotones Verhalten (Optimum liegt oft bei mittlerem Rank). Initialization Bottleneck [SOURCE-MISSING: Xue, 2025]: Zero-Initialisierung limitiert Aktivierung der Originalgewichte und kann optimale Performance-Pfade blockieren.
-        
-        \paragraph{Wechselwirkungen und theoretische Perspektive}
-        
-        Wechselwirkungen zwischen Herausforderungen manifestieren sich: Overfitting und Catastrophic Forgetting profitieren beide von Regularisierung und Early Stopping, sind jedoch gegenläufig (Overfitting will Spezialisierung, CF will Generalisierung). Balance ist erforderlich: weder zu spezialisiert noch zu generisch.
-
-Konvergenz und Overfitting interagieren: Langsame Konvergenz kann Overfitting verzögern (implizite Regularisierung), zu viele Epochen führen trotz langsamer Konvergenz zu Overfitting, Early Stopping muss beide Faktoren berücksichtigen.
-
-Learning Rate fungiert als zentraler Hebel: Zu hoch führt zu schneller Konvergenz, aber Overfitting und CF-Risiko. Zu niedrig verursacht langsame Konvergenz und paradoxerweise auch Overfitting. Optimal ist task- und datensatzabhängig und empirisch zu bestimmen.
-
-Die theoretische Perspektive: Fine-Tuning ist ein Optimierungsproblem mit multiplen Constraints. Keine universelle Lösung existiert aufgrund von Trade-offs zwischen verschiedenen Zielen. PEFT-Methoden wie LoRA verschieben Trade-offs, eliminieren sie nicht. Empirische Validierung ist unerlässlich für praktische Anwendungen.
-        
-
-        % EINLEITUNG:
-        % - Fine-Tuning vortrainierter Modelle bringt spezifische Herausforderungen
-        % - Spannungsfeld: Spezialisierung auf neue Aufgabe vs. Erhalt allgemeiner Fähigkeiten
-        % - Besonders kritisch bei kleinen domänenspezifischen Datensätzen
-        % - Drei zentrale Problemfelder: Overfitting, Catastrophic Forgetting, Konvergenz
-        
-        % ============================================================================
-        % 1. OVERFITTING - ÜBERANPASSUNG AN TRAININGSDATEN
-        % ============================================================================
-        
-        % DEFINITION UND SYMPTOME:
-        % - Modell lernt Trainingsdaten auswendig statt Muster zu generalisieren
-        % - Charakteristisch: Hohe Training Accuracy, niedrige Validation/Test Accuracy
-        % - Divergenz zwischen Training und Validation Loss
-        % - Besonders ausgeprägt bei kleinen Datensätzen (< 1000 Beispiele)
-        % - LoRA reduziert Overfitting-Risiko gegenüber Full Fine-Tuning, eliminiert es aber nicht
-        %
-        % URSACHEN:
-        % - Modellkomplexität übersteigt Informationsgehalt der Trainingsdaten
-        % - Zu hohe Anzahl trainierbarer Parameter relativ zur Datensatzgröße
-        % - Zu viele Trainings-Epochen: Modell memoriert statt zu lernen
-        % - Unbalancierte Datensätze: Bias zu überrepräsentierten Kategorien
-        % - Zu hohe Learning Rate: Instabile, zu schnelle Anpassung an Trainingsdaten
-        %
-        % Bei LoRA-Fine-Tuning spezifisch:
-        % - Höherer Rank (r) → mehr trainierbare Parameter → höheres Overfitting-Risiko
-        % - Mehr Target Modules → größere Angriffsfläche für Überanpassung
-        % - Trade-off: Expressivität vs. Generalisierung
-        %
-        % VERMEIDUNGSSTRATEGIEN:
-        %
-        % a) Regularisierung [SOURCE-MISSING: Goodfellow et al., 2016]:
-        %    - L2-Regularisierung (Weight Decay): Bestraft große Gewichtswerte
-        %      * Mathematisch: Zusätzlicher Term λ||w||² zur Loss-Funktion
-        %      * Fördert kleinere, gleichmäßiger verteilte Gewichte
-        %    - L1-Regularisierung: Fördert Sparsity (weniger relevant für LoRA)
-        %    - Dropout [SOURCE-MISSING: Srivastava et al., 2014]:
-        %      * Zufälliges Deaktivieren von Neuronen während Training
-        %      * Bei LoRA: Nur für lange Trainings-Episoden geeignet (siehe Abschnitt~\ref{sec:2.2.1})
-        %      * Verhindert Co-Adaptationen zwischen Neuronen
-        %
-        % b) Early Stopping [SOURCE-MISSING: Prechelt, 1998]:
-        %    - Kontinuierliches Monitoring von Validation Loss während Training
-        %    - Training stoppen, wenn Validation Loss nicht mehr sinkt oder ansteigt
-        %    - Typische Patience-Strategie: 3-5 Epochen ohne Verbesserung
-        %    - Verhindert Überanpassung in späten Trainingsphasen
-        %    - Erfordert separates Validation Set (nicht Teil der Trainingsdaten)
-        %
-        % c) Datenaugmentierung (siehe Abschnitt~\ref{sec:2.2.3}):
-        %    - Künstliche Vergrößerung des effektiven Datensatzes
-        %    - Reduziert Overfitting durch erhöhte Variabilität
-        %    - Methoden: EDA, Back-Translation, Synthetic Data Generation
-        %    - Erhöht Robustheit gegenüber Formulierungsvariationen
-        %
-        % d) Cross-Validation:
-        %    - K-Fold Cross-Validation bei sehr kleinen Datensätzen
-        %    - Robustere Schätzung der Generalisierungsfähigkeit
-        %    - Rechenintensiv, aber aussagekräftiger bei limitierten Daten
-        %
-        % e) PEFT-spezifische Strategien:
-        %    - Niedrigerer LoRA-Rank: Reduziert trainierbare Parameter
-        %    - Selektive Target Modules: Nur kritische Layer anpassen
-        %    - Trade-off: Geringere Expressivität vs. bessere Generalisierung
-        %
-        % UNDERFITTING VS. OVERFITTING - BALANCIERUNG:
-        % - Underfitting: Modell zu einfach, erfasst Muster nicht (zu niedriger Rank, zu wenig Training)
-        % - Overfitting: Modell zu komplex, memoriert Daten (zu hoher Rank, zu viel Training)
-        % - Optimaler Arbeitspunkt liegt zwischen beiden Extremen
-        % - Empirische Bestimmung durch Validation-Set-Performance notwendig
-        % - Bias-Variance Trade-off [SOURCE-MISSING: Geman et al., 1992]
-        
-        % ============================================================================
-        % 2. CATASTROPHIC FORGETTING - VERLUST VORTRAINIERTER FÄHIGKEITEN
-        % ============================================================================
-        
-        % DEFINITION:
-        % - Phänomen: Modell verliert während Fine-Tuning Fähigkeiten aus Pretraining-Phase
-        % - Spezialisierung auf neue Aufgabe geht zu Lasten allgemeiner Kompetenzen
-        % - Graduelle oder abrupte Verschlechterung auf Pretraining-Tasks
-        % - Erstmals dokumentiert in neuronalen Netzen [SOURCE-MISSING: McCloskey & Cohen, 1989]
-        % - Bei LoRA: Weniger ausgeprägt als bei Full Fine-Tuning, aber vorhanden [SOURCE-MISSING: Luo et al., 2025; Yang et al., 2024]
-        %
-        % MANIFESTATIONEN:
-        % - Wissensverlust: Fakten aus Pretraining-Korpora nicht mehr abrufbar
-        % - Sprachkompetenz-Degradation: Verschlechterung grammatikalischer Fähigkeiten
-        % - Task Interference: Neue Aufgabe überschreibt Wissen über alte Aufgaben
-        % - Safety Alignment Degradation [SOURCE-MISSING: Qi et al., 2023; Hsu et al., 2024]:
-        %   * Fine-Tuning kann Safety Guardrails schwächen
-        %   * Betrifft alle PEFT-Methoden (LoRA, Adapter, Prefix Tuning)
-        %   * Selbst bei benign Training Data möglich (nicht nur adversarial)
-        %
-        % THEORETISCHE URSACHEN:
-        % - Weight Interference: Neue Gewichtsanpassungen überschreiben alte Repräsentationen
-        % - Gradient Descent Bias: Optimierung favorisiert aktuelle Task über vorherige
-        % - Representation Overlap: Shared Weights müssen beide Tasks gleichzeitig kodieren
-        % - Distribution Shift: Trainingsverteilung unterscheidet sich stark von Pretraining-Daten
-        %
-        % LoRA-spezifische Faktoren:
-        % - Zero-Initialisierung der B-Matrix kann Konvergenz verlangsamen [SOURCE-MISSING: Luo et al., 2025]
-        % - Low-Rank Updates können wichtige Pretraining-Repräsentationen nicht vollständig bewahren
-        % - Trotz eingefrorener Basisgewichte: Adapter-Outputs können Aktivierungen verzerren
-        %
-        % GEGENMAÄSSNAHMEN:
-        %
-        % a) Niedrigere Learning Rates [SOURCE-MISSING: Howard & Ruder, 2018]:
-        %    - Typisch: 1e-4 bis 5e-5 für LoRA (vs. 1e-3 für Full Fine-Tuning)
-        %    - Sanftere Anpassung erhält mehr Pretraining-Wissen
-        %    - Trade-off: Langsamere Konvergenz
-        %
-        % b) LoRA als sanftere Alternative zu Full Fine-Tuning:
-        %    - Originalgewichte bleiben eingefroren (siehe Abschnitt~\ref{sec:2.2.1})
-        %    - Nur Low-Rank-Adapter werden trainiert
-        %    - Reduziert Catastrophic Forgetting im Vergleich zu Full Fine-Tuning
-        %    - Aber: Nicht vollständig eliminiert [SOURCE-MISSING: Luo et al., 2025]
-        %
-        % c) Mixed Task Training:
-        %    - Kombination domänenspezifischer und allgemeiner Daten
-        %    - Typisches Verhältnis: 85-90% spezifisch, 10-15% allgemein \cite{raffel2020exploring}
-        %    - Erhält Generalisierungsfähigkeit während Spezialisierung
-        %    - Beispiel: LVB-Verkehrsanweisungen + allgemeine deutsche Texte
-        %
-        % d) Regularisierungstechniken:
-        %    - Elastic Weight Consolidation (EWC) [SOURCE-MISSING: Kirkpatrick et al., 2017]
-        %    - Knowledge Distillation vom Pretraining-Modell
-        %    - Bei LoRA: Weniger kritisch aufgrund gefrorener Basisgewichte
-        %
-        % e) Early Stopping basierend auf Generalisierungsmetriken:
-        %    - Monitoring nicht nur Task-Accuracy, sondern auch allgemeine Sprachfähigkeiten
-        %    - Perplexity auf Out-of-Domain-Daten als Indikator
-        %    - Training stoppen bei signifikantem Anstieg
-        
-        % ============================================================================
-        % 3. KONVERGENZ-HERAUSFORDERUNGEN BEI LORA
-        % ============================================================================
-        
-        % LANGSAME KONVERGENZ:
-        % - LoRA konvergiert signifikant langsamer als Full Fine-Tuning [SOURCE-MISSING: Wang et al., 2024]
-        % - Empirisch dokumentiert: 5-6x mehr Iterationen und FLOPs für gleiche Performance
-        % - Paradoxe Situation: Pro-Iteration effizienter, aber Gesamt-Trainingskosten höher
-        % - Kann zu schlechterer finaler Test-Performance führen
-        % - Nicht nur Geschwindigkeitsproblem, sondern fundamentale Optimierungsschwierigkeit
-        %
-        % ARCHITEKTONISCHE URSACHEN:
-        %
-        % a) Zero-Initialisierung der B-Matrix [SOURCE-MISSING: Wang et al., 2024]:
-        %    - Bei Training-Start: ΔW = BA = 0 (keine initiale Störung)
-        %    - Langsame Trainingsdynamik zwischen A und B in frühen Epochen
-        %    - "Kurzsichtige" Inter-Layer-Interaktionen
-        %    - Verzögert Entwicklung komplexer Feature-Transformationen
-        %
-        % b) Low-Rank Constraint [SOURCE-MISSING: Shen et al., 2025; Xia et al., 2024]:
-        %    - Gewichtsupdates auf niedrigdimensionalen Unterraum beschränkt
-        %    - Kann komplexe Adaptionen nicht vollständig abbilden
-        %    - Limitiert Expressivität der Weight Updates
-        %    - Performance-Gap zu Full Fine-Tuning bei komplexen Datensätzen [SOURCE-MISSING: Wang et al., 2025]
-        %
-        % c) Imbalancierte Weight Updates [SOURCE-MISSING: Zhang et al., 2025; Yen et al., 2024]:
-        %    - Low-Rank-Faktorisierung ist nicht eindeutig (non-unique)
-        %    - Verschiedene A-B-Kombinationen ergeben gleiches ΔW
-        %    - Führt zu inkonsistenten und imbalancierten Updates
-        %    - Suboptimale Konvergenzpfade im Optimierungsraum
-        %
-        % RANK-AUSWAHL-DILEMMA - "LOW-RANK BOTTLENECK":
-        %
-        % - Fundamentales Trade-off [SOURCE-MISSING: Dong et al., 2025; Biderman et al., 2024]:
-        %   * Niedriger Rank (r=4-8): 
-        %     - Hohe Parameter-Effizienz
-        %     - Schnelles Training pro Iteration
-        %     - ABER: Signifikanter Performance-Gap zu Full Fine-Tuning
-        %     - Expressivität zu gering für komplexe Aufgaben
-        %   
-        %   * Hoher Rank (r=64-128):
-        %     - Bessere Performance, nähert sich Full Fine-Tuning an
-        %     - Höhere Expressivität der Weight Updates
-        %     - ABER: Parameter-Kosten wachsen linear mit Rank
-        %     - Schwächt fundamentalen Vorteil der Parameter-Effizienz
-        %
-        % - Empirische Beobachtungen:
-        %   * Performance verbessert sich monoton mit steigendem Rank [SOURCE-MISSING: Dong et al., 2025]
-        %   * Aber: Diminishing Returns ab bestimmtem Rank (task-abhängig)
-        %   * Optimaler Rank variiert nach Modellgröße, Task-Komplexität, Datensatzgröße
-        %   * Keine universelle Heuristik: Empirische Bestimmung erforderlich [SOURCE-MISSING: Rajabzadeh et al., 2024]
-        %
-        % - "Low-Rank Bottleneck":
-        %   * Narrowing Performance-Gap erfordert Rank-Erhöhung
-        %   * Bei sehr hohem Rank: Annäherung an Full Fine-Tuning-Kosten
-        %   * Fundamentale Limitation der Low-Rank-Annahme
-        %   * Theoretische Grenze der PEFT-Effizienz
-        %
-        % PERFORMANCE-GAP ZU FULL FINE-TUNING:
-        % - Konsistent dokumentiert über verschiedene Benchmarks [SOURCE-MISSING: Tastan et al., 2025; Biderman et al., 2024]
-        % - Besonders ausgeprägt bei:
-        %   * Komplexen Datensätzen mit diversen Sub-Domänen
-        %   * Tasks mit hoher semantischer Variabilität
-        %   * Kleinen Modellen (< 7B Parameter) [SOURCE-MISSING: Wang et al., 2025]
-        % - Gap verringert sich mit:
-        %   * Größeren Basismodellen
-        %   * Höherem LoRA-Rank
-        %   * Längeren Trainings-Episoden
-        %
-        % OVERFITTING BEI LORA-TRAINING:
-        % - Widersprüchliche Phänomene [SOURCE-MISSING: Mao et al., 2024]:
-        %   * Höherer Rank bringt nicht zwingend bessere Performance
-        %   * Kann zu Overfitting führen, besonders bei kleinen Datensätzen
-        %   * Non-monotones Verhalten: Optimum liegt oft bei mittlerem Rank
-        % - Initialization Bottleneck [SOURCE-MISSING: Xue, 2025]:
-        %   * Zero-Initialisierung limitiert Aktivierung der Originalgewichte
-        %   * Kann optimale Performance-Pfade blockieren
-        
-        % ============================================================================
-        % ZUSAMMENFASSUNG & INTERAKTIONEN
-        % ============================================================================
-        
-        % WECHSELWIRKUNGEN ZWISCHEN HERAUSFORDERUNGEN:
-        % - Overfitting und Catastrophic Forgetting:
-        %   * Beide profitieren von Regularisierung und Early Stopping
-        %   * Gegenläufig: Overfitting will Spezialisierung, CF will Generalisierung
-        %   * Balance erforderlich: Weder zu spezialisiert noch zu generisch
-        %
-        % - Konvergenz und Overfitting:
-        %   * Langsame Konvergenz kann Overfitting verzögern (implizite Regularisierung)
-        %   * Zu viele Epochen: Langsame Konvergenz führt trotzdem zu Overfitting
-        %   * Early Stopping muss beide Faktoren berücksichtigen
-        %
-        % - Learning Rate als zentraler Hebel:
-        %   * Zu hoch: Schnelle Konvergenz, aber Overfitting und CF-Risiko
-        %   * Zu niedrig: Langsame Konvergenz, paradoxerweise auch Overfitting möglich
-        %   * Optimal: Task- und datensatzabhängig, empirisch zu bestimmen
-        %
-        % THEORETISCHE PERSPEKTIVE:
-        % - Fine-Tuning als Optimierungsproblem mit multiplen Constraints
-        % - Keine universelle Lösung: Trade-offs zwischen verschiedenen Zielen
-        % - PEFT-Methoden wie LoRA: Verschieben Trade-offs, eliminieren sie nicht
-        % - Empirische Validierung unerlässlich für praktische Anwendungen
-
-
-    \subsection{Ressourceneffizienz und Modelloptimierung}
-    \label{sec:2.3}
-    
-    % Ziel: 4-5 Seiten
-    
-        \subsubsection{Problematik großer Sprachmodelle}
-        \label{sec:2.3.1}
-        
-        % Ziel: 1,5 Seiten
-        % - Energieverbrauch und CO2-Bilanz großer Modelle
-        % - Überdimensionierung in der Praxis
-        % - Wirtschaftliche und ökologische Implikationen
-        % - Notwendigkeit ressourceneffizienter Alternativen
-        
-        
-        \subsubsection{Quantisierung}
-        \label{sec:2.3.2}
-        
-        % Ziel: 2,5-3 Seiten
-        % AUSFÜHRLICH, da zentral für die Arbeit:
-        % - Grundprinzip der Quantisierung
-        % - INT8/INT4-Quantisierung
-        % - Theoretische Einsparungen bei Speicher und Rechenleistung
-        % - Speicherbedarf (konkrete Zahlen aus Literatur)
-        % - Inferenzgeschwindigkeit
-        % - Energieverbrauch (theoretische Berechnungen)
-        % - Trade-off: Effizienz vs. Qualität
-        % - Quantisierung vor vs. nach Fine-Tuning
-        % - Verfügbare Open-Source-Tools (llama.cpp, bitsandbytes, GPTQ)
-        % - Erwartete praktische Implikationen
-        
-        
-        \subsubsection{Weitere Optimierungsansätze}
-        \label{sec:2.3.3}
-        
-        % Ziel: 1,5-2 Seiten
-        % - RAG-Systeme (Retrieval-Augmented Generation)
-        %   * Konzept: Dynamischer Retrieval + Generation
-        %   * Zwei-Stufen-Prozess (Retrieval aus Vektorstore, dann LLM-Generation)
-        %   * Vorteile: Skalierung auf große Wissensbasen, Aktualität
-        %   * Anwendungsfälle im Verkehrssektor
-        %   * Hardware-Anforderungen und Komplexität
-        % - Knowledge-Enhanced Prompting als vereinfachte Alternative
-        %   * Statische Einbettung von Domänenwissen in System-Prompts
-        %   * Vorteile: Einfachere Implementierung, geringere Hardware-Anforderungen
-        %   * Limitierungen: Begrenzte Wissensbasis (Context-Window), keine Dynamik
-        %   * Geeignet für überschaubare, stabile Domänen
-        % - Modellkompression (Pruning, Destillation - kurz erwähnen)
-        % - Vergleich verschiedener Ansätze
-
-
-    \subsection{Qualitätssicherung bei KI-generierten Texten}
-    \label{sec:2.4}
-    
-    % Ziel: 2-2,5 Seiten
-    
-        \subsubsection{Evaluationsmetriken für NLP}
-        \label{sec:2.4.1}
-        
-        % Ziel: 1 Seite
-        
-        % AUTOMATISCHE METRIKEN:
-        % - BLEU, ROUGE (kurz): N-gram Overlap-basiert
-        %   * Ursprünglich für Maschinenübersetzung entwickelt
-        %   * Limitiert für semantische Äquivalenz
-        %   * Schnell berechenbar, aber oberflächlich
-        %
-        % - Semantische Ähnlichkeitsmetriken (BERTScore):
-        %   * Contextualized Embeddings statt Surface-Form
-        %   * Bessere Erfassung von Paraphrasen
-        %   * Rechenintensiver, aber aussagekräftiger
-        %
-        % - Perplexity:
-        %   * Misst Konfidenz des Modells
-        %   * Niedriger = besseres Language Modeling
-        %   * Nicht direkt für Qualität, aber für Training-Monitoring
-        %
-        % PROMPT-BASIERTE EVALUATION \cite{berryman2024prompt}:
-        % - LLM-as-a-Judge: Nutzung größerer Modelle zur Bewertung
-        %   * Prompt: "Bewerte die Qualität dieser Transformation auf Skala 1-5"
-        %   * Kriterien: Faktentreue, Verständlichkeit, Stilkonformität
-        %   * Vorteil: Flexibel, domänenspezifisch anpassbar
-        %   * Limitation: Bias des Evaluator-Modells, Kosten
-        %
-        % - Comparative Evaluation \cite{berryman2024prompt}:
-        %   * A/B-Vergleich zweier Outputs
-        %   * "Welcher Text ist verständlicher: A oder B?"
-        %   * Robuster als absolute Bewertungen
-        %   * Nützlich für Prompt-Optimierung (siehe Abschnitt~\ref{sec:2.2.2})
-        %
-        % DOMÄNENSPEZIFISCHE METRIKEN:
-        % - Faktentreue: Prüfung gegen strukturierte Eingabedaten
-        %   * Entitätsextraktion: Liniennummer, Haltestellen, Zeitangaben
-        %   * Vollständigkeitsprüfung: Alle Input-Informationen im Output?
-        %   * Halluzination Detection: Erfundene Details? (siehe Abschnitt~\ref{sec:2.4.2})
-        %
-        % - Stilkonformität:
-        %   * Einhaltung von Stilrichtlinien (siehe Abschnitt~\ref{sec:3.2})
-        %   * Regelbasierte Checks: Passiv vs. Aktiv, Fachbegriffe vs. Allgemeinsprache
-        %   * Pattern-Matching für verbotene Formulierungen
-        %
-        % - Konsistenz:
-        %   * Gleiche Eingabe → identische Ausgabe (bei deterministischer Temperatur)
-        %   * Messung: Wiederholte Generierung, Hamming-Distanz zwischen Outputs
-        %   * Wichtig für Produktionsumgebung: Vorhersagbarkeit
-        
-        
-        \subsubsection{Halluzination Detection und Validierung}
-        \label{sec:2.4.2}
-        
-        % Ziel: 1-1,5 Seiten
-        
-        % PROBLEMSTELLUNG:
-        % - Halluzinationen: Modell generiert faktisch inkorrekte oder erfundene Informationen
-        % - Besonders kritisch bei sicherheitsrelevanten Verkehrsinformationen
-        % - Herausforderung: Plausibel klingende, aber falsche Aussagen
-        % - Beispiel: "Straßenbahn Linie 10" statt korrekter "Bus Linie 10"
-        %
-        % SELF-CONSISTENCY CHECKS \cite{bonstra2024prompt}:
-        % - Grundprinzip: Mehrfache Generierung mit Sampling (siehe Abschnitt~\ref{sec:2.2.2})
-        % - Mechanismus:
-        %   * Gleiche Eingabe → N verschiedene Outputs generieren (typisch N=3-10)
-        %   * Sampling mit Temperature > 0 für Variabilität
-        %   * Mehrheitsentscheidung oder Konsensanalyse
-        % - Annahme: Korrekte Antworten konvergieren, Halluzinationen divergieren
-        % - Vorteil: Keine externe Wissensquelle erforderlich
-        % - Limitation: Mehrfache Inferenz-Kosten (N-facher Rechenaufwand)
-        % - Anwendung: Kritische Transformationen, wo Faktentreue essentiell ist
-        %
-        % FACT CHECKING GEGEN EINGABEDATEN:
-        % - Strukturierte Validierung \cite{berryman2024prompt}:
-        %   * Extraktion von Entitäten aus Input und Output
-        %   * Vergleich: Sind alle Input-Entitäten im Output enthalten?
-        %   * Regel: Output darf KEINE Entitäten enthalten, die nicht im Input sind
-        % - Named Entity Recognition (NER) für Extraktion:
-        %   * Liniennummern, Haltestellen, Zeitangaben, Fahrzeugtypen
-        %   * Pattern-Matching oder NER-Modell
-        % - Constraint-basierte Validierung:
-        %   * Whitelist-Ansatz: Nur bekannte Liniennummern erlaubt
-        %   * Knowledge Base: Linien-Fahrzeug-Zuordnungen als Ground Truth
-        %   * Reject-Output bei Verletzung von Constraints
-        %
-        % PROMPT-BASIERTE HALLUZINATION PREVENTION \cite{berryman2024prompt}:
-        % - Negative Constraints in System Prompt (siehe Abschnitt~\ref{sec:2.2.2}):
-        %   * "Erfinde KEINE Details, die nicht in der Eingabe stehen"
-        %   * "Nutze NUR Informationen aus dem bereitgestellten Kontext"
-        %   * "Bei Unsicherheit: NICHT spekulieren, sondern Information weglassen"
-        % - Knowledge Grounding:
-        %   * Explizite Einbettung von Fakten im Prompt
-        %   * Beispiel: "Linie 10 ist ein Bus, Linie 11 ist eine Straßenbahn"
-        %   * Reduziert Halluzinationen durch direkte Verfügbarkeit von Wissen
-        % - Chain-of-Thought für Faktentreue:
-        %   * Zwischenschritt: "Welche Informationen sind in der Eingabe enthalten?"
-        %   * Explizite Verifikation vor Generierung
-        %   * Erhöht Token-Kosten, aber verbessert Zuverlässigkeit
-        %
-        % AUTOMATISIERTE VS. MANUELLE EVALUATION:
-        % - Automatisiert (skalierbar, aber limitiert):
-        %   * Entitätsvergleich: Schnell, deterministisch
-        %   * Pattern-Matching: Regelbasiert, wartungsintensiv
-        %   * Self-Consistency: Rechenintensiv, keine externe Referenz
-        % - Manuell (präzise, aber teuer):
-        %   * Human Evaluation: Gold Standard, aber nicht skalierbar
-        %   * Stichprobenbasiert: Regelmäßige Quality Checks
-        %   * Iterative Verbesserung: Fehleranalyse → Prompt-Anpassung
-        % - Hybrid-Ansatz (optimal für Praxis):
-        %   * Automatisierte Pre-Filter: Offensichtliche Fehler abfangen
-        %   * Manuelle Review: Grenzfälle und Stichproben
-        %   * Feedback-Loop: Erkannte Fehler → Prompt-Optimierung
-        %
-        % PRAKTISCHE ANSÄTZE FÜR RESSOURCENLIMITIERTE UMGEBUNGEN:
-        % - Deterministische Temperatur (T=0) reduziert Halluzinationen \cite{berryman2024prompt}
-        %   * Trade-off: Weniger kreativ, aber konsistenter
-        %   * Geeignet für faktische Transformationen
-        % - Kleinere Validierungsmodelle:
-        %   * Leichtgewichtige NER-Modelle für Entitätsextraktion
-        %   * Regelbasierte Checks statt LLM-as-a-Judge
-        % - Cached Knowledge Integration:
-        %   * Statische Wissensbasis im Prompt (kein RAG-Overhead)
-        %   * Siehe Abschnitt~\ref{sec:2.3.3} für Knowledge Integration ohne RAG
-        %
-        % ÜBERGANG ZU KAPITEL 7 (EVALUATION):
-        % - Theoretische Konzepte hier: Methodik und Prinzipien
-        % - Praktische Anwendung in Kapitel~\ref{chap:7}: Konkrete Metriken und Ergebnisse
-        % - Kombination automatisierter und manueller Validierung in Implementierung
+Die signifikanten Ressourcenanforderungen machen Cloud-Hosting häufig notwendig. Dies erfordert umfangreiche GPU-Cluster und verursacht substanzielle Kosten im vier- bis fünfstelligen Bereich. Für Forschende und kleine Organisationen entstehen dadurch erhebliche Zugangsbeschränkungen \cite{bender2021dangers}.
 
+Training und Deployment großer Sprachmodelle sind aufgrund ihrer Größe und Komplexität energieintensiv. Das Training von GPT-3 verbrauchte etwa 700.000 Liter Frischwasser für die Wasserkühlung und verursachte Kosten von über 100 Millionen US-Dollar \cite{li2023making}. Die rasche Verbreitung großer Sprachmodelle führt zu signifikantem Energieverbrauch und CO2-Emissionen. Projektionen zeigen, dass der Energieverbrauch von Rechenzentren bis 2030 etwa 9,1 bis 11,7 Prozent des gesamten Energiebedarfs der Vereinigten Staaten ausmachen könnte \cite{strubell2019energy}.
 
+In der Literatur wird zwischen Red AI und Green AI unterschieden \cite{schwartz2020green}. Ein Paradigmenwechsel hin zu nachhaltiger Entwicklung erscheint erforderlich. Die Forschung zu energieeffizienten Ansätzen im maschinellen Lernen hat gezeigt, dass durch gezielte Optimierungen substantielle Reduktionen des Ressourcenbedarfs möglich sind.
+
+Das Training großer Sprachmodelle erfordert signifikante Rechenressourcen und umfangreiche Datensätze. Dies führt zu eskalierenden Forschungs- und Entwicklungskosten \cite{bender2021dangers}. Die hohen Rechenkosten führen dazu, dass fortgeschrittene künstliche Intelligenz nur für gut finanzierte Organisationen verfügbar ist.
+
+Die finanzielle Belastung beschränkt sich nicht auf das initiale Training, sondern umfasst auch laufende Betriebskosten. In industriellen Deployments entstehen exorbitante Betriebskosten durch explosiven Overhead bei API-Aufrufen.
+
+Cloud-Deployment wirft Datenschutzbedenken auf, verursacht Latenzprobleme und führt zu Nutzungsbeschränkungen. Edge-Deployment steht vor inhärenten Beschränkungen durch eingeschränkte Rechenleistung sowie begrenzten Speicher \cite{zhou2019edge}.
+
+Für den Anwendungsfall kommunaler Organisationen ergeben sich spezifische Implikationen. Kommunale Einrichtungen verfügen über begrenzte Budgets und Ressourcen. Die Anforderungen der Datenschutz-Grundverordnung favorisieren lokales Deployment gegenüber Cloud-Lösungen. Die Beschränkung auf Consumer-Hardware schließt Enterprise-Grade-Infrastruktur aus. Diese Problemstellung erfordert Lösungsansätze, die eine effiziente Nutzung großer Sprachmodelle unter den genannten Rahmenbedingungen ermöglichen.
+
+\subsubsection{Quantisierung}
+\label{sec:2.3.2}
+
+Quantisierung bezeichnet die Reduktion der numerischen Präzision von Modellparametern und stellt eine zentrale Optimierungstechnik zur Effizienzsteigerung großer Sprachmodelle dar \cite{gholami2022survey}. Das Grundprinzip besteht in der Umwandlung von 32-Bit-Gleitkommazahlen zu niedrigpräzisen 8-Bit- oder 4-Bit-Ganzzahldarstellungen. Diese Transformation verfolgt einen dualen Zweck: die Reduktion des Speicherbedarfs und die Beschleunigung der Berechnungen. Neuronale Netze erweisen sich als überparametrisiert und tolerieren daher einen gewissen Präzisionsverlust ohne signifikante Leistungseinbußen.
+
+Die Quantisierung kann unterschiedlich auf Gewichte und Aktivierungen angewendet werden. Bei W8A8 werden sowohl Gewichte als auch Aktivierungen mit 8 Bit dargestellt. W4A16 nutzt 4-Bit-Gewichte bei 16-Bit-Aktivierungen, während W4A8 4-Bit-Gewichte mit 8-Bit-Aktivierungen kombiniert \cite{dettmers2022llmint8}. Die Quantisierung von Gewichten gestaltet sich einfacher als die von Aktivierungen, da letztere höhere Varianz und Ausreißer aufweisen.
+
+Die Darstellung in 32-Bit Floating Point erfordert 4 Bytes pro Parameter, während 8-Bit Integer lediglich 1 Byte benötigt. Dies resultiert in einer vierfachen Kompression \cite{jacob2018quantization}. Empirische Untersuchungen zeigen eine Reduktion der Rechenkosten um 40 Prozent und der Modellgröße um 68 Prozent. Die Leistung bleibt dabei innerhalb von 6 Prozent der FP32-Baseline.
+
+INT8-Quantisierung nutzt ausschließlich Ganzzahlarithmetik, was zu einer Geschwindigkeitssteigerung um den Faktor 2 bis 3 führt. INT8-GEMM-Operationen erweisen sich als 1,67-mal schneller als FP32 \cite{jacob2018quantization}. Auf Edge-Geräten zeigt sich eine Durchsatzsteigerung um den Faktor 2,4.
+
+INT8-Quantisierung reduziert den Energieverbrauch um 40 Prozent. Die Framerate verbessert sich um 27 Prozent, während die Inferenzzeit um 19 Prozent sinkt. Diese Eigenschaften erweisen sich als essenziell für mobile, eingebettete und Edge-Plattformen.
+
+Theoretisch ermöglicht 4-Bit Integer-Quantisierung eine 16-fache Reduktion des Speicherbedarfs, praktisch werden jedoch Faktoren zwischen 4 und 8 erreicht \cite{frantar2023gptq}. Moderne Methoden realisieren eine Speicherreduktion um den Faktor 5,6. Dies ermöglicht die Ausführung von Modellen mit 7 Milliarden Parametern auf Consumer-Laptops.
+
+INT4-Quantisierung führt zu einer Beschleunigung um den Faktor 1,45 gegenüber INT8. Mixed-Precision-Ansätze mit INT4 und INT8 reduzieren die Latenz um 23 Prozent gegenüber reiner INT8-Quantisierung.
+
+Post-Training-INT4-Quantisierung steht jedoch vor Schwierigkeiten, die ursprüngliche Modellqualität zu erreichen \cite{frantar2023gptq}. Das Risiko für Genauigkeitseinbußen ist bei INT4 höher als bei INT8. GPTQ erfordert eine ausgefeilte Kalibrierung zur Erhaltung der Genauigkeit.
+
+Die Überparametrisierung vieler neuronaler Netze ermöglicht einen minimalen Genauigkeitsverlust bei Quantisierung. INT8-Quantisierung verursacht einen Genauigkeitsverlust von unter 1 Prozent bei vierfacher Kompression \cite{gholami2022survey}. INT4-Quantisierung stellt höhere Anforderungen an die Genauigkeitserhaltung.
+
+Die Quantisierung von Aktivierungen erweist sich als anfälliger für Qualitätsverluste als die Quantisierung von Gewichten. Ausschließliche Gewichtsquantisierung erhält die Präzision der Aktivierungen und gewährleistet numerische Stabilität.
+
+Post-Training-Quantisierung zeichnet sich durch schnelle Ausführung und Ressourceneffizienz aus, weist jedoch höhere Genauigkeitseinbußen auf. Quantization-Aware Training erhält die Genauigkeit besser, verursacht jedoch höheren Aufwand \cite{jacob2018quantization}. QLoRA kombiniert ein 4-Bit-Basismodell mit höherpräzisen LoRA-Adaptern \cite{dettmers2023qlora}. Dieser hybride Ansatz verbindet Speichereffizienz während der Feinabstimmung mit Qualitätserhaltung.
+
+INT8-Quantisierung lässt sich unkompliziert deployen und verfügt über gute Framework-Unterstützung. INT4-Quantisierung steht vor begrenzter Software-Infrastruktur. Die Leistungsgewinne hängen von Hardware-Faktoren wie Speicherbandbreite, Cache und Befehlssatzunterstützung ab \cite{gholami2022survey}.
+
+Für den Anwendungsfall dieser Arbeit ergibt sich folgende Bewertung: INT8-Quantisierung bietet einen optimalen Kompromiss mit vierfacher Speicherreduktion, zwei- bis dreifacher Geschwindigkeitssteigerung und Genauigkeitsverlusten unter 1 Prozent. INT4-Quantisierung ermöglicht zusätzliche Einsparungen um den Faktor 5,6, birgt jedoch höhere Genauigkeitsrisiken. QLoRA kombiniert ein 4-Bit-Basismodell mit höherpräzisen Adaptern und balanciert Effizienz mit Qualität.
+
+\subsubsection{Weitere Optimierungsansätze}
+\label{sec:2.3.3}
+
+Neben Fine-Tuning und Quantisierung existieren weitere Ansätze zur Optimierung von Large Language Models für spezifische Anwendungsdomänen.
+
+Das Konzept der Retrieval-Augmented Generation stellt einen hybriden Ansatz dar, der die generativen Fähigkeiten von Large Language Models mit externen Wissensdatenbanken kombiniert \cite{lewis2020retrieval}. Die grundlegende Idee besteht darin, relevante Informationen dynamisch aus einer strukturierten Wissensbasis abzurufen und diese dem Sprachmodell als Kontext zur Verfügung zu stellen.
+
+Der technische Ablauf unterteilt sich in zwei Phasen. In der Retrieval-Phase wird eine semantische Suche in einer Vektorendatenbank durchgeführt. In der Generation-Phase werden die abgerufenen Informationen zusammen mit der ursprünglichen Anfrage an das Large Language Model übergeben.
+
+Die Vorteile manifestieren sich in effizienter Skalierung mit der Größe der Wissensbasis und kontinuierlicher Aktualisierbarkeit ohne erneutes Training \cite{lewis2020retrieval}. Die Implementierung bringt jedoch erhebliche Herausforderungen mit sich. Die technische Komplexität ist deutlich höher als bei einfacheren Ansätzen, da neben dem Sprachmodell zusätzliche Komponenten wie Embedding-Modelle und Vektorendatenbanken betrieben werden müssen.
+
+Als praktikable Alternative hat sich das Knowledge-Enhanced Prompting etabliert. Dieser Ansatz verzichtet auf dynamische Retrieval-Mechanismen und integriert stattdessen relevantes Domänenwissen statisch in die System-Prompts \cite{liu2023pretraining}. Die Implementierung gestaltet sich deutlich unkomplizierter als bei RAG-Systemen. Domänenspezifisches Wissen wird direkt in den Prompt eingebettet, ohne dass zusätzliche Infrastruktur erforderlich ist.
+
+Die Menge an Wissen ist jedoch durch das Context-Window des Sprachmodells begrenzt. Zudem fehlt die Dynamik eines RAG-Systems: Aktualisierungen erfordern manuelle Anpassungen der Prompts. Für Anwendungsfälle im Verkehrssektor eignet sich Knowledge-Enhanced Prompting besonders dann, wenn die relevante Wissensbasis überschaubar und relativ stabil ist.
+
+\subsection{Qualitätssicherung bei KI-generierten Texten}
+\label{sec:2.4}
+
+Die in den Abschnitten 2.2 und 2.3 diskutierten Optimierungsverfahren schaffen die technische Grundlage für die Anpassung von Large Language Models an spezifische Anwendungsdomänen. Damit stellt sich jedoch eine entscheidende Frage: Wie kann sichergestellt werden, dass die generierten Texte qualitativ hochwertig sind und den Anforderungen einer produktiven Anwendung genügen \cite{dhuliawala2023chain}.
+
+Die Qualitätssicherung bei LLM-generierten Texten stellt besondere Herausforderungen dar. Während deterministische Systeme bei identischen Eingaben reproduzierbare Ausgaben liefern, ist das Verhalten generativer Modelle durch ihre stochastische Natur geprägt. Dieser Non-Determinismus birgt das Risiko inkonsistenter Outputs und erfordert spezifische Evaluationsstrategien \cite{ji2023survey}.
+
+Im Kontext von Verkehrsinformationen ist die Faktentreue nicht optional, sondern essentiell. Falsche oder inkonsistente Angaben zu Liniennummern, Haltestellen oder Betriebszeiten können direkte Auswirkungen auf die Reiseplanung der Fahrgäste haben. Die Balance zwischen automatisierter Evaluation und manueller Qualitätskontrolle stellt dabei eine zentrale methodische Herausforderung dar.
+
+Halluzinationen bezeichnen das Phänomen, dass Sprachmodelle plausibel klingende, aber faktisch falsche Informationen generieren \cite{maynez2020faithfulness}. Besonders problematisch ist dabei, dass halluzinierte Informationen oft syntaktisch und stilistisch korrekt formuliert sind und sich nur durch Abgleich mit den strukturierten Eingabedaten als fehlerhaft identifizieren lassen.
+
+Inkonsistenz resultiert aus der stochastischen Natur von LLMs und manifestiert sich in variierenden Outputs bei identischen Inputs. Der Trade-off zwischen Kreativität und Determinismus muss durch geeignete Hyperparameter wie die Temperature gesteuert werden \cite{holtzman2020curious}.
+
+Stilabweichungen treten auf, wenn generierte Texte von etablierten Formulierungsrichtlinien abweichen. Unvollständigkeit bezeichnet das selektive Weglassen wichtiger Informationen aus der Eingabe. Insbesondere bei sicherheitsrelevanten Angaben ist ein Informationsverlust durch Zusammenfassung kritisch.
+
+Automatische Metriken ermöglichen eine skalierbare Evaluation großer Textmengen, sind jedoch in ihrer Aussagekraft limitiert \cite{celikyilmaz2021evaluation}. Oberflächliche Metriken wie BLEU und ROUGE messen lediglich N-gram Overlaps. Semantische Metriken wie BERTScore beruhen auf Embedding-basierten Vergleichen.
+
+Für domänenspezifische Anforderungen sind spezialisierte Validierungsverfahren erforderlich. Self-Consistency-Ansätze generieren mehrere Outputs für denselben Input und bilden einen Konsens \cite{wang2023selfconsistency}. Fact-Checking-Verfahren validieren die generierten Texte gegen strukturierte Eingabedaten. Prompt-basierte Präventionsstrategien setzen bereits bei der Generierung an, indem sie Constraints im System Prompt definieren.
+
+\subsubsection{Evaluationsmetriken für NLP}
+\label{sec:2.4.1}
+
+Die Evaluation von Textgenerierungsmodellen erfordert geeignete Metriken zur Quantifizierung der Ausgabequalität. Im Folgenden werden die drei zentralen Metriken BLEU, ROUGE und BERTScore erläutert.
+
+BLEU wurde für die Evaluation maschineller Übersetzungssysteme entwickelt und basiert auf dem Vergleich von N-Gramm-Übereinstimmungen zwischen generiertem Text und Referenztext \cite{papineni2002bleu}. Die Metrik berechnet die Präzision übereinstimmender N-Gramme verschiedener Längen und kombiniert diese mittels geometrischem Mittel. Die Stärke liegt in der schnellen Berechenbarkeit und der Unabhängigkeit von menschlichen Annotatoren. Allerdings erfasst BLEU lediglich oberflächliche Textübereinstimmungen und kann semantische Äquivalenz nicht adäquat bewerten.
+
+ROUGE wurde für die automatische Evaluation von Textzusammenfassungen entwickelt \cite{lin2004rouge}. ROUGE-N misst die Übereinstimmung von N-Grammen, wobei im Gegensatz zu BLEU der Recall betont wird. ROUGE-L basiert auf der längsten gemeinsamen Teilsequenz zwischen generiertem und Referenztext. Die Fokussierung auf Recall macht ROUGE besonders geeignet für die Evaluation von Zusammenfassungen, bei denen die Vollständigkeit der Informationsabdeckung zentral ist.
+
+BERTScore adressiert die Limitationen oberflächlicher N-Gramm-Metriken durch die Nutzung kontextualisierter Worteinbettungen \cite{zhang2019bertscore}. Die Metrik berechnet die Kosinus-Ähnlichkeit zwischen den BERT-Embeddings der Token im generierten und im Referenztext. Die Verwendung kontextualisierter Embeddings ermöglicht die Erfassung semantischer Äquivalenz jenseits exakter lexikalischer Übereinstimmungen. BERTScore korreliert stärker mit menschlichen Qualitätsurteilen.
+
+\subsubsection{Halluzination Detection und Validierung}
+\label{sec:2.4.2}
+
+Halluzinationen bezeichnen die Generierung faktisch inkorrekter oder erfundener Informationen durch Sprachmodelle. Diese Problematik erweist sich als besonders kritisch bei sicherheitsrelevanten Verkehrsinformationen \cite{ji2023survey}.
+
+Self-Consistency beschreibt einen Ansatz zur Qualitätssicherung durch mehrfache Generierung und Konsensanalyse \cite{wang2023selfconsistency}. Das Grundprinzip besteht darin, für dieselbe Eingabe mehrere verschiedene Outputs zu generieren und diese auf Übereinstimmung zu prüfen.
+
+Der Mechanismus umfasst die Generierung von N verschiedenen Outputs für identische Eingaben, typischerweise N zwischen 3 und 10. Das Sampling erfolgt mit einer Temperatur größer null, um Variabilität in den Ausgaben zu ermöglichen. Die zugrunde liegende Annahme besagt, dass korrekte Antworten konvergieren, während Halluzinationen divergieren.
+
+Die Limitation besteht im N-fachen Rechenaufwand durch mehrfache Inferenz. Für die vorliegende Arbeit wird ein modifizierter Self-Consistency-Ansatz implementiert: Eine erste Instanz generiert den initialen Output mit niedriger Temperatur. Eine zweite Instanz desselben Modells prüft diesen Output anhand expliziter Validierungskriterien und korrigiert identifizierte Fehler.
+
+Die strukturierte Validierung generierter Texte erfolgt durch Extraktion und Vergleich von Entitäten \cite{dhuliawala2023chain}. Aus Input und Output werden relevante Entitäten extrahiert und gegenübergestellt. Eine fundamentale Regel besagt, dass der Output keine Entitäten enthalten darf, die nicht im Input vorhanden sind.
+
+Named Entity Recognition ermöglicht die Extraktion spezifischer Informationen wie Liniennummern, Haltestellen, Zeitangaben und Fahrzeugtypen. Dies kann mittels Pattern-Matching oder dedizierter NER-Modelle erfolgen. Constraint-basierte Validierung nutzt einen Whitelist-Ansatz, bei dem ausschließlich bekannte Liniennummern zugelassen werden.
+
+Prompt-Engineering bietet Mechanismen zur präventiven Reduktion von Halluzinationen \cite{arora2023pal}. Negative Constraints im System-Prompt explizieren unerwünschte Verhaltensweisen. Typische Formulierungen umfassen die strikte Anweisung, keine Details zu erfinden, die nicht in der Eingabe enthalten sind, und ausschließlich Informationen aus dem bereitgestellten Kontext zu nutzen.
+
+Knowledge Grounding beschreibt die explizite Einbettung von Fakten im Prompt. Diese Technik reduziert Halluzinationen durch direkte Verfügbarkeit relevanten Wissens im Kontext.
+
+Die Temperatur-Parameter der Generierung beeinflusst die Zufälligkeit der Token-Selektion. Eine Temperatur nahe null induziert deterministische Generierung, bei der stets die wahrscheinlichsten Token gewählt werden \cite{holtzman2020curious}. Dies reduziert Halluzinationen, da unwahrscheinliche und potenziell inkorrekte Token-Sequenzen vermieden werden.
+
+Der Trade-off besteht in reduzierter Kreativität bei erhöhter Konsistenz. Für faktische Transformationen, bei denen Korrektheit gegenüber Variabilität priorisiert wird, erweist sich dieser Ansatz als geeignet. In der vorliegenden Arbeit wird die Temperatur auf null gesetzt, um maximale Determinismus und Reproduzierbarkeit zu gewährleisten.
+
+Automatisierte Evaluationsverfahren bieten Skalierbarkeit, weisen jedoch Limitationen auf. Entitätsvergleich erfolgt schnell und deterministisch. Pattern-Matching basiert auf Regeln, erfordert jedoch kontinuierliche Wartung.
+
+Manuelle Evaluation durch menschliche Annotatoren stellt den Gold Standard dar, skaliert jedoch nicht für große Datenmengen \cite{celikyilmaz2021evaluation}. Ein hybrider Ansatz kombiniert die Vorteile beider Methoden. Automatisierte Pre-Filter fangen offensichtliche Fehler ab. Manuelle Review fokussiert auf Grenzfälle und Stichproben. Dieser Ansatz erweist sich als optimal für praktische Anwendungen unter Ressourcenbeschränkungen.
+
+Die theoretischen Konzepte dieses Abschnitts bilden die methodische Grundlage für die praktische Evaluation. Die konkrete Anwendung der beschriebenen Techniken sowie die Messung ihrer Effektivität anhand spezifischer Metriken erfolgt in Kapitel 7.

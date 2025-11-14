@@ -1,106 +1,106 @@
-\section{Anwendungskontext und Anforderungen} \label{chap:3}
+\section{Anwendungskontext und Anforderungen}
+\label{chap:3}
 
-% Ziel: 8-10 Seiten
+\subsection{Analyse der Verkehrsanweisungen}
+\label{sec:3.1}
 
-    \subsection{Leipziger Verkehrsbetriebe}
-    \label{sec:3.1}
-    
-    % Ziel: 2-3 Seiten
-    % - Relevante Organisationsstrukturen
-    % - Aktueller Workflow: Manuelle Transformation von Verkehrsanweisungen
-    % - Zielgruppen und Kommunikationskanäle
-    % - Herausforderungen und Ineffizienzen
+Die Leipziger Verkehrsbetriebe erstellen technische Verkehrsanweisungen, um interne Abläufe bei Baumaßnahmen, Umleitungen oder Betriebsänderungen zu koordinieren. Diese Dokumente dienen primär der internen Kommunikation zwischen verschiedenen Abteilungen und enthalten sowohl fahrgastrelevante als auch rein betriebliche Informationen. Die folgenden Abschnitte analysieren die Struktur dieser Anweisungen sowie die daraus abgeleiteten Anforderungen an die Transformation in nutzergerechte Fahrgastinformationen.
 
+\subsubsection{Kategorisierung von Verkehrsmeldungen nach Komplexität}
+\label{sec:3.1.1}
 
-    \subsection{Analyse der Verkehrsanweisungen}
-    \label{sec:3.2}
-    
-    % Ziel: 4-5 Seiten
-    % - Detaillierte Charakterisierung des Problems
-    % - Struktur technischer Verkehrsanweisungen
-    % - Beispiele und Komplexität
-    % - Zielformate für verschiedene Nutzergruppen
-    % - Linguistische Besonderheiten
-    
-        \subsubsection{Kategorisierung von Verkehrsmeldungen nach Komplexität}
-        \label{sec:3.2.1}
-        
-        % KOMPLEXITÄTSKATEGORIEN VON VERKEHRSMELDUNGEN
-        % Die Verkehrsanweisungen der LVB lassen sich nach Art und Umfang der betroffenen
-        % Linien und Maßnahmen in verschiedene Kategorien einteilen:
-        %
-        % KATEGORIE 1: EINZELLINIE, EINE RICHTUNG
-        % - Eine Linie in eine Richtung betroffen
-        % - Einfachste Struktur
-        % - Beispiel: "Linie 3 fährt Richtung Taucha über Umleitung"
-        %
-        % KATEGORIE 2: EINZELLINIE, MEHRERE RICHTUNGEN MIT UNTERSCHIEDLICHEN MASSNAHMEN
-        % - Eine Linie in mehrere Richtungen betroffen
-        % - Jede Richtung hat unterschiedliche Umleitungen/Maßnahmen
-        % - Darstellung: Richtungsspezifische Maßnahmen werden hintereinander formuliert
-        % - Reihenfolge: Erst Richtung A, dann Richtung B
-        % - Beispiel: "Linie 11 fährt Richtung Schkeuditz über X, Richtung Markkleeberg über Y"
-        %
-        % KATEGORIE 3: EINZELLINIE, BEIDE RICHTUNGEN MIT GLEICHEN MASSNAHMEN
-        % - Eine Linie in beide Richtungen betroffen
-        % - Identische Maßnahmen für beide Richtungen
-        % - Beispiel: "Linie 7 wird in beiden Richtungen umgeleitet"
-        %
-        % KATEGORIE 4: MEHRERE LINIEN MIT GLEICHEN MASSNAHMEN
-        % - Mehrere Linien von identischen Maßnahmen betroffen
-        % - Darstellung: Aufzählung der betroffenen Linien
-        % - Beispiel: "Die Linien 1, 2 und 3 werden über Straße X umgeleitet"
-        %
-        % KATEGORIE 5: MEHRERE LINIEN MIT UNTERSCHIEDLICHEN MASSNAHMEN
-        % - Mehrere Linien, jede mit individuellen Maßnahmen
-        % - Hohe Komplexität durch mehrfache Differenzierung
-        % - Beispiel: "Linie 3 über Route A, Linie 7 über Route B, Linie 11 verkehrt nicht"
-        %
-        % KATEGORIE 6: MEHRERE ZEITRÄUME/BAUPHASEN
-        % - Maßnahmen ändern sich über verschiedene Zeiträume
-        % - Unterschiedliche Regelungen pro Bauphase
-        % - Beispiel: "Phase 1 (01.-15.03.): Linie 3 umgeleitet; Phase 2 (16.-31.03.): zusätzlich Linie 7"
-        %
-        % KATEGORIE 7: KOMBINATION AUS ZEITRÄUMEN UND MEHREREN LINIEN
-        % - Höchste Komplexität
-        % - Verschiedene Linien mit unterschiedlichen Maßnahmen über mehrere Zeiträume
-        %
-        % DARSTELLUNGSKONVENTIONEN:
-        % - Maßnahmen im gleichen Zeitraum werden in einem Text hintereinander zusammengefasst
-        % - Mehrere Linien mit gleicher Maßnahme werden durch Aufzählung zusammengefasst
-        % - Richtungsspezifische Maßnahmen werden hintereinander formuliert (erst Richtung A, dann B)
-        % - Verschiedene Zeiträume/Bauphasen werden explizit gekennzeichnet
-        %
-        % BEISPIEL KOMBINATION (Kategorie 7):
-        % "Vom 1. bis 15. März fahren die Linien 1 und 2 Richtung Nord über Umleitung X,
-        %  Richtung Süd über Umleitung Y. Linie 3 verkehrt nicht. Ab 16. März fahren alle
-        %  Linien wieder regulär."
-        %
-        % RELEVANZ FÜR MODELLTRAINING:
-        % - Diese Kategorien bestimmen die Diversität des Trainingsdatensatzes (siehe Abschnitt~\ref{sec:5.2.3})
-        % - Unterschiedliche Komplexitätsstufen erfordern differenzierte Transformationsstrategien
-        % - Verteilung der Kategorien beeinflusst Modellperformance
+Die Komplexität von Verkehrsanweisungen wird durch verschiedene strukturelle Dimensionen bestimmt, die sich auf die Anforderungen an die automatisierte Transformation auswirken \cite{rosenfeld2015information}. Diese Dimensionen treten in der Praxis häufig in Kombination auf, wobei umfangreichere Verkehrsanweisungen typischerweise mehrere dieser Merkmale gleichzeitig aufweisen, während einfachere Anweisungen sich auf einzelne Aspekte beschränken können. Die Systematisierung von Komplexitätsdimensionen in technischen Dokumenten folgt etablierten Ansätzen der Informationsarchitektur und Dokumentenanalyse \cite{schriver1997dynamics,redish2000readability}.
 
+Eine grundlegende Dimension der Komplexität stellt die Anzahl der betroffenen Linien dar. Die einfachste Konstellation betrifft eine einzelne Linie, beispielsweise wenn eine Buslinie aufgrund einer kurzzeitigen Straßensperrung umgeleitet wird. Komplexere Szenarien umfassen mehrere Linien, die entweder identische oder unterschiedliche Maßnahmen erfahren. Bei identischen Maßnahmen können die betroffenen Linien durch Aufzählung zusammengefasst werden, etwa wenn mehrere Buslinien dieselbe Umleitungsstrecke nutzen. Deutlich anspruchsvoller gestaltet sich die Transformation, wenn jede betroffene Linie individuelle Maßnahmen erfährt.
 
-    \subsection{Anforderungen an das System}
-    \label{sec:3.3}
-    
-    % Ziel: 2 Seiten
-    
-        \subsubsection{Funktionale Anforderungen}
-        \label{sec:3.3.1}
-        
-        % - Automatische Transformation mit minimaler Nutzerinteraktion
-        % - Konsistente Formulierungen
-        % - Mehrere Ausgabeformate
-        % - Qualitätssicherung
-        
-        
-        \subsubsection{Nicht-funktionale Anforderungen}
-        \label{sec:3.3.2}
-        
-        % - Datenschutz (DSGVO-Konformität)
-        % - Ressourceneffizienz
-        % - Integrationsfähigkeit in bestehende Systeme
-        % - Wartbarkeit und Skalierbarkeit
+Eine weitere Komplexitätsdimension ergibt sich aus der Richtungsspezifität der Maßnahmen. Während bei einfachen Anweisungen eine Linie lediglich in eine Fahrtrichtung betroffen ist, können komplexere Fälle unterschiedliche Maßnahmen für verschiedene Richtungen derselben Linie vorsehen. In solchen Fällen müssen die richtungsspezifischen Maßnahmen in der Fahrgastinformation klar voneinander abgegrenzt werden, wobei die Konvention besteht, die Maßnahmen sequenziell zu formulieren \cite{baker2013every}.
 
+Die zeitliche Dimension fügt eine zusätzliche Komplexitätsebene hinzu. Einfache Verkehrsanweisungen gelten für einen einheitlichen Zeitraum. Komplexere Anweisungen können jedoch mehrere Zeiträume oder Bauphasen umfassen, in denen unterschiedliche Maßnahmen gelten. Diese zeitliche Staffelung erfordert eine präzise Zuordnung der Maßnahmen zu den jeweiligen Gültigkeitszeiträumen, wobei Fahrgäste ausschließlich die für sie relevanten Informationen erhalten sollen \cite{rude2015technical}.
+
+Die Art der verkehrlichen Maßnahmen bildet eine weitere Differenzierungsdimension. Diese reicht von einfachen Umleitungen über Haltestellenänderungen bis hin zu Ersatzverkehren, also temporären Busverbindungen die ausgefallene Bahn- oder Straßenbahnstrecken ersetzen. Besondere Herausforderungen entstehen, wenn verschiedene Maßnahmentypen kombiniert werden, beispielsweise wenn eine Linie verkürzt wird und gleichzeitig ein Schienenersatzverkehr, also ein Ersatzbus, die Reststrecke übernimmt. In solchen Fällen müssen die Zusammenhänge zwischen den Maßnahmen und die Umsteigeverbindungen explizit kommuniziert werden.
+
+Die räumliche Ausdehnung der Maßnahmen stellt ebenfalls einen Komplexitätsfaktor dar. Während lokale Änderungen wie die Verlegung einer einzelnen Haltestelle relativ übersichtlich kommuniziert werden können, erfordern großräumige Umleitungen oder stadtweite Betriebsänderungen eine differenziertere Darstellung der betroffenen Streckenabschnitte und Haltestellenbereiche \cite{horn1998visual}.
+
+Eine besondere Komplexitätsdimension ergibt sich aus den Interdependenzen zwischen verschiedenen Maßnahmen. Hierzu zählen Substitutionen, bei denen eine Linie durch eine andere ersetzt wird, Modifikationen, bei denen eine Linie mit Änderungen weiterfährt, sowie Eliminierungen, bei denen eine Linie vollständig entfällt. Das Sprachmodell muss lernen, diese Beziehungen zu erkennen und in der Fahrgastinformation verständlich darzustellen.
+
+Schließlich können Verkehrsanweisungen faktisch mehrere separate Baumaßnahmen bündeln, die räumlich oder zeitlich zusammenhängen, aber jeweils eigenständige Transformationen erfordern. Für die automatisierte Verarbeitung bedeutet dies, dass das System erkennen muss, welche Maßnahmen logisch zusammengehören und gemeinsam kommuniziert werden sollten.
+
+Die beschriebenen Komplexitätsdimensionen bestimmen die Diversität des Trainingsdatensatzes und beeinflussen die Modellperformance. Umfangreiche Verkehrsanweisungen weisen typischerweise mehrere dieser Dimensionen gleichzeitig auf, während einfachere Anweisungen sich auf einzelne Aspekte beschränken können.
+
+\subsubsection{Charakterisierung technischer Verkehrsanweisungen}
+\label{sec:3.1.2}
+
+Verkehrsanweisungen folgen bei den LVB einer standardisierten Struktur, die sich aus der betrieblichen Praxis entwickelt hat. Die Standardisierung technischer Dokumente in Organisationen folgt etablierten Prinzipien der Organizational Communication und Document Design \cite{henning2003writing,hackos2002content}. Die Analyse der Anweisung \hyperref[anh:sperrung]{198/25} verdeutlicht den typischen Aufbau dieser Dokumente und dient im Folgenden als konkretes Beispiel für die Erläuterung der Strukturelemente.
+
+Die Grundlage für die nachfolgenden Erläuterungen bildet das Dokument Sperrung der Lützner Straße, das die Struktur und Inhalte einer typischen Verkehrsanweisung exemplarisch darstellt.
+
+Jede Verkehrsanweisung beginnt mit einer Kopfzeile, die das LVB-Branding, Ort und Datum der Veröffentlichung, Leipzig, 24.09.2025, einen eindeutigen Titel sowie die Anweisungsnummer enthält. Darauf folgt die Nennung untergeordneter Anweisungen, sofern mehrere Baumaßnahmen zeitlich oder räumlich zusammenhängen. In der Anweisung 198/25 wird beispielsweise auf Anweisung Nr. 100/24 – Sperrung der Jahnallee verwiesen, was auf eine räumliche oder betriebliche Verbindung zwischen beiden Maßnahmen hinweist. Anschließend erfolgt die Übersicht der betroffenen Linien, in diesem Fall Linie N2, operativer SEV.
+
+Der Hauptteil der Anweisung gliedert sich in mehrere inhaltlich voneinander abgegrenzte Abschnitte. Zunächst wird der Anlass der Anweisung erläutert: Für den Neubau der landwärtigen Bushaltestelle sowie einer Querungshilfe wird vom Montag, 13.10.2025 bis Freitag, 17.10.2025 die Lützner Straße zwischen Brünner Straße und Nelkenweg für den Kraftfahrzeug-Verkehr in beiden Richtungen gesperrt. Diese Passage kombiniert Grund, Zeitraum und räumliche Eingrenzung der Maßnahme. Dabei werden auch begleitende Maßnahmen genannt, die für das Verständnis der Gesamtsituation relevant sind.
+
+Für jede betroffene Linie werden die spezifischen Maßnahmen detailliert beschrieben. Die Anweisung 198/25 beschreibt für Linie N2: verkehrt ab der Nacht vom Mo. 13.10./ Di. 14.10. zwischen den Haltestellen Saarländer Straße und Schönauer Ring in beiden Richtungen mit Umleitung über Brünner Straße – Ratzelstraße – Schönauer Straße – Lützner Straße und bedient alle Haltestellen entlang der Umleitung. Diese Beschreibung umfasst neue Linienführungen in Form einer Umleitung mit präziser Straßennennung sowie implizite Informationen zu Halteausfällen, wobei die regulären Haltestellen im gesperrten Bereich entfallen, während Haltestellen entlang der Umleitungsroute bedient werden.
+
+Zusätzlich enthalten die Anweisungen Ansagetexte für Fahrzeugführer, die an bestimmten Haltestellen abgespielt werden sollen, um Fahrgäste über die Änderungen zu informieren. In der Anweisung 198/25 sind zwei richtungsspezifische Ansagetexte enthalten. Der Text für die Haltestelle Saarländer Straße nach Markranstädt lautet: Wegen Sperrung der Lützner Straße verkehrt diese Linie weiter mit Umleitung über Brünner Straße – Ratzelstraße – Schönauer Straße – Lützner Straße zur Haltestelle Schönauer Ring. Die Haltestellen Grünauer Allee und Parkallee können nicht bedient werden. Der entsprechende Text für die Gegenrichtung Schönauer Ring nach Hauptbahnhof ist analog formuliert, nennt aber die Straßen in umgekehrter Reihenfolge, entsprechend der Fahrtrichtung.
+
+Die technischen Anweisungen richten sich an interne Fachabteilungen und umfassen beispielsweise die Schließung und Neueinrichtung von Haltestellen. Der Abschnitt BMH, Betriebsmittel und Haltestellen, in Anweisung 198/25 enthält folgende Arbeitsaufträge: Haltestellen Parkallee und Grünauer Allee in beiden Richtungen für die Linien N2 und X5 schließen, alle Haltestellen im Umleitungsweg der Linie N2 in beiden Richtungen einrichten, Fahrgastinformationen und Fahrpläne veröffentlichen. Diese Informationen sind nicht für Fahrgäste relevant und müssen bei der Transformation herausgefiltert werden \cite{petersen2014audience}. Am Ende der Anweisung befinden sich Fahrtwegskizzen, die die Umleitungen und neuen Linienführungen visuell darstellen und die textlichen Beschreibungen durch kartografische Darstellungen ergänzen.
+
+Nicht alle in Verkehrsanweisungen enthaltenen Informationen sind für Fahrgäste relevant. Eine Analyse der Informationshierarchie zeigt, dass sich die Inhalte in zwei Hauptkategorien einteilen lassen. Die Kategorisierung von Information nach Relevanz für unterschiedliche Zielgruppen folgt etablierten Prinzipien der Informationsarchitektur und Audience Analysis \cite{mathes1985arriving,weiss2005handbook}. Die erste Kategorie umfasst fahrgastrelevante Informationen, die die Grundlage jeder Fahrgastinformation bilden und in verständlicher Form kommuniziert werden müssen. Dazu zählen der Gültigkeitszeitraum der Änderungen, vom Montag, 13.10.2025 bis Freitag, 17.10.2025, die betroffenen Linien, Linie N2, und die Art der Beeinträchtigung, mit Umleitung, sowie die räumliche Eingrenzung zwischen den betroffenen Haltestellen, zwischen Saarländer Straße und Schönauer Ring. Der Grund der Maßnahme liefert den notwendigen Kontext, Neubau der landwärtigen Bushaltestelle sowie einer Querungshilfe. Darüber hinaus müssen spezifische Haltestellenänderungen kommuniziert werden, in diesem Fall die ausfallenden Haltestellen Grünauer Allee und Parkallee sowie die bediente Umleitungsroute.
+
+Die zweite Kategorie umfasst technische Informationen, die ausschließlich der internen Koordination dienen und Fahrgäste verwirren oder mit unnötigen Details überfrachten würden. In der Anweisung 198/25 gehört dazu beispielsweise die Erwähnung der Linie X5 im BMH-Abschnitt. Diese Linie ist nicht von der Umleitung betroffen, sondern lediglich von der Haltestellenschließung im gesperrten Bereich. Für Fahrgäste der Linie N2 ist diese Information irrelevant; Fahrgäste der Linie X5 erhalten separate Informationen. Ebenso sind Details zur Einrichtung von Haltestellen im Umleitungsweg rein operativ und müssen nicht kommuniziert werden.
+
+Die Analyse des Korpus von Verkehrsanweisungen zeigt unterschiedliche Komplexitätsgrade gemäß der in Abschnitt \ref{sec:3.1.1} dargelegten Dimensionen. Eine weitere Herausforderung für die automatisierte Verarbeitung stellt die Disambiguierung, also die eindeutige Zuordnung von Linieninformationen dar. Verkehrsanweisungen enthalten nicht nur die von den Maßnahmen betroffenen Linien, sondern nennen auch Linien, die lediglich zur Orientierung oder als Kontext dienen. Die Anweisung 198/25 illustriert dies beispielhaft: Während in der Kopfzeile eindeutig Linie N2 als betroffene Linie genannt wird, erscheint im BMH-Abschnitt zusätzlich Linie X5. Für das Sprachmodell ist es essenziell, diese Unterscheidung zu treffen und nur die tatsächlich von der Umleitung betroffene Linie N2 in die Fahrgastinformation zu übernehmen.
+
+Bei größeren Baumaßnahmen können Verkehrsanweisungen sehr schnell an Komplexität zunehmen; dies wird beispielhaft in der Anweisung \hyperref[anh:gleisbau]{200/25} deutlich. Das zugehörige Dokument zu den Gleisbauarbeiten in der Riesaer Straße befindet sich im Anhang.
+
+\subsubsection{Analyse bestehender Fahrgastinformationen}
+\label{sec:3.1.3}
+
+Um Regeln und Konventionen für die automatisierte Transformation zu entwickeln, wurden bestehende Fahrgastinformationen systematisch analysiert. Die Methodik folgt etablierten Ansätzen der Korpusanalyse und vergleichenden Dokumentenanalyse im Bereich der technischen Kommunikation \cite{mcenery2011corpus,bowker2012corpus}. Die Analyse umfasste 185 Beispiele von verschiedenen deutschen Verkehrsbetrieben, darunter die Schweizerische Bundesbahnen, die Berliner Verkehrsbetriebe, den Verkehrsverbund Bremen/Niedersachsen, den Verkehrsverbund Berlin-Brandenburg und den Rhein-Main-Verkehrsverbund. Zusätzlich wurden bereits veröffentlichte Fahrgastinformationen der LVB als Referenz herangezogen.
+
+Eine ausführliche Sammlung der analysierten Beispiele sowie die daraus abgeleiteten Formulierungsregeln sind im Dokument \hyperref[anh:regeln]{Regeln Formulierung Fahrgastinformationen} im Anhang, siehe Anhang Abschnitt \ref{anh:regeln}, enthalten und dienen als zentrale Referenz für die nachfolgende Systematisierung.
+
+Die Extraktion erfolgte auf Grundlage einer bereitgestellten Datei, in der Beispieltexte bereits nach potenziellen Satzbausteinen kategorisiert waren. Diese Kategorisierung wurde manuell überprüft und die relevanten Formulierungen markiert. Anschließend wurden die Satzbausteine unter allgemeineren Maßnahmentypen zusammengefasst, um eine hierarchische Struktur für die spätere Prompt-Entwicklung zu schaffen. Die in der Datei enthaltenen Beispiele wurden mit den tatsächlichen Verkehrsanweisungen der LVB sowie den bereits verfassten Texten abgeglichen. Nur solche Formulierungen und Regeln, die für die LVB zutreffend und konsistent anwendbar waren, wurden in das finale Regelwerk aufgenommen. Dabei wurde darauf geachtet, die Kontextlänge, also die maximale Eingabegröße des Sprachmodells, optimal auszunutzen, ohne durch zu viele Beispiele die Gefahr von Fehlern oder Halluzinationen zu erhöhen.
+
+Aus der Analyse ergaben sich mehrere Kernerkenntnisse, die die Basis für die Entwicklung der Transformationsregeln bilden. Die folgenden Abschnitte beleuchten zentrale Konventionen, die über die analysierten Verkehrsbetriebe hinweg konsistent auftreten und für die automatisierte Verarbeitung von besonderer Bedeutung sind.
+
+Fahrzeugtyp-Spezifikation und terminologische Unterscheidungen
+
+Während Verkehrsanweisungen häufig generische Formulierungen wie Linie N2 verwenden, erwarten Fahrgäste eine explizite Nennung des Fahrzeugtyps in der Form BUS N2 oder TRAM 7. Diese Konvention ist über alle analysierten Verkehrsbetriebe hinweg konsistent und erhöht die Klarheit, insbesondere wenn sowohl Bus- als auch Straßenbahnlinien mit ähnlichen Nummern existieren. Die explizite Nennung von Fahrzeugtypen in Fahrgastinformationen entspricht etablierten Prinzipien der Plain Language und technischen Kommunikation, die Eindeutigkeit und Verständlichkeit priorisieren \cite{kimble2006plain,schriver2012plain,plainlanguage2011federal}. Bei der gleichzeitigen Nennung mehrerer Linien desselben Fahrzeugtyps wird der Typ nur einmal vorangestellt, etwa BUS 72, 73 und N7 fahren. Diese Regel verbessert die Lesbarkeit, insbesondere bei langen Linienaufzählungen.
+
+Eine besonders wichtige terminologische Unterscheidung betrifft die Bezeichnung von Haltepunkten. Während Busse und Straßenbahnen im Betriebsalltag häufig undifferenziert behandelt werden, folgt die Fahrgastkommunikation einer strikten Konvention: Buslinien verwenden ausschließlich Haltestelle beziehungsweise Haltestellen und Ersatzhaltestelle beziehungsweise Ersatzhaltestellen, während Bahnen und Straßenbahnen die Begriffe Halt beziehungsweise Halte und Ersatzhalt beziehungsweise Ersatzhalte nutzen. Diese Differenzierung zieht sich durch das gesamte Regelwerk und betrifft alle Maßnahmentypen. So lautet beispielsweise die Formulierung für einen Halteausfall bei einem Bus Die Haltestelle Markt entfällt ersatzlos, während bei einer Straßenbahn Der Halt Markt entfällt ersatzlos formuliert wird. Diese Unterscheidung ist nicht nur eine sprachliche Konvention, sondern spiegelt die unterschiedlichen Betriebscharakteristika wider und trägt zur Professionalität der Kommunikation bei.
+
+Strukturelle Grundregeln und Informationsanordnung
+
+Die Analyse bestätigte eine konsistente Grundstruktur über verschiedene Verkehrsbetriebe hinweg, die sich in vier Hauptelemente gliedert: Zunächst der Zeitraum, der angibt, wann die Änderung gilt, vom Montag, 13. Oktober bis Freitag, 17. Oktober 2025. Darauf folgen die betroffenen Linien mit explizitem Fahrzeugtyp, BUS N2. Es folgen die konkreten Maßnahmen, verkehrt zwischen den Haltestellen Saarländer Straße und Schönauer Ring in beiden Richtungen mit Umleitung über Brünner Straße, Ratzelstraße, Schönauer Straße und Lützner Straße. Den Abschluss bildet die Nennung des Grundes für die Änderung, Grund dafür ist der Neubau der landwärtigen Bushaltestelle sowie einer Querungshilfe. Diese Strukturierung folgt etablierten Prinzipien der Informationsarchitektur, die die Priorisierung handlungsrelevanter Informationen vor kontextuellen Erklärungen vorsehen \cite{rosenfeld2015information}.
+
+Die Platzierung des Grundes am Ende wurde aus zwei Überlegungen heraus als optimal identifiziert. Erstens ist für Fahrgäste zunächst die konkrete Auswirkung auf ihre Reise von primärer Relevanz; der Grund liefert Kontext, ist aber für die unmittelbare Reiseplanung weniger entscheidend. Zweitens entspricht diese Struktur der gängigen Praxis bei anderen deutschen Verkehrsbetrieben und trägt zur Konsistenz und Wiedererkennbarkeit bei. Der Grund wird dabei stets als eigenständiger Satz formuliert: Grund dafür ist Singular-Beschreibung oder Grund dafür sind Plural-Beschreibung. Diese strikte Formulierung vermeidet Variationen und erhöht die Vorhersagbarkeit für Fahrgäste. Bei der Verkehrsanweisung 198/25 wird beispielsweise die technische Formulierung Für den Neubau der landwärtigen Bushaltestelle sowie einer Querungshilfe wird die Lützner Straße gesperrt transformiert zu Grund dafür ist der Neubau der landwärtigen Bushaltestelle sowie einer Querungshilfe.
+
+Formatierungskonventionen und sprachliche Details
+
+Mehrere präzise Formatierungsregeln tragen zur Einheitlichkeit der Fahrgastinformationen bei. Haltestellennamen werden ausnahmslos in Anführungszeichen gesetzt, etwa Die Haltestelle Grünauer Allee kann nicht bedient werden. Diese Regel gilt unabhängig vom Kontext und unterscheidet Haltestellennamen klar von Straßennamen, die ohne Anführungszeichen genannt werden. Die systematische Verwendung von Anführungszeichen zur Markierung von Eigennamen entspricht etablierten typografischen Konventionen in der technischen Dokumentation \cite{weiss2005handbook}.
+
+Bei Aufzählungen wird das letzte Element stets mit und, nicht mit Komma, angeschlossen. Eine korrekte Aufzählung lautet Brünner Straße, Ratzelstraße, Schönauer Straße und Lützner Straße, nicht Brünner Straße, Ratzelstraße, Schönauer Straße, Lützner Straße. Diese als Oxford-Comma-Verzicht bekannte Konvention entspricht der gängigen deutschen Sprachpraxis und wird konsequent in allen Aufzählungskontexten angewendet, sowohl bei Straßennamen in Umleitungen als auch bei der Nennung mehrerer ausfallender Haltestellen.
+
+Die Analyse der LVB-Texte zeigt einen heterogenen Umgang mit Abkürzungen. Während allgemein bekannte Straßenabkürzungen wie -str. für -straße in Fahrgastinformationen akzeptabel sind, werden fachspezifische Abkürzungen inkonsistent behandelt. Für ein standardisiertes Format wurde die Entscheidung getroffen, fachspezifische Abkürzungen konsequent auszuschreiben: Hst. wird zu Haltestelle, Strbhf. zu Straßenbahnhof und örtl. zu örtlicher. Diese Regel erhöht die Verständlichkeit für alle Fahrgäste, insbesondere für weniger verkehrsaffine Personen oder ortsunkundige Reisende. Die konsequente Auflösung von Abkürzungen entspricht den Empfehlungen für barrierefreie und verständliche Kommunikation \cite{accessible2008wcag,petrie2007accessibility}. In der Verkehrsanweisung 198/25 wird die Linie N2 zwar nicht verkürzt, jedoch ist in anderen Anweisungen die Formulierung verkürzt bis Paunsdorf, Strbhf. zu finden, die in der Fahrgastinformation zu verkürzt bis und ab Paunsdorf, Straßenbahnhof transformiert wird.
+
+Maßnahmenspezifische Regelungen
+
+Unterschiedliche Maßnahmentypen folgen jeweils eigenen Formulierungsmustern. Bei Halteausfällen wird zwischen Singular und Plural unterschieden: Die Haltestelle Grünauer Allee kann nicht bedient werden für einen einzelnen Ausfall, versus Die Haltestellen Grünauer Allee und Parkallee können nicht bedient werden für mehrere Ausfälle. Das Verb muss entsprechend konjugiert werden. In der Verkehrsanweisung 198/25 werden beide Haltestellen explizit in den Ansagetexten genannt, was die Plural-Formulierung erfordert.
+
+Bei Umleitungen zeigt sich ein fahrzeugtypspezifischer Unterschied. Während bei Bussen die Formulierung Die Busse fahren eine Umleitung über verwendet wird, lautet die entsprechende Formulierung bei Straßenbahnen Die Züge werden über umgeleitet. Diese Unterscheidung trägt den unterschiedlichen Betriebscharakteristika Rechnung und findet sich in den Fahrgastinformationen verschiedener deutscher Verkehrsbetriebe. In kürzeren Texten kann die vereinfachte Form mit Umleitung über verwendet werden, wie in der Verkehrsanweisung 198/25: verkehrt mit Umleitung über Brünner Straße, Ratzelstraße, Schönauer Straße und Lützner Straße.
+
+Sonderfälle und Abweichungen
+
+Bestimmte Situationen erfordern Abweichungen von der Grundstruktur. Bei Endmeldungen, die die Aufhebung von Einschränkungen kommunizieren, entfällt die Grund-Angabe vollständig. Die Formulierung beschränkt sich auf Zeitangabe und Meldung: ab 20.05.23: Die reguläre Haltestelle Markt ist wieder in Betrieb. Ein Grund wäre hier redundant, da die vorangegangene Einschränkung den Fahrgästen bereits bekannt ist und die Endmeldung lediglich den Normalzustand wiederherstellt.
+
+Bei Events, Sportveranstaltungen, Messen, Lichtfest, ändert sich die Struktur dahingehend, dass der Event-Anlass nach der Zeitangabe, aber vor der Liniennennung steht: am Samstag, 18. Oktober 2025: Anlässlich des Fußballspiels RB Leipzig gegen Hamburger SV fahren die Linien. In diesem Fall kann der Grund am Ende entfallen, da der Event-Anlass bereits am Anfang genannt wurde und eine Wiederholung redundant wäre.
+
+Ein weiterer Sonderfall sind Ansagetexte, die in Fahrzeugen abgespielt werden. Diese folgen einer eigenen Struktur: Sie beginnen stets mit Sehr geehrte Fahrgäste, und integrieren den Grund direkt mit wegen Grund nach der Begrüßung. Zeitangaben und Liniennummern entfallen vollständig, stattdessen wird der Fahrzeugbezug verwendet, dieser Bus beziehungsweise diese Straßenbahn. Die beiden in der Verkehrsanweisung 198/25 vorgegebenen Ansagetexte illustrieren diese Struktur: Wegen Sperrung der Lützner Straße verkehrt diese Linie weiter mit Umleitung über.
+
+Systematisierung und Übertragbarkeit
+
+Die Entwicklung eines automatisierten Transformationssystems bietet die Chance, über die reine Zeitersparnis hinaus einen systematischen Ansatz für die Fahrgastinformation zu etablieren. Während Mitarbeitende bei der manuellen Formulierung unter Zeitdruck arbeiten und individuelle Präferenzen in die Texterstellung einfließen lassen, ermöglicht die Automatisierung eine durchgängig konsistente Anwendung der definierten Regeln. Die systematische Standardisierung von Kommunikationsprozessen in Organisationen trägt nachweislich zur Qualitätssicherung und Effizienzsteigerung bei \cite{henning2003writing,hackos2002content}. Durch die systematische Anwendung werden Variationen in Formulierungen vermieden, die bei manueller Texterstellung naturgemäß auftreten. Dies erhöht die Wiedererkennbarkeit und reduziert kognitive Belastung für Fahrgäste, die regelmäßig auf Verkehrsinformationen angewiesen sind \cite{sweller1988cognitive,chandler1991cognitive}.
+
+Es ist dabei hervorzuheben, dass die ausgearbeiteten Regeln nicht lediglich eine Sammlung von Beispielen anderer Verkehrsbetriebe darstellen. Vielmehr bilden sie die Grundlage für einen übergreifend einheitlichen Stil zur Formulierung von Fahrgastinformationen, auf den sich die beteiligten Betriebe verständigen. Die Regeln dienen somit als verbindlicher Rahmen, der eine konsistente und verständliche Kommunikation sicherstellt und die Grundlage für eine überregionale Standardisierung schafft.
+
+Ein weiterer Vorteil liegt in der Möglichkeit, das entwickelte Regelwerk auch überregional nutzbar zu machen. Die identifizierten Konventionen basieren nicht nur auf LVB-internen Praktiken, sondern berücksichtigen Best Practices verschiedener deutscher Verkehrsbetriebe. Die Unterscheidung zwischen Haltestelle und Halt, die Position des Grundes am Ende oder die Regeln zur Aufzählung sind keine LVB-spezifischen Eigenheiten, sondern finden sich in ähnlicher Form bei anderen Betreibern. Dies schafft die Grundlage für ein allgemeingültiges Format, das sich mit minimalen Anpassungen auf andere Betreiber übertragen lässt. Die Entwicklung übertragbarer Standards in der technischen Kommunikation entspricht etablierten Ansätzen zur Qualitätssicherung und Prozessoptimierung in organisationsübergreifenden Kontexten \cite{baker2013every,weiss2005handbook}.
