@@ -520,50 +520,21 @@ Die theoretische Perspektive betrachtet Fine-Tuning als Optimierungsproblem mit 
         
         % Ziel: 1 Seite
         
-        % AUTOMATISCHE METRIKEN:
-        % - BLEU, ROUGE (kurz): N-gram Overlap-basiert
-        %   * Ursprünglich für Maschinenübersetzung entwickelt
-        %   * Limitiert für semantische Äquivalenz
-        %   * Schnell berechenbar, aber oberflächlich
-        %
-        % - Semantische Ähnlichkeitsmetriken (BERTScore):
-        %   * Contextualized Embeddings statt Surface-Form
-        %   * Bessere Erfassung von Paraphrasen
-        %   * Rechenintensiver, aber aussagekräftiger
-        %
-        % - Perplexity:
-        %   * Misst Konfidenz des Modells
-        %   * Niedriger = besseres Language Modeling
-        %   * Nicht direkt für Qualität, aber für Training-Monitoring
-        %
-        % PROMPT-BASIERTE EVALUATION \cite{berryman2024prompt}:
-        % - LLM-as-a-Judge: Nutzung größerer Modelle zur Bewertung
-        %   * Prompt: "Bewerte die Qualität dieser Transformation auf Skala 1-5"
-        %   * Kriterien: Faktentreue, Verständlichkeit, Stilkonformität
-        %   * Vorteil: Flexibel, domänenspezifisch anpassbar
-        %   * Limitation: Bias des Evaluator-Modells, Kosten
-        %
-        % - Comparative Evaluation \cite{berryman2024prompt}:
-        %   * A/B-Vergleich zweier Outputs
-        %   * "Welcher Text ist verständlicher: A oder B?"
-        %   * Robuster als absolute Bewertungen
-        %   * Nützlich für Prompt-Optimierung (siehe Abschnitt~\ref{sec:2.2.2})
-        %
-        % DOMÄNENSPEZIFISCHE METRIKEN:
-        % - Faktentreue: Prüfung gegen strukturierte Eingabedaten
-        %   * Entitätsextraktion: Liniennummer, Haltestellen, Zeitangaben
-        %   * Vollständigkeitsprüfung: Alle Input-Informationen im Output?
-        %   * Halluzination Detection: Erfundene Details? (siehe Abschnitt~\ref{sec:2.4.2})
-        %
-        % - Stilkonformität:
-        %   * Einhaltung von Stilrichtlinien (siehe Abschnitt~\ref{sec:3.2})
-        %   * Regelbasierte Checks: Passiv vs. Aktiv, Fachbegriffe vs. Allgemeinsprache
-        %   * Pattern-Matching für verbotene Formulierungen
-        %
-        % - Konsistenz:
-        %   * Gleiche Eingabe → identische Ausgabe (bei deterministischer Temperatur)
-        %   * Messung: Wiederholte Generierung, Hamming-Distanz zwischen Outputs
-        %   * Wichtig für Produktionsumgebung: Vorhersagbarkeit
+        Automatische Metriken für Natural Language Processing umfassen verschiedene Ansätze. BLEU und ROUGE sind N-gram Overlap-basierte Metriken, die ursprünglich für Maschinenübersetzung entwickelt wurden. Sie sind limitiert für semantische Äquivalenz, aber schnell berechenbar, wenngleich oberflächlich.
+
+Semantische Ähnlichkeitsmetriken wie BERTScore nutzen Contextualized Embeddings statt Surface-Form. Dies ermöglicht bessere Erfassung von Paraphrasen, ist jedoch rechenintensiver, aber aussagekräftiger.
+
+Perplexity misst die Konfidenz des Modells. Niedriger Wert bedeutet besseres Language Modeling. Dies ist nicht direkt für Qualität geeignet, aber für Training-Monitoring relevant.
+
+Prompt-basierte Evaluation [SOURCE-MISSING] nutzt LLM-as-a-Judge durch größere Modelle zur Bewertung. Prompts wie „Bewerte die Qualität dieser Transformation auf Skala 1-5" definieren Kriterien wie Faktentreue, Verständlichkeit und Stilkonformität. Der Vorteil liegt in Flexibilität und domänenspezifischer Anpassbarkeit. Limitierungen bestehen in Bias des Evaluator-Modells und Kosten.
+
+Comparative Evaluation [SOURCE-MISSING] führt A/B-Vergleich zweier Outputs durch. Fragen wie „Welcher Text ist verständlicher: A oder B?" sind robuster als absolute Bewertungen. Dies ist nützlich für Prompt-Optimierung (siehe Abschnitt~\ref{sec:2.2.2}).
+
+Domänenspezifische Metriken umfassen Faktentreue durch Prüfung gegen strukturierte Eingabedaten. Entitätsextraktion erfasst Liniennummer, Haltestellen und Zeitangaben. Vollständigkeitsprüfung stellt sicher, dass alle Input-Informationen im Output enthalten sind. Halluzination Detection identifiziert erfundene Details (siehe Abschnitt~\ref{sec:2.4.2}).
+
+Stilkonformität überwacht Einhaltung von Stilrichtlinien (siehe Abschnitt~\ref{sec:3.2}) durch regelbasierte Checks wie Passiv versus Aktiv und Fachbegriffe versus Allgemeinsprache. Pattern-Matching identifiziert verbotene Formulierungen.
+
+Konsistenz stellt sicher, dass gleiche Eingabe zu identischer Ausgabe führt bei deterministischer Temperatur. Messung erfolgt durch wiederholte Generierung und Hamming-Distanz zwischen Outputs. Dies ist wichtig für Produktionsumgebung zur Vorhersagbarkeit.
         
         
         \subsubsection{Halluzination Detection und Validierung}
@@ -571,78 +542,32 @@ Die theoretische Perspektive betrachtet Fine-Tuning als Optimierungsproblem mit 
         
         % Ziel: 1-1,5 Seiten
         
-        % PROBLEMSTELLUNG:
-        % - Halluzinationen: Modell generiert faktisch inkorrekte oder erfundene Informationen
-        % - Besonders kritisch bei sicherheitsrelevanten Verkehrsinformationen
-        % - Herausforderung: Plausibel klingende, aber falsche Aussagen
-        % - Beispiel: "Straßenbahn Linie 10" statt korrekter "Bus Linie 10"
-        %
-        % SELF-CONSISTENCY CHECKS \cite{bonstra2024prompt}:
-        % - Grundprinzip: Mehrfache Generierung mit Sampling (siehe Abschnitt~\ref{sec:2.2.2})
-        % - Mechanismus:
-        %   * Gleiche Eingabe → N verschiedene Outputs generieren (typisch N=3-10)
-        %   * Sampling mit Temperature > 0 für Variabilität
-        %   * Mehrheitsentscheidung oder Konsensanalyse
-        % - Annahme: Korrekte Antworten konvergieren, Halluzinationen divergieren
-        % - Vorteil: Keine externe Wissensquelle erforderlich
-        % - Limitation: Mehrfache Inferenz-Kosten (N-facher Rechenaufwand)
-        % - Anwendung: Kritische Transformationen, wo Faktentreue essentiell ist
-        %
-        % FACT CHECKING GEGEN EINGABEDATEN:
-        % - Strukturierte Validierung \cite{berryman2024prompt}:
-        %   * Extraktion von Entitäten aus Input und Output
-        %   * Vergleich: Sind alle Input-Entitäten im Output enthalten?
-        %   * Regel: Output darf KEINE Entitäten enthalten, die nicht im Input sind
-        % - Named Entity Recognition (NER) für Extraktion:
-        %   * Liniennummern, Haltestellen, Zeitangaben, Fahrzeugtypen
-        %   * Pattern-Matching oder NER-Modell
-        % - Constraint-basierte Validierung:
-        %   * Whitelist-Ansatz: Nur bekannte Liniennummern erlaubt
-        %   * Knowledge Base: Linien-Fahrzeug-Zuordnungen als Ground Truth
-        %   * Reject-Output bei Verletzung von Constraints
-        %
-        % PROMPT-BASIERTE HALLUZINATION PREVENTION \cite{berryman2024prompt}:
-        % - Negative Constraints in System Prompt (siehe Abschnitt~\ref{sec:2.2.2}):
-        %   * "Erfinde KEINE Details, die nicht in der Eingabe stehen"
-        %   * "Nutze NUR Informationen aus dem bereitgestellten Kontext"
-        %   * "Bei Unsicherheit: NICHT spekulieren, sondern Information weglassen"
-        % - Knowledge Grounding:
-        %   * Explizite Einbettung von Fakten im Prompt
-        %   * Beispiel: "Linie 10 ist ein Bus, Linie 11 ist eine Straßenbahn"
-        %   * Reduziert Halluzinationen durch direkte Verfügbarkeit von Wissen
-        % - Chain-of-Thought für Faktentreue:
-        %   * Zwischenschritt: "Welche Informationen sind in der Eingabe enthalten?"
-        %   * Explizite Verifikation vor Generierung
-        %   * Erhöht Token-Kosten, aber verbessert Zuverlässigkeit
-        %
-        % AUTOMATISIERTE VS. MANUELLE EVALUATION:
-        % - Automatisiert (skalierbar, aber limitiert):
-        %   * Entitätsvergleich: Schnell, deterministisch
-        %   * Pattern-Matching: Regelbasiert, wartungsintensiv
-        %   * Self-Consistency: Rechenintensiv, keine externe Referenz
-        % - Manuell (präzise, aber teuer):
-        %   * Human Evaluation: Gold Standard, aber nicht skalierbar
-        %   * Stichprobenbasiert: Regelmäßige Quality Checks
-        %   * Iterative Verbesserung: Fehleranalyse → Prompt-Anpassung
-        % - Hybrid-Ansatz (optimal für Praxis):
-        %   * Automatisierte Pre-Filter: Offensichtliche Fehler abfangen
-        %   * Manuelle Review: Grenzfälle und Stichproben
-        %   * Feedback-Loop: Erkannte Fehler → Prompt-Optimierung
-        %
-        % PRAKTISCHE ANSÄTZE FÜR RESSOURCENLIMITIERTE UMGEBUNGEN:
-        % - Deterministische Temperatur (T=0) reduziert Halluzinationen \cite{berryman2024prompt}
-        %   * Trade-off: Weniger kreativ, aber konsistenter
-        %   * Geeignet für faktische Transformationen
-        % - Kleinere Validierungsmodelle:
-        %   * Leichtgewichtige NER-Modelle für Entitätsextraktion
-        %   * Regelbasierte Checks statt LLM-as-a-Judge
-        % - Cached Knowledge Integration:
-        %   * Statische Wissensbasis im Prompt (kein RAG-Overhead)
-        %   * Siehe Abschnitt~\ref{sec:2.3.3} für Knowledge Integration ohne RAG
-        %
-        % ÜBERGANG ZU KAPITEL 7 (EVALUATION):
-        % - Theoretische Konzepte hier: Methodik und Prinzipien
-        % - Praktische Anwendung in Kapitel~\ref{chap:7}: Konkrete Metriken und Ergebnisse
-        % - Kombination automatisierter und manueller Validierung in Implementierung
+        Halluzinationen bezeichnen faktisch inkorrekte oder erfundene Informationen, die Modelle generieren. Dies ist besonders kritisch bei sicherheitsrelevanten Verkehrsinformationen. Die Herausforderung besteht in plausibel klingenden, aber falschen Aussagen. Ein Beispiel ist „Straßenbahn Linie 10" statt korrekter „Bus Linie 10".
+
+Self-Consistency Checks [SOURCE-MISSING] basieren auf mehrfacher Generierung mit Sampling (siehe Abschnitt~\ref{sec:2.2.2}). Der Mechanismus generiert N verschiedene Outputs für gleiche Eingabe, typisch N=3-10. Sampling erfolgt mit Temperature größer 0 für Variabilität. Mehrheitsentscheidung oder Konsensanalyse folgen. Die Annahme ist, dass korrekte Antworten konvergieren, während Halluzinationen divergieren. Der Vorteil besteht darin, dass keine externe Wissensquelle erforderlich ist. Die Limitation liegt in mehrfachen Inferenz-Kosten mit N-fachem Rechenaufwand. Anwendung findet dies bei kritischen Transformationen, wo Faktentreue essentiell ist.
+
+Fact Checking gegen Eingabedaten erfolgt durch strukturierte Validierung [SOURCE-MISSING]. Extraktion von Entitäten aus Input und Output ermöglicht Vergleich: Sind alle Input-Entitäten im Output enthalten? Die Regel lautet, dass Output keine Entitäten enthalten darf, die nicht im Input sind.
+
+Named Entity Recognition (NER) extrahiert Liniennummern, Haltestellen, Zeitangaben und Fahrzeugtypen durch Pattern-Matching oder NER-Modell.
+
+Constraint-basierte Validierung nutzt Whitelist-Ansatz, wobei nur bekannte Liniennummern erlaubt sind. Knowledge Base mit Linien-Fahrzeug-Zuordnungen als Ground Truth führt zu Reject-Output bei Verletzung von Constraints.
+
+Prompt-basierte Halluzination Prevention [SOURCE-MISSING] verwendet negative Constraints in System Prompt (siehe Abschnitt~\ref{sec:2.2.2}) wie „Erfinde KEINE Details, die nicht in der Eingabe stehen", „Nutze NUR Informationen aus dem bereitgestellten Kontext" und „Bei Unsicherheit: NICHT spekulieren, sondern Information weglassen".
+
+Knowledge Grounding bettet Fakten explizit im Prompt ein. Beispiel: „Linie 10 ist ein Bus, Linie 11 ist eine Straßenbahn" reduziert Halluzinationen durch direkte Verfügbarkeit von Wissen.
+
+Chain-of-Thought für Faktentreue nutzt Zwischenschritt: „Welche Informationen sind in der Eingabe enthalten?" Explizite Verifikation vor Generierung erhöht Token-Kosten, verbessert aber Zuverlässigkeit.
+
+Automatisierte versus manuelle Evaluation unterscheidet skalierbare, aber limitierte automatisierte Ansätze von präziser, aber teurer manueller Evaluation. Automatisiert sind Entitätsvergleich (schnell, deterministisch), Pattern-Matching (regelbasiert, wartungsintensiv) und Self-Consistency (rechenintensiv, keine externe Referenz). Manuell sind Human Evaluation als Gold Standard (nicht skalierbar) und stichprobenbasierte regelmäßige Quality Checks mit iterativer Verbesserung durch Fehleranalyse zu Prompt-Anpassung.
+
+Hybrid-Ansatz ist optimal für Praxis durch automatisierte Pre-Filter für offensichtliche Fehler, manuelle Review für Grenzfälle und Stichproben sowie Feedback-Loop, wobei erkannte Fehler zu Prompt-Optimierung führen.
+
+Praktische Ansätze für ressourcenlimitierte Umgebungen nutzen deterministische Temperatur (T=0) zur Reduktion von Halluzinationen [SOURCE-MISSING]. Der Trade-off besteht in weniger Kreativität, aber höherer Konsistenz. Dies ist geeignet für faktische Transformationen.
+
+Kleinere Validierungsmodelle umfassen leichtgewichtige NER-Modelle für Entitätsextraktion sowie regelbasierte Checks statt LLM-as-a-Judge.
+
+Cached Knowledge Integration verwendet statische Wissensbasis im Prompt ohne RAG-Overhead. Siehe Abschnitt~\ref{sec:2.3.3} für Knowledge Integration ohne RAG.
+
+Der Übergang zu Kapitel~\ref{chap:7} verdeutlicht, dass theoretische Konzepte hier Methodik und Prinzipien darstellen. Praktische Anwendung in Kapitel~\ref{chap:7} zeigt konkrete Metriken und Ergebnisse. Kombination automatisierter und manueller Validierung erfolgt in Implementierung.
 
 
