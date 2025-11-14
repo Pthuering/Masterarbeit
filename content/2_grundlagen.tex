@@ -32,66 +32,30 @@
 % - Sections with only structural comments
 % ============================================================================
 
-% KAPITEL-EINLEITUNG - STICHPUNKTE:
-%
-% Ausgangspunkt: Von manueller zu automatisierter Texttransformation
-% - LVB-Problemstellung (Kap.~\ref{chap:1}) erfordert NLP-Expertise
-% - Nicht trivial: Fachsprache → Allgemeinsprache ≠ einfache Übersetzung
-% - Kontextabhängigkeit, Präzision, Verständlichkeit simultan erforderlich
-%
-% Architektonischer Aufbau des Kapitels:
-% 1. NLP-Fundamente (Abschnitt~\ref{sec:2.1}):
-%    - Transformer als paradigmatischer Durchbruch
-%    - Pretraining-Finetuning-Paradigma
-%    - Deutschsprachige Modelle: Von Mistral zu LeoLM
-%
-% 2. Anpassungsmethodik (Abschnitt~\ref{sec:2.2}):
-%    - Parameter-effizientes Fine-Tuning: LoRA & Unsloth
-%    - Datenstrategien bei limitierten Ressourcen
-%    - Prompt Engineering als komplementärer Ansatz
-%
-% 3. Produktionsreife (Abschnitt~\ref{sec:2.3}):
-%    - Quantisierung: Deployment unter Hardware-Constraints
-%    - Halluzination Prevention: Faktentreue sicherstellen
-%    - Knowledge Integration ohne RAG-Overhead
-%
-% Roter Faden: Theoretische Konzepte → Praktische Constraints
-% - Kapitel 3: Anwendungskontext determiniert technologische Entscheidungen
-% - Kapitel 6: Implementierung operationalisiert theoretische Konzepte
-% - Diese Kapitel: Fundierung der Lösung in etablierter Forschung
+Die in Kapitel~\ref{chap:1} vorgestellte Problemstellung der Leipziger Verkehrsbetriebe erfordert fundierte Natural Language Processing-Expertise, da die Transformation von fachsprachlichen Verkehrsanweisungen in allgemeinverständliche Fahrgastinformationen keine triviale Übersetzungsaufgabe darstellt. Vielmehr müssen Kontextabhängigkeit, semantische Präzision und kommunikative Verständlichkeit simultan gewährleistet werden, was moderne Sprachverarbeitungsmethoden unerlässlich macht.
+
+Das vorliegende Kapitel legt die theoretischen Grundlagen für die automatisierte Texttransformation und gliedert sich in drei aufeinander aufbauende Themenkomplexe. Abschnitt~\ref{sec:2.1} behandelt zunächst die NLP-Fundamente, wobei die Transformer-Architektur als paradigmatischer Durchbruch im Bereich der Sprachverarbeitung eingeführt wird. Das Pretraining-Finetuning-Paradigma wird erörtert, bevor deutschsprachige Modelle von Mistral bis LeoLM betrachtet werden, welche die sprachliche Basis für die vorliegende Arbeit bilden.
+
+Abschnitt~\ref{sec:2.2} widmet sich der Anpassungsmethodik vortrainierter Sprachmodelle an domänenspezifische Aufgaben. Parameter-effiziente Fine-Tuning-Verfahren wie LoRA werden vorgestellt, ergänzt durch das Unsloth-Optimierungsframework, das Training unter Ressourcenbeschränkungen ermöglicht. Datenstrategien bei limitierter Datenverfügbarkeit sowie Prompt Engineering als komplementärer Ansatz zur Verhaltenssteuerung von Sprachmodellen runden diesen Abschnitt ab.
+
+Der dritte Themenkomplex in Abschnitt~\ref{sec:2.3} fokussiert auf Produktionsreife und praktische Einsatzfähigkeit. Quantisierung als Technik für das Deployment unter Hardware-Constraints wird erörtert, bevor Mechanismen zur Halluzination Prevention und zur Sicherstellung faktentreuer Ausgaben behandelt werden. Strategien zur Knowledge Integration ohne den Overhead vollständiger Retrieval-Augmented Generation-Systeme schließen diesen Abschnitt.
+
+Der rote Faden dieses Kapitels führt von theoretischen Konzepten zu deren praktischer Anwendbarkeit unter realen Constraints. Während Kapitel~\ref{chap:3} den Anwendungskontext beschreibt, der technologische Entscheidungen determiniert, und Kapitel~\ref{chap:6} die konkrete Implementierung darstellt, fundiert das vorliegende Kapitel die entwickelte Lösung in der etablierten wissenschaftlichen Forschung und schafft das konzeptionelle Fundament für die nachfolgenden praktischen Ausführungen.
 
     \subsection{Natural Language Processing für Verkehrsinformationen}
     \label{sec:2.1}
     
     % Ziel: 5-6 Seiten
     
-% ABSCHNITT-EINLEITUNG - STICHPUNKTE:
-%
-% Spannungsfeld: Universelle Sprachmodelle vs. Domänenspezifik
-% - GPT-4, Claude: Beeindruckende Generalfähigkeiten
-% - Verkehrsdomäne: Spezifische Terminologie, rechtliche Präzision, Lokalkontexte
-% - Open-Source-Notwendigkeit: DSGVO, Datensouveränität, Kosteneffizienz
-%
-% NLP im Verkehrssektor: Unterschätzte Komplexität
-% - Nicht nur Sentiment-Analyse oder FAQ-Bots
-% - Transformation erfordert: Kontextverständnis + Stiladaption + Faktentreue
-% - "Linie 10 fährt nicht" vs. "Straßenbahn der Linie 10 verkehrt aufgrund..."
-% - Implizites Wissen: Welche Linien? Welche Fahrzeugtypen? Welche Alternativrouten?
-%
-% Evolution der Ansätze:
-% - Template-basiert: Starr, limitiert, wartungsintensiv
-% - Regelbasierte NLG: Bessere Kontrolle, aber Skalierungsprobleme
-% - Moderne LLMs: Flexibilität + Generalisierung, aber Kontrolle-Herausforderung
-%
-% Warum Transformer-basierte Modelle den Unterschied machen:
-% - Attention-Mechanismus erfasst Abhängigkeiten über Satzgrenzen hinweg
-% - Pretraining auf Milliarden Tokens → robustes Sprachverständnis
-% - Fine-Tuning ermöglicht Domänenanpassung ohne Training from-scratch
-%
-% Vorausblick auf Unterabschnitte:
-% - 2.1.1: Technische Fundamente (Transformer, Pretraining, Transfer Learning)
-% - 2.1.2: Verkehrsspezifische NLP-Anwendungen (Stand der Technik)
-% - 2.1.3: Deutschsprachige & domänenspezifische Modelle (LeoLM-Familie)
+Die Auswahl geeigneter Sprachmodelle für die Verarbeitung von Verkehrsinformationen bewegt sich im Spannungsfeld zwischen universellen und domänenspezifischen Ansätzen. Während proprietäre Systeme wie GPT-4 oder Claude beeindruckende Generalfähigkeiten demonstrieren, erfordern Verkehrsdomänen spezifische Terminologie, rechtliche Präzision und lokale Kontextkenntnisse. Zudem machen Anforderungen der Datenschutz-Grundverordnung, Datensouveränität und Kosteneffizienz den Einsatz von Open-Source-Modellen für öffentliche Verkehrsbetriebe unerlässlich.
+
+Die Komplexität von Natural Language Processing im Verkehrssektor wird häufig unterschätzt. Es genügt nicht, Sentiment-Analysen oder FAQ-Bots bereitzustellen; die Transformation fachsprachlicher Anweisungen erfordert gleichzeitig tiefes Kontextverständnis, präzise Stiladaption und absolute Faktentreue. Die Umformulierung einer verkürzten Mitteilung wie „Linie 10 fährt nicht" in eine vollständige Fahrgastinformation „Die Straßenbahn der Linie 10 verkehrt aufgrund technischer Störungen gegenwärtig nicht" erfordert implizites Wissen über Liniennummern, Fahrzeugtypen und gegebenenfalls Alternativrouten, das nicht unmittelbar in der Eingabe kodiert ist.
+
+Die Evolution natürlichsprachlicher Generierungsansätze im Verkehrssektor spiegelt den allgemeinen Fortschritt im Natural Language Processing wider. Template-basierte Systeme waren starr, in ihrem Ausdrucksvermögen limitiert und wartungsintensiv. Regelbasierte Natural Language Generation bot zwar bessere Kontrolle über die Ausgabequalität, stieß jedoch bei der Skalierung auf erhebliche Probleme. Moderne Large Language Models vereinen Flexibilität mit Generalisierungsfähigkeit, stellen jedoch neue Herausforderungen hinsichtlich der Kontrollierbarkeit und Faktentreue dar.
+
+Transformer-basierte Sprachmodelle unterscheiden sich fundamental von früheren Ansätzen und ermöglichen erst die geforderte Qualität automatisierter Texttransformation. Der Attention-Mechanismus erfasst semantische Abhängigkeiten über Satzgrenzen hinweg, während das Pretraining auf Milliarden von Tokens ein robustes allgemeines Sprachverständnis etabliert. Fine-Tuning erlaubt anschließend die Domänenanpassung, ohne dass ein vollständiges Training from-scratch erforderlich wäre, was bei begrenzten Ressourcen und Datenmengen entscheidend ist.
+
+Die folgenden Unterabschnitte strukturieren die theoretischen Grundlagen systematisch: Abschnitt~\ref{sec:2.1.1} behandelt die technischen Fundamente der Transformer-Architektur, das Pretraining-Paradigma und Transfer Learning. Abschnitt~\ref{sec:2.1.2} gibt einen Überblick über verkehrsspezifische NLP-Anwendungen und den aktuellen Stand der Technik. Abschnitt~\ref{sec:2.1.3} fokussiert auf deutschsprachige und domänenspezifische Modelle, insbesondere die LeoLM-Familie, die als Basis für die vorliegende Arbeit dient.
     
         \subsubsection{Grundlagen der Sprachverarbeitung}
         \label{sec:2.1.1}
@@ -135,89 +99,21 @@
         
         % Ziel: 2-3 Seiten
         
-        % DATENFLUT IM TRANSPORTSEKTOR:
-        % - Personentransportsektor: Massive Textdatenproduktion
-        %   * Verkehrsberichte (Echtzeit & historisch)
-        %   * Wartungsprotokolle (technische Dokumentation)
-        %   * Unfallmeldungen (Incident Reports)
-        %   * Fahrgastbeschwerden & Feedback
-        %   * Social Media (ungefiltert, heterogen)
-        % - Problem: Datenvolumen übersteigt menschliche Verarbeitungskapazität
-        % - Regelbasierte Ansätze: Als unzureichend erwiesen
-        %   * Starre Pattern-Matching-Logik
-        %   * Skalierungsprobleme bei Variabilität natürlicher Sprache
-        %   * Wartungsaufwand wächst exponentiell mit Komplexität
-        
-        % NLP ALS ENABLER-TECHNOLOGIE:
-        % - Verkehrsmanagement: Von reaktiv zu proaktiv
-        % - Erkenntnisgewinnung aus heterogenen Datenquellen
-        % - Effizienzsteigerung durch Automatisierung
-        % - Evolution der Fähigkeiten:
-        %   * Früher: Schlüsselwortsuche, einfache Klassifizierung
-        %   * Heute: Kontextverständnis, komplexe Zusammenhänge
-        %   * Transformation: Vom Mustererkenner zum Bedeutungsversteher
-        
-        % ANWENDUNGSGEBIETE (TAXONOMIE):
-        % Laut Khalil et al. (2024) - [SOURCE-MISSING] hinzufügen
-        %
-        % 1. VERKEHRSVORHERSAGE & -MANAGEMENT:
-        %    - Predictive Analytics aus Textdaten
-        %    - Anomalie-Detektion in Verkehrsberichten
-        %    - Ressourcenallokation basierend auf Textanalyse
-        %
-        % 2. SENTIMENTANALYSE VON SOCIAL-MEDIA-DATEN:
-        %    - Echtzeit-Stimmungsbarometer der Fahrgäste
-        %    - Früherkennung von Service-Problemen
-        %    - Crisis Management (z.B. bei Großstörungen)
-        %
-        % 3. NATÜRLICHE SPRACHSCHNITTSTELLEN:
-        %    - Query-Interfaces für Fahrplandatenbanken
-        %    - Conversational AI für Kundenservice
-        %    - Voice-Assistenten in Fahrzeugen
-        %
-        % 4. VERKEHRSAMPEL-STEUERUNG:
-        %    - NLP für adaptive Steuerungssysteme
-        %    - Textbasierte Koordination zwischen Systemen
-        %    - (Weniger relevant für diese Arbeit)
-        %
-        % 5. AUTOMATISIERTE BERICHTSERSTELLUNG & DOKUMENTENANALYSE:
-        %    *** KERNRELEVANT FÜR DIESE ARBEIT ***
-        %    - Zusammenfassung von Unfallberichten (Zhang et al., 2023) - [SOURCE-MISSING]
-        %    - Klassifizierung der Unfall-Schwere aus Textbeschreibungen (Zhen et al., 2024) - [SOURCE-MISSING]
-        %    - Erhebliche Fortschritte in letzten Jahren
-        %    - Leistungsstarke Sprachmodelle: Textbasierte Verarbeitung stark verbessert
-        %
-        % 6. ÖFFENTLICHE VERKEHRSINFORMATIONSDIENSTE:
-        %    *** DIREKT RELEVANT FÜR DIESE ARBEIT ***
-        %    - Fahrgastanfragen: LLMs effektiv in Analyse & Aufbereitung (Jonnala et al., 2024) - [SOURCE-MISSING]
-        %    - Transformation technischer Informationen → Endnutzerformat
-        %    - Unterstützt zentrale Aufgabe dieser Arbeit: Verkehrsanweisungen aufbereiten
-        %    - Konsistente, verständliche Kommunikation
-        %
-        % 7. MEHRSPRACHIGE VERARBEITUNG:
-        %    - Mit steigender Vielseitigkeit von LLMs möglich (Kaur et al., 2024) - [SOURCE-MISSING]
-        %    - Aktuell sekundäres Ziel
-        %    - Wird in dieser Arbeit nicht tiefergehend behandelt
-        %    - Potenzial für zukünftige Erweiterungen
-        
-        % FOKUS DIESER ARBEIT:
-        % - Primär: Automatisierte Berichtserstellung & Öffentliche Informationsdienste
-        % - Konkreter Anwendungsfall: Transformation LVB-Verkehrsanweisungen
-        % - Brücke zwischen technischer Fachsprache und Allgemeinverständlichkeit
-        % - Verwandt mit: Dokumentenanalyse, Textzusammenfassung, Stiladaption
-        % - Unterschied zu reiner Klassifizierung: Generative Komponente essentiell
-        
-        % EMPIRISCHE ERFOLGE:
-        % - Zusammenfassung & Klassifizierung: State-of-the-Art-Performance
-        % - Fahrgastanfragen: Effektive Bearbeitung nachgewiesen
-        % - Unfallberichte: Automatisierte Verarbeitung übertrifft regelbasierte Systeme
-        % - Stützt Hypothese: LLMs geeignet für Verkehrsanweisungs-Transformation
-        
-        % HERAUSFORDERUNGEN:
-        % - Domänenspezifisches Vokabular erfordert Spezialisierung
-        % - Faktentreue: Keine Halluzinationen bei sicherheitskritischen Infos
-        % - Konsistenz: Gleiche Eingabe → gleiche Ausgabe (Determinismus)
-        % - Mehrsprachigkeit: Technisch möglich, aber Ressourcen-intensiv
+        Der Personentransportsektor produziert massive Mengen an Textdaten, darunter Verkehrsberichte in Echtzeit und historischer Form, technische Wartungsprotokolle, Incident Reports zu Unfällen und Störungen, Fahrgastbeschwerden und Feedback sowie ungefilterte, heterogene Beiträge in sozialen Medien. Das Datenvolumen übersteigt die menschliche Verarbeitungskapazität bei weitem, während sich regelbasierte Ansätze als unzureichend erwiesen haben. Starre Pattern-Matching-Logik skaliert nicht mit der Variabilität natürlicher Sprache, und der Wartungsaufwand wächst exponentiell mit zunehmender Systemkomplexität.
+
+Natural Language Processing entwickelt sich in diesem Kontext zur Enabler-Technologie, die den Wandel von reaktivem zu proaktivem Verkehrsmanagement ermöglicht. Die automatisierte Erkenntnisgewinnung aus heterogenen Datenquellen steigert die operative Effizienz erheblich. Während frühe NLP-Ansätze auf Schlüsselwortsuche und einfache Klassifizierung beschränkt waren, beherrschen moderne Systeme komplexes Kontextverständnis und erfassen semantische Zusammenhänge. Diese Evolution transformiert Natural Language Processing vom reinen Mustererkenner zum Bedeutungsversteher.
+
+Laut [SOURCE-MISSING] lassen sich NLP-Anwendungen im Verkehrssektor in mehrere Hauptkategorien einteilen. Verkehrsvorhersage und -management umfasst Predictive Analytics aus Textdaten, Anomalie-Detektion in Verkehrsberichten sowie textbasierte Ressourcenallokation. Sentimentanalyse von Social-Media-Daten ermöglicht ein Echtzeit-Stimmungsbarometer der Fahrgäste, die Früherkennung von Service-Problemen und unterstützt Crisis Management bei Großstörungen. Natürliche Sprachschnittstellen finden Anwendung in Query-Interfaces für Fahrplandatenbanken, Conversational AI für den Kundenservice sowie in Voice-Assistenten für Fahrzeuge. Verkehrsampel-Steuerung mittels NLP für adaptive Systeme und textbasierte Koordination zwischen Systemen ist für die vorliegende Arbeit weniger relevant.
+
+Für diese Arbeit zentral ist die automatisierte Berichtserstellung und Dokumentenanalyse. Jüngste Forschungsarbeiten dokumentieren erhebliche Fortschritte: Die Zusammenfassung von Unfallberichten [SOURCE-MISSING], die Klassifizierung der Unfall-Schwere aus Textbeschreibungen [SOURCE-MISSING] sowie die generelle Verbesserung textbasierter Verarbeitung durch leistungsstarke Sprachmodelle zeigen das Potenzial dieser Technologien.
+
+Direkt relevant für die vorliegende Arbeit sind öffentliche Verkehrsinformationsdienste. Large Language Models erweisen sich als effektiv in der Analyse und Aufbereitung von Fahrgastanfragen [SOURCE-MISSING]. Die Transformation technischer Informationen in endnutzergerechte Formate unterstützt die zentrale Aufgabe dieser Arbeit: die verständliche Aufbereitung von Verkehrsanweisungen für Fahrgäste unter Wahrung konsistenter und präziser Kommunikation. Mehrsprachige Verarbeitung wird mit steigender Vielseitigkeit von Large Language Models zunehmend möglich [SOURCE-MISSING], stellt jedoch aktuell ein sekundäres Ziel dar, das in dieser Arbeit nicht tiefergehend behandelt wird, jedoch Potenzial für zukünftige Erweiterungen bietet.
+
+Der Fokus dieser Arbeit liegt primär auf automatisierter Berichtserstellung und öffentlichen Informationsdiensten. Der konkrete Anwendungsfall der Transformation von LVB-Verkehrsanweisungen schlägt eine Brücke zwischen technischer Fachsprache und Allgemeinverständlichkeit. Diese Aufgabe ist verwandt mit Dokumentenanalyse, Textzusammenfassung und Stiladaption, unterscheidet sich jedoch von reiner Klassifizierung durch die essenzielle generative Komponente.
+
+Empirische Erfolge in verwandten Domänen stützen die Hypothese, dass Large Language Models für die Transformation von Verkehrsanweisungen geeignet sind. State-of-the-Art-Performance wurde bei Zusammenfassung und Klassifizierung nachgewiesen, die effektive Bearbeitung von Fahrgastanfragen ist dokumentiert, und die automatisierte Verarbeitung von Unfallberichten übertrifft regelbasierte Systeme deutlich.
+
+Dennoch bestehen spezifische Herausforderungen: Domänenspezifisches Vokabular erfordert gezielte Spezialisierung der Modelle. Faktentreue ist bei sicherheitskritischen Informationen unabdingbar, sodass Halluzinationen vermieden werden müssen. Konsistenz in der Ausgabe ist erforderlich, sodass gleiche Eingaben zu identischen Ausgaben führen und ein gewisser Determinismus gewährleistet ist. Mehrsprachigkeit ist technisch möglich, aber ressourcenintensiv und daher für diese Arbeit nicht im Fokus.
         
         
         \subsubsection{Domänenspezifische Sprachmodelle}
@@ -225,165 +121,41 @@
         
         % Ziel: 1,5-2 Seiten
         
-        % VON GENERAL-PURPOSE ZU SPECIALIZED MODELS:
-        % - Allgemeine LLMs (GPT-4, Claude): Beeindruckende Breite
-        % - Verkehrsdomäne: Spezialisierung zeigt signifikante Vorteile
-        % - Trade-off: Generalität vs. Domänen-Expertise
-        
-        % TRAFFICSSAFETYGPT - CASE STUDY:
-        % Laut Zheng et al. (2023) - [SOURCE-MISSING] hinzufügen
-        %
-        % - Domänenspezifisches Feintuning: Kritischer Erfolgsfaktor
-        % - Übertrifft konsistent allgemeine Modelle in verkehrsspezifischen Aufgaben
-        % - Technische Komponenten:
-        %   * Erweiterte Fachterminologie-Datenbanken
-        %   * Domain-Specific Pre-Training auf Verkehrssicherheits-Korpora
-        %   * Professionelle Ausdrucksfähigkeiten (technische Präzision)
-        % - Vorteile:
-        %   * Effizientere Zuweisung von Rechenressourcen
-        %   * Kürzere Trainingszeiten bei höherer Qualität
-        %   * Deutlich höhere Informationsabdeckung vs. General Models
-        
-        % MULTIMODALE INTEGRATION - ERFOLGSFAKTOR:
-        % Laut Bhagat et al. (2025) - [SOURCE-MISSING] hinzufügen
-        %
-        % - Definition: Kombination verschiedener Datenmodalitäten
-        %   * Narrativer Text (unstrukturiert)
-        %   * Strukturierte Unfalldaten (Tabellen, Kategorien)
-        %   * Metadaten (Zeit, Ort, Beteiligte)
-        % - Empirischer Erfolg: 54,2% Reduktion der Fehlerrate
-        % - Synergieeffekt: Text liefert Kontext, Struktur liefert Präzision
-        % - Vielversprechendste Strategie zur Leistungssteigerung
-        
-        % DOMAIN-SPECIFIC PRE-TRAINING:
-        % - Continued Pretraining auf Verkehrssicherheits-Korpora
-        % - Modelle lernen spezialisierte Terminologie und Kontexte
-        % - Signifikante Leistungsverbesserung dokumentiert
-        % - Analog zu LeoLM: Deutsches Continued Pretraining auf Mistral
-        
-        % ÜBERTRAGUNG AUF DIESE ARBEIT:
-        % - Strategie: Stufenweise multimodale Integration verschiedener Optimierungen
-        %   1. Base Model: LeoLM (bereits deutsch-optimiert)
-        %   2. Fine-Tuning: Domänenspezifische Verkehrsanweisungen
-        %   3. Knowledge Enhancement: Linien-Fahrzeug-Zuordnungen (strukturiert)
-        %   4. Prompt Engineering: Stilrichtlinien, Beispiele
-        % - Ziel: Trotz kleinem Datensatz fehlerfreies Ergebnis
-        % - Rechtfertigung durch Forschung: Multi-Methoden-Ansatz kompensiert Datenmangel
-        
-        % DEUTSCHSPRACHIGE MODELLE - BESONDERHEITEN:
-        % - LeoLM-Familie: Mistral + Deutsches Continued Pretraining
-        % - Vorteil: Sprachspezifische Optimierung (Komposita, Morphologie)
-        % - Relevanz: LVB-Anwendungsfall rein deutschsprachig
-        % - Vergleich: Englische Modelle + Translation vs. Native German Models
-        %   * Native: Bessere Idiomatik, Präzision
-        %   * Translation: Risiko von Artefakten, Stilbrüchen
-        
-        % HERAUSFORDERUNGEN DEUTSCHSPRACHIGER VERKEHRSDATEN:
-        % Laut Schiersch et al. (2018) & Troxler et al. (2022) - [SOURCE-MISSING]n hinzufügen
-        %
-        % 1. Heterogene Formatvielfalt:
-        %    - Telegrafische Texte (verkürzt, ohne Artikel)
-        %    - Tabelleneinträge (strukturiert, fragmentiert)
-        %    - Fließtext-Berichte (vollständige Sätze)
-        %    - Standardisierte Verarbeitung erschwert
-        %    - Vorverarbeitungs-Herausforderungen erheblich
-        %
-        % 2. Cross-Language Transferability-Problem:
-        %    - Englisch-trainierte Modelle: Nicht direkt auf Deutsch anwendbar
-        %    - Erhebliche Leistungseinbußen ohne deutschsprachiges Training
-        %    - Zwei Lösungswege:
-        %      a) Separates Training für deutschsprachige Daten (→ LeoLM-Ansatz)
-        %      b) Mehrsprachige Trainingsdatensätze (mindestens 20% Deutsch für vergleichbare Performance)
-        %    - Begründet Wahl deutschsprachiger Basismodelle für diese Arbeit
-        %
-        % 3. Fehleranfälligkeit bei generischen Modellen:
-        %    - Problem 1: Primär englischsprachiges Pretraining
-        %      * Modelle können übersetzen, aber Fehlerrate steigt deutlich
-        %      * Idiomatische Fehler, ungünstige Wortwahl
-        %    - Problem 2: Generisches Training ohne Verkehrsdomäne
-        %      * Fehlende Fachterminologie
-        %      * Mangelndes Kontextverständnis für verkehrsspezifische Abkürzungen
-        %    - Schiersch (2018): Einziger deutscher Verkehrsdatensatz (veraltet, limitiert)
-        %    - Implikation: Eigenständiges Fine-Tuning unumgänglich
-        %
-        % Überleitung zu Kapitel~\ref{chap:4}:
-        % - Theoretisch: Domänenspezifische Modelle überlegen
-        % - Praktisch: Deutsche Verkehrsmodelle fehlen
-        % - Lösung: Deutsches Basismodell + verkehrsspezifisches Fine-Tuning
-        % - Detaillierte Auswahlbegründung in Modellauswahl-Kapitel
-        
-        % VERKEHRSSPEZIFISCHE MODELLE - LANDSCAPE:
-        % WARUM NICHT GEEIGNET FÜR DIESE ARBEIT:
-        %
-        % TrafficSafetyGPT (Zheng et al., 2023; Karim et al., 2025) - [SOURCE-MISSING]n
-        % - Basis: LLaMA (Meta AI)
-        % - Datensatz: TrafficSafety-2k (behördliche Richtlinien + ChatGPT-generiert)
-        % - Fokus: Verkehrssicherheit (Traffic Safety)
-        % - Vorteile: Effiziente Ressourcen, kurze Trainingszeiten
-        % - NICHT GEEIGNET für LVB, weil:
-        %   * Englischsprachig (keine deutsche Sprachkompetenz)
-        %   * Safety-Fokus ≠ Fahrgastinformation
-        %   * Closed-Source-Basis (DSGVO-Probleme für lokales Deployment)
-        %
-        % TransGPT-Familie (Wang et al., 2024; Karim et al., 2025) - [SOURCE-MISSING]n
-        % - TransGPT-SM: Unimodal (Text), basierend auf ChatGLM2-6B
-        % - TransGPT-MM: Multimodal (Text + Vision)
-        % - Training: Verkehrsunterlagen, Bücher, Berichte
-        % - Anwendung: Dokumentenanalyse, Führerscheinprüfungen
-        % - NICHT GEEIGNET für LVB, weil:
-        %   * Chinesischsprachig (ChatGLM2 = chinesisches Modell)
-        %   * Fokus auf Wissensvermittlung, nicht Texttransformation
-        %   * Keine Open-Source-Verfügbarkeit für lokales Fine-Tuning
-        %
-        % Anwendungsspezifische Chatbots:
-        % - TP-GPT (Traffic Performance GPT): Verkehrsüberwachung, Echtzeit-Daten (Li et al., 2024) - [SOURCE-MISSING]
-        % - TrafficGPT: Integration mit Traffic Foundation Models, Aufgaben-Dekomposition (Li et al., 2024) - [SOURCE-MISSING]
-        % - ChatSUMO: SUMO-Simulator-Integration, Szenario-Generierung (Taleb et al., 2025) - [SOURCE-MISSING]
-        % - NICHT GEEIGNET für LVB, weil:
-        %   * Aufgaben-spezifische Frameworks (nicht General-Purpose)
-        %   * Echtzeit-Datenbanken erforderlich (Infrastructure-Overhead)
-        %   * Keine Texttransformation, sondern Query-Beantwortung
-        %   * Englischsprachig
-        %
-        % Multimodale & Sicherheitskritische Modelle:
-        % - ChatScene: AV-Sicherheitsszenarien (Li et al., 2024; Zhang et al., 2024) - [SOURCE-MISSING]n
-        % - AccidentGPT: Kollisionsvermeidung (Li et al., 2024; Wang et al., 2024) - [SOURCE-MISSING]n
-        % - IDM-GPT: 5 spezialisierte Agenten für Verkehrsanalysen (Karim et al., 2025) - [SOURCE-MISSING]
-        % - STEP-LLM: Räumlich-zeitliche Verkehrsvorhersage (Karim et al., 2025) - [SOURCE-MISSING]
-        % - NICHT GEEIGNET für LVB, weil:
-        %   * Fokus: Autonome Fahrzeuge, Predictive Analytics
-        %   * Aufgabe: Nicht Textgenerierung, sondern Szenario-Simulation
-        %   * Keine deutschsprachigen Varianten
-        %   * Zu spezialisiert für allgemeine Fahrgastinformation
-        %
-        % ZUSAMMENFASSUNG - WARUM KEINES DIESER MODELLE:
-        % 1. Sprachbarriere: Alle englisch- oder chinesischsprachig
-        % 2. Aufgaben-Mismatch: Safety, Prediction, Simulation ≠ Text-Transformation
-        % 3. Lizenzierung: Meist proprietär oder Closed-Source-Basis
-        % 4. Infrastruktur: Echtzeit-Datenbanken, Multi-Agenten erforderlich
-        % 5. Deployment: Nicht für lokale, offline-fähige Ausführung konzipiert
-        %
-        % KONSEQUENZ FÜR DIESE ARBEIT:
-        % - Keine Off-the-Shelf-Lösung verfügbar
-        % - Notwendigkeit: Eigenständige Modellentwicklung
-        % - Strategie: Deutsches Basismodell (LeoLM) + domänenspezifisches Fine-Tuning
-        % - Rechtfertigung: Forschungslücke bei deutschsprachiger Verkehrsinformation
-        % - Detaillierte Begründung in Kapitel~\ref{chap:4}
-        
-        % ERKENNTNISSE FÜR KLEINE DATENSÄTZE:
-        % - Herausforderung: LVB-Datensatz vergleichsweise klein
-        % - Strategie aus Forschung:
-        %   * Transfer Learning von vortrainierten Modellen
-        %   * Multimodale Integration (Text + Strukturdaten)
-        %   * Data Augmentation (siehe Abschnitt~\ref{sec:2.2.3})
-        %   * Parameter-effizientes Fine-Tuning (LoRA, siehe Abschnitt~\ref{sec:2.2.1})
-        % - Kombination dieser Methoden: Nachweislich erfolgreich
-        
-        % ÜBERLEITUNG ZU ABSCHNITT 2.2:
-        % - Domänenspezifische Modelle: Theoretische Überlegenheit etabliert
-        % - Nächster Schritt: Wie erstellt man solche Modelle?
-        % - Fine-Tuning-Methoden, Datenstrategien, Optimierungen
-        % - Von "Was funktioniert?" zu "Wie macht man es?"
+        Während allgemeine Large Language Models wie GPT-4 oder Claude eine beeindruckende Breite an Fähigkeiten demonstrieren, zeigt die Spezialisierung auf die Verkehrsdomäne signifikante Vorteile. Der Trade-off zwischen Generalität und Domänen-Expertise ist dabei zu berücksichtigen.
+
+Domänenspezifisches Fine-Tuning erweist sich als kritischer Erfolgsfaktor [SOURCE-MISSING]. Wie am Beispiel von TrafficSafetyGPT dokumentiert, übertreffen spezialisierte Modelle konsistent allgemeine Modelle in verkehrsspezifischen Aufgaben. Technische Komponenten wie erweiterte Fachterminologie-Datenbanken, Domain-Specific Pre-Training auf Verkehrssicherheits-Korpora und professionelle Ausdrucksfähigkeiten mit technischer Präzision tragen zu diesem Erfolg bei. Die Vorteile manifestieren sich in effizienterer Zuweisung von Rechenressourcen, kürzeren Trainingszeiten bei gleichzeitig höherer Qualität sowie deutlich höherer Informationsabdeckung im Vergleich zu General-Purpose-Modellen.
+
+Die multimodale Integration verschiedener Datenmodalitäten stellt sich als wesentlicher Erfolgsfaktor heraus [SOURCE-MISSING]. Die Kombination von narrativem, unstrukturiertem Text mit strukturierten Unfalldaten in Form von Tabellen und Kategorien sowie Metadaten zu Zeit, Ort und Beteiligten erzielt empirisch nachgewiesene Erfolge. Eine dokumentierte Reduktion der Fehlerrate um 54,2\,\% verdeutlicht den Synergieeffekt: Text liefert Kontext, während strukturierte Daten Präzision gewährleisten. Diese Strategie gilt als die vielversprechendste zur Leistungssteigerung.
+
+Domain-Specific Pre-Training mittels Continued Pretraining auf Verkehrssicherheits-Korpora ermöglicht es Modellen, spezialisierte Terminologie und Kontexte zu erlernen. Signifikante Leistungsverbesserungen sind dokumentiert, analog zum deutschsprachigen Continued Pretraining von LeoLM auf Basis von Mistral.
+
+Die Übertragung dieser Erkenntnisse auf die vorliegende Arbeit erfolgt durch eine stufenweise multimodale Integration verschiedener Optimierungen. Ausgehend vom Base Model LeoLM, das bereits für die deutsche Sprache optimiert ist, erfolgt Fine-Tuning auf domänenspezifischen Verkehrsanweisungen. Knowledge Enhancement integriert strukturierte Linien-Fahrzeug-Zuordnungen, während Prompt Engineering Stilrichtlinien und Beispiele bereitstellt. Das Ziel besteht darin, trotz eines kleinen Datensatzes fehlerfreie Ergebnisse zu erzielen. Die Forschung rechtfertigt diesen Multi-Methoden-Ansatz, da die Kombination verschiedener Techniken den Datenmangel kompensieren kann.
+
+Deutschsprachige Modelle weisen Besonderheiten auf, die für die vorliegende Arbeit relevant sind. Die LeoLM-Familie basiert auf Mistral und durchläuft deutsches Continued Pretraining, was sprachspezifische Optimierung für Komposita und Morphologie ermöglicht. Da der LVB-Anwendungsfall rein deutschsprachig ist, stellt sich die Frage nach dem Vergleich zwischen englischen Modellen mit nachgelagerter Translation und nativen deutschen Modellen. Native Modelle bieten bessere Idiomatik und Präzision, während Translation das Risiko von Artefakten und Stilbrüchen birgt.
+
+Die Herausforderungen deutschsprachiger Verkehrsdaten sind vielfältig [SOURCE-MISSING]. Heterogene Formatvielfalt erschwert die standardisierte Verarbeitung erheblich. Telegrafische Texte sind verkürzt und entbehren Artikel, Tabelleneinträge sind strukturiert und fragmentiert, während Fließtext-Berichte vollständige Sätze enthalten. Diese Heterogenität stellt hohe Anforderungen an die Vorverarbeitung.
+
+Das Cross-Language Transferability-Problem manifestiert sich darin, dass englisch-trainierte Modelle nicht direkt auf deutschsprachige Daten anwendbar sind. Erhebliche Leistungseinbußen ohne deutschsprachiges Training sind dokumentiert. Zwei Lösungswege existieren: separates Training für deutschsprachige Daten, wie es der LeoLM-Ansatz verfolgt, oder mehrsprachige Trainingsdatensätze mit mindestens 20\,\% deutschen Anteilen für vergleichbare Performance. Diese Erkenntnisse begründen die Wahl deutschsprachiger Basismodelle für die vorliegende Arbeit.
+
+Die Fehleranfälligkeit generischer Modelle resultiert aus zwei Hauptproblemen. Primär englischsprachiges Pretraining führt dazu, dass Modelle zwar übersetzen können, die Fehlerrate jedoch deutlich steigt. Idiomatische Fehler und ungünstige Wortwahl sind häufige Konsequenzen. Generisches Training ohne Verkehrsdomäne hat fehlende Fachterminologie und mangelndes Kontextverständnis für verkehrsspezifische Abkürzungen zur Folge. Der einzige verfügbare deutsche Verkehrsdatensatz von [SOURCE-MISSING] ist veraltet und limitiert, was eigenständiges Fine-Tuning unumgänglich macht.
+
+Die Überleitung zu Kapitel~\ref{chap:4} verdeutlicht, dass domänenspezifische Modelle theoretisch überlegen sind, deutsche Verkehrsmodelle in der Praxis jedoch fehlen. Die Lösung besteht in der Kombination eines deutschen Basismodells mit verkehrsspezifischem Fine-Tuning. Die detaillierte Auswahlbegründung erfolgt im Modellauswahl-Kapitel.
+
+Existierende verkehrsspezifische Modelle sind für die vorliegende Arbeit nicht geeignet. TrafficSafetyGPT [SOURCE-MISSING] basiert auf LLaMA von Meta AI und verwendet den TrafficSafety-2k-Datensatz, der behördliche Richtlinien und ChatGPT-generierte Daten umfasst. Der Fokus liegt auf Verkehrssicherheit (Traffic Safety), und die Vorteile bestehen in effizienter Ressourcennutzung und kurzen Trainingszeiten. Dennoch ist das Modell für LVB nicht geeignet, da es englischsprachig ist und keine deutsche Sprachkompetenz aufweist, der Safety-Fokus nicht der Fahrgastinformation entspricht und die Closed-Source-Basis DSGVO-Probleme für lokales Deployment verursacht.
+
+Die TransGPT-Familie [SOURCE-MISSING] umfasst TransGPT-SM als unimodales Text-Modell basierend auf ChatGLM2-6B sowie TransGPT-MM als multimodales Modell mit Text- und Vision-Komponenten. Das Training erfolgte mit Verkehrsunterlagen, Büchern und Berichten für Anwendungen in Dokumentenanalyse und Führerscheinprüfungen. Das Modell ist für LVB nicht geeignet, da es chinesischsprachig ist (ChatGLM2 ist ein chinesisches Modell), der Fokus auf Wissensvermittlung statt Texttransformation liegt und keine Open-Source-Verfügbarkeit für lokales Fine-Tuning besteht.
+
+Anwendungsspezifische Chatbots wie TP-GPT für Verkehrsüberwachung und Echtzeit-Daten [SOURCE-MISSING], TrafficGPT mit Integration von Traffic Foundation Models und Aufgaben-Dekomposition [SOURCE-MISSING] sowie ChatSUMO für SUMO-Simulator-Integration und Szenario-Generierung [SOURCE-MISSING] sind ebenfalls nicht für LVB geeignet. Diese Frameworks sind aufgabenspezifisch und nicht General-Purpose, erfordern Echtzeit-Datenbanken mit erheblichem Infrastruktur-Overhead, fokussieren auf Query-Beantwortung statt Texttransformation und sind englischsprachig.
+
+Multimodale und sicherheitskritische Modelle wie ChatScene für AV-Sicherheitsszenarien [SOURCE-MISSING], AccidentGPT für Kollisionsvermeidung [SOURCE-MISSING], IDM-GPT mit fünf spezialisierten Agenten für Verkehrsanalysen [SOURCE-MISSING] sowie STEP-LLM für räumlich-zeitliche Verkehrsvorhersage [SOURCE-MISSING] sind nicht für LVB geeignet. Der Fokus liegt auf autonomen Fahrzeugen und Predictive Analytics, die Aufgabe besteht nicht in Textgenerierung, sondern in Szenario-Simulation, deutschsprachige Varianten fehlen, und die Modelle sind zu spezialisiert für allgemeine Fahrgastinformation.
+
+Zusammenfassend ist keines dieser Modelle aus mehreren Gründen geeignet: Die Sprachbarriere, da alle Modelle englisch- oder chinesischsprachig sind; der Aufgaben-Mismatch, da Safety, Prediction und Simulation nicht der Text-Transformation entsprechen; Lizenzierungsprobleme, da die meisten Modelle proprietär sind oder auf Closed-Source-Basis beruhen; Infrastruktur-Anforderungen für Echtzeit-Datenbanken und Multi-Agenten-Systeme sowie Deployment-Einschränkungen, da die Modelle nicht für lokale, offline-fähige Ausführung konzipiert sind.
+
+Die Konsequenz für die vorliegende Arbeit besteht darin, dass keine Off-the-Shelf-Lösung verfügbar ist. Dies macht eine eigenständige Modellentwicklung notwendig. Die Strategie besteht in der Verwendung eines deutschen Basismodells (LeoLM) mit domänenspezifischem Fine-Tuning. Dies füllt eine Forschungslücke bei deutschsprachiger Verkehrsinformation, wobei die detaillierte Begründung in Kapitel~\ref{chap:4} erfolgt.
+
+Für kleine Datensätze ergeben sich aus der Forschung bewährte Strategien. Die Herausforderung besteht darin, dass der LVB-Datensatz vergleichsweise klein ist. Strategien aus der Forschung umfassen Transfer Learning von vortrainierten Modellen, multimodale Integration von Text und Strukturdaten, Data Augmentation (siehe Abschnitt~\ref{sec:2.2.3}) sowie parameter-effizientes Fine-Tuning mittels LoRA (siehe Abschnitt~\ref{sec:2.2.1}). Die Kombination dieser Methoden hat sich nachweislich als erfolgreich erwiesen.
+
+Die Überleitung zu Abschnitt~\ref{sec:2.2} verdeutlicht, dass die theoretische Überlegenheit domänenspezifischer Modelle etabliert ist. Der nächste Schritt besteht darin zu klären, wie solche Modelle erstellt werden. Fine-Tuning-Methoden, Datenstrategien und Optimierungen stehen im Fokus des folgenden Abschnitts, der die Perspektive von „Was funktioniert?" zu „Wie macht man es?" verschiebt.
 
 
     \subsection{Sprachmodelle und Fine-Tuning}
