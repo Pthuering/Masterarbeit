@@ -28,9 +28,30 @@
         %   * Hyperparameter (Learning Rate, Batch Size, Epochs)
         %   * Trainingsverhalten und Konvergenz
         %   * Overfitting-Vermeidung
+        %     - KRITISCH: Datensatz-Shuffling zwischen Epochen
+        %       * Selbst bei kleinen Datensätzen (100-500 Beispiele) essentiell
+        %       * Verhindert sequentielles Auswendiglernen gleichartiger Muster
+        %       * Ohne Shuffling: Schnelles Overfitting bereits nach wenigen 100 Beispielen
+        %       * Theoretische Grundlage: Siehe Abschnitt~\ref{sec:2.2.4} (Overfitting-Vermeidung)
+        %       * Praktische Umsetzung: Randomisierung vor jeder Epoche mittels PyTorch DataLoader
+        %     - Learning-Rate-Paradoxon (empirische Beobachtung):
+        %       * Initial vermutete konservative Learning Rate (5e-5) erwies sich als kontraproduktiv
+        %       * Zu langsames Lernen führte zu direktem Memorization-Verhalten
+        %       * Moderate Learning Rate (2e-4) ermöglichte bessere Generalisierung
+        %       * Bestätigt theoretische Diskussion in Abschnitt~\ref{sec:2.2.4}
         % - Iterative Optimierung
         %   * Anpassungen basierend auf Validierungsergebnissen
         %   * Verschiedene Experimente
+        %
+        % - UNSLOTH-OPTIMIERTES TRAINING:
+        %   * Einsatz von Unsloth-Framework (siehe theoretische Grundlagen Abschnitt~\ref{sec:2.2.1})
+        %   * Begründung: Hardware-Limitierungen (7B-Modell auf Consumer-GPU)
+        %   * TODO: TRAININGS-LOGS AUSWERTEN!
+        %     - Training-Zeit (Vergleich mit/ohne Unsloth falls vorhanden)
+        %     - VRAM-Verbrauch während des Trainings
+        %     - Iterations-Geschwindigkeit (Samples/Sekunde)
+        %     - Loss-Kurven und Konvergenzverhalten
+        %     - Praktische Vorteile in der iterativen Entwicklung
         
         
         \subsubsection{Prompt Engineering und Automatisierung}

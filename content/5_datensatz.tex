@@ -65,6 +65,19 @@
         % - Monitoring der Verteilung der Maßnahmentypen im Datensatz
         % - Identifikation unterrepräsentierter Maßnahmentypen für gezielte Augmentierung
         %
+        % 3b. RICHTUNGSSPEZIFISCHE ANGABEN-VALIDIERUNG
+        % - Prüfung korrekter Formatierung richtungsspezifischer Informationen
+        % - Pattern-Matching für Richtungsangaben: "Richtung [ZIELORT]:"
+        %   * Regex-basierte Erkennung: "Richtung\s+\w+:"
+        %   * Validierung der Reihenfolge: Schlüsselwort → Richtungsangabe → Doppelpunkt
+        %   * Beispiele: "Richtung Hauptbahnhof:", "Richtung Connewitz:", "Richtung Gohlis:"
+        % - Identifikation fehlerhafter Formate:
+        %   * Fehlendes Doppelpunkt: "Richtung Hauptbahnhof"
+        %   * Falsche Reihenfolge: ": Richtung Hauptbahnhof"
+        %   * Fehlende Richtungsangabe: "Richtung:"
+        % - Konsistenzprüfung bei mehreren Richtungsangaben im selben Text
+        % - Validierung, dass bei richtungsspezifischen Maßnahmen die Formatierung eingehalten wird
+        %
         % 4. ZUSÄTZLICHE VALIDIERUNGSPRÜFUNGEN
         % - Duplikatsprüfung: Identifikation identischer oder nahezu identischer Trainingsbeispiele
         % - Zeichensatzvalidierung: Prüfung auf korrekte UTF-8-Kodierung, Sonderzeichen, Umlaute

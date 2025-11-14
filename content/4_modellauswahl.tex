@@ -5,11 +5,32 @@
     \subsection{Anforderungen an das Modell}
     \label{sec:4.1}
     
+    % PRIMÄRE ANFORDERUNGEN:
     % - Deutschsprachige Kompetenz (LVB-Verkehrsanweisungen)
     % - Moderate Größe für lokale Ausführung (Hardware-Limitierungen)
     % - Open-Source (DSGVO-Konformität, keine API-Abhängigkeit)
     % - Fine-Tuning-fähig (Anpassung an spezifische Domäne)
     % - Gute Textgenerierungs-Qualität
+    %
+    % AUSSCHLUSSKRITERIEN (aus Abschnitt~\ref{sec:2.1.3}):
+    % - Verkehrsspezifische Modelle (TrafficSafetyGPT, TransGPT, etc.):
+    %   * Sprachbarriere: Englisch/Chinesisch, keine deutschen Varianten
+    %   * Aufgaben-Mismatch: Safety/Prediction/Simulation ≠ Text-Transformation
+    %   * Lizenzierung: Proprietär oder Closed-Source-Basis (LLaMA, ChatGLM2)
+    %   * Deployment: Nicht für offline-fähige lokale Ausführung konzipiert
+    %
+    % BEGRÜNDUNG DEUTSCHSPRACHIGES BASISMODELL:
+    % - Cross-Language Transfer: Englische Modelle erhebliche Leistungseinbußen
+    % - Fehleranfälligkeit bei Translation steigt deutlich
+    % - Deutsche Verkehrsdaten: Heterogene Formate, spezifische Morphologie
+    % - Schiersch (2018): Einziger deutscher Verkehrsdatensatz (veraltet, limitiert)
+    % - Eigenständiges Fine-Tuning unumgänglich
+    %
+    % ERWARTETE VERBESSERUNG TROTZ KLEINEM DATENSATZ:
+    % - Anwendungsfall sehr spezifisch (LVB-Verkehrsanweisungen)
+    % - Transfer Learning von deutschem Basismodell reduziert Datenbedarf
+    % - Kombination mehrerer Optimierungsstrategien (siehe Kapitel~\ref{chap:6})
+    % - Trotz kleinem Trainingssatz: Hohe Fehlerreduktion erwartet
 
 
     \subsection{Modellvergleich und Auswahlprozess}

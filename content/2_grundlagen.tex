@@ -2,13 +2,101 @@
 
 % Ziel: 16-18 Seiten
 
+% ============================================================================
+% AGENT-TODO: FORMULATE TEXTS FROM BULLET POINTS
+% ============================================================================
+% Instructions for agent task:
+% 1. Go through ALL subsections with bullet points (marked with %)
+% 2. Formulate complete, scientific paragraphs from these bullet points
+% 3. Use ONLY sources already mentioned in bullet points (marked with [SOURCE-MISSING])
+% 4. DO NOT add new sources or citations on your own
+% 5. Keep all [SOURCE-MISSING] tags in the formulated text where citations belong
+% 6. Maintain cross-references (\ref{}) to other chapters
+% 7. Keep scientific style
+%
+% Sections to formulate:
+% - Kapitel-Einleitung (lines ~5-33)
+% - 2.1 Abschnitt-Einleitung (lines ~36-65)
+% - 2.1.2 NLP-Anwendungen im Verkehrssektor (lines ~115-203)
+% - 2.1.3 Domänenspezifische Sprachmodelle (lines ~205-366)
+% - 2.2.1 Fine-Tuning-Methoden (partial - LoRA, other PEFT methods)
+% - 2.2.2 Prompt Engineering (complete)
+% - 2.2.3 Datensätze (partial - needs completion)
+% - 2.2.4 Overfitting & Catastrophic Forgetting (complete)
+% - 2.3.1 Quantisierung (complete)
+% - 2.3.2 Halluzination Prevention (complete)
+% - 2.3.3 RAG & Knowledge Integration (complete)
+%
+% Do NOT formulate:
+% - Already written paragraphs (e.g., 2.1.1 Transformer-Architektur)
+% - Sections with only structural comments
+% ============================================================================
+
+% KAPITEL-EINLEITUNG - STICHPUNKTE:
+%
+% Ausgangspunkt: Von manueller zu automatisierter Texttransformation
+% - LVB-Problemstellung (Kap.~\ref{chap:1}) erfordert NLP-Expertise
+% - Nicht trivial: Fachsprache → Allgemeinsprache ≠ einfache Übersetzung
+% - Kontextabhängigkeit, Präzision, Verständlichkeit simultan erforderlich
+%
+% Architektonischer Aufbau des Kapitels:
+% 1. NLP-Fundamente (Abschnitt~\ref{sec:2.1}):
+%    - Transformer als paradigmatischer Durchbruch
+%    - Pretraining-Finetuning-Paradigma
+%    - Deutschsprachige Modelle: Von Mistral zu LeoLM
+%
+% 2. Anpassungsmethodik (Abschnitt~\ref{sec:2.2}):
+%    - Parameter-effizientes Fine-Tuning: LoRA & Unsloth
+%    - Datenstrategien bei limitierten Ressourcen
+%    - Prompt Engineering als komplementärer Ansatz
+%
+% 3. Produktionsreife (Abschnitt~\ref{sec:2.3}):
+%    - Quantisierung: Deployment unter Hardware-Constraints
+%    - Halluzination Prevention: Faktentreue sicherstellen
+%    - Knowledge Integration ohne RAG-Overhead
+%
+% Roter Faden: Theoretische Konzepte → Praktische Constraints
+% - Kapitel 3: Anwendungskontext determiniert technologische Entscheidungen
+% - Kapitel 6: Implementierung operationalisiert theoretische Konzepte
+% - Diese Kapitel: Fundierung der Lösung in etablierter Forschung
+
     \subsection{Natural Language Processing für Verkehrsinformationen}
     \label{sec:2.1}
     
     % Ziel: 5-6 Seiten
     
+% ABSCHNITT-EINLEITUNG - STICHPUNKTE:
+%
+% Spannungsfeld: Universelle Sprachmodelle vs. Domänenspezifik
+% - GPT-4, Claude: Beeindruckende Generalfähigkeiten
+% - Verkehrsdomäne: Spezifische Terminologie, rechtliche Präzision, Lokalkontexte
+% - Open-Source-Notwendigkeit: DSGVO, Datensouveränität, Kosteneffizienz
+%
+% NLP im Verkehrssektor: Unterschätzte Komplexität
+% - Nicht nur Sentiment-Analyse oder FAQ-Bots
+% - Transformation erfordert: Kontextverständnis + Stiladaption + Faktentreue
+% - "Linie 10 fährt nicht" vs. "Straßenbahn der Linie 10 verkehrt aufgrund..."
+% - Implizites Wissen: Welche Linien? Welche Fahrzeugtypen? Welche Alternativrouten?
+%
+% Evolution der Ansätze:
+% - Template-basiert: Starr, limitiert, wartungsintensiv
+% - Regelbasierte NLG: Bessere Kontrolle, aber Skalierungsprobleme
+% - Moderne LLMs: Flexibilität + Generalisierung, aber Kontrolle-Herausforderung
+%
+% Warum Transformer-basierte Modelle den Unterschied machen:
+% - Attention-Mechanismus erfasst Abhängigkeiten über Satzgrenzen hinweg
+% - Pretraining auf Milliarden Tokens → robustes Sprachverständnis
+% - Fine-Tuning ermöglicht Domänenanpassung ohne Training from-scratch
+%
+% Vorausblick auf Unterabschnitte:
+% - 2.1.1: Technische Fundamente (Transformer, Pretraining, Transfer Learning)
+% - 2.1.2: Verkehrsspezifische NLP-Anwendungen (Stand der Technik)
+% - 2.1.3: Deutschsprachige & domänenspezifische Modelle (LeoLM-Familie)
+    
         \subsubsection{Grundlagen der Sprachverarbeitung}
         \label{sec:2.1.1}
+        
+        % Bereits ausgearbeitet - siehe unten
         
         Die automatisierte Verarbeitung und Transformation von Verkehrsinformationen stellt hohe Anforderungen an Natural Language Processing-Systeme. Präzision, Kontextverständnis und die Fähigkeit zur semantischen Umformulierung sind dabei zentrale Anforderungen. Moderne Ansätze der Sprachverarbeitung basieren auf der Transformer-Architektur, die seit ihrer Einführung im Jahr 2017 die Entwicklung von Sprachmodellen maßgeblich geprägt hat. Das in dieser Arbeit verwendete Modell LeoLM-7B baut auf dieser Architektur auf und nutzt deren Vorteile für die Verarbeitung deutschsprachiger Texte.
         
@@ -42,46 +130,260 @@
         
         Für die vorliegende Arbeit ist besonders relevant, dass LeoLM bereits auf umfangreichen deutschen Textkorpora vortrainiert wurde \cite{leolm2023}, was eine solide Basis für die weitere Spezialisierung bildet. Das Fine-Tuning auf den vergleichsweise kleinen Datensatz der LVB-Verkehrsanweisungen wird durch Transfer Learning erst praktikabel und ermöglicht die notwendige domänenspezifische Anpassung an die fachsprachlichen Anforderungen des Verkehrssektors.
         
-        % LITERATUR für dieses Kapitel:
-        % - Vaswani et al. (2017): "Attention Is All You Need"
-        % - Devlin et al. (2018): "BERT: Pre-training of Deep Bidirectional Transformers"
-        % - Radford et al. (2018-2023): GPT-Serie
-        % - Howard & Ruder (2018): "ULMFiT: Universal Language Model Fine-tuning"
-        % - Pan & Yang (2010): "A Survey on Transfer Learning"
-        % - LeoLM-Dokumentation
-        
-        
         \subsubsection{NLP-Anwendungen im Verkehrssektor}
         \label{sec:2.1.2}
         
         % Ziel: 2-3 Seiten
-        % Stand der Forschung:
-        % - Verkehrsvorhersage und -management
-        % - Automatisierte Berichtserstellung und Unfallanalyse
-        % - Texttransformation und -klassifizierung
-        % - Öffentliche Verkehrsinformationsdienste
-        % - Sentimentanalyse von Social-Media-Daten
-        % - Mehrsprachige Verarbeitung (kurz erwähnen)
+        
+        % DATENFLUT IM TRANSPORTSEKTOR:
+        % - Personentransportsektor: Massive Textdatenproduktion
+        %   * Verkehrsberichte (Echtzeit & historisch)
+        %   * Wartungsprotokolle (technische Dokumentation)
+        %   * Unfallmeldungen (Incident Reports)
+        %   * Fahrgastbeschwerden & Feedback
+        %   * Social Media (ungefiltert, heterogen)
+        % - Problem: Datenvolumen übersteigt menschliche Verarbeitungskapazität
+        % - Regelbasierte Ansätze: Als unzureichend erwiesen
+        %   * Starre Pattern-Matching-Logik
+        %   * Skalierungsprobleme bei Variabilität natürlicher Sprache
+        %   * Wartungsaufwand wächst exponentiell mit Komplexität
+        
+        % NLP ALS ENABLER-TECHNOLOGIE:
+        % - Verkehrsmanagement: Von reaktiv zu proaktiv
+        % - Erkenntnisgewinnung aus heterogenen Datenquellen
+        % - Effizienzsteigerung durch Automatisierung
+        % - Evolution der Fähigkeiten:
+        %   * Früher: Schlüsselwortsuche, einfache Klassifizierung
+        %   * Heute: Kontextverständnis, komplexe Zusammenhänge
+        %   * Transformation: Vom Mustererkenner zum Bedeutungsversteher
+        
+        % ANWENDUNGSGEBIETE (TAXONOMIE):
+        % Laut Khalil et al. (2024) - [SOURCE-MISSING] hinzufügen
         %
-        % Erfolge und Herausforderungen:
-        % - Leistungsstarke Modelle für Zusammenfassung und Klassifizierung
-        % - Effektive Bearbeitung von Fahrgastanfragen
+        % 1. VERKEHRSVORHERSAGE & -MANAGEMENT:
+        %    - Predictive Analytics aus Textdaten
+        %    - Anomalie-Detektion in Verkehrsberichten
+        %    - Ressourcenallokation basierend auf Textanalyse
+        %
+        % 2. SENTIMENTANALYSE VON SOCIAL-MEDIA-DATEN:
+        %    - Echtzeit-Stimmungsbarometer der Fahrgäste
+        %    - Früherkennung von Service-Problemen
+        %    - Crisis Management (z.B. bei Großstörungen)
+        %
+        % 3. NATÜRLICHE SPRACHSCHNITTSTELLEN:
+        %    - Query-Interfaces für Fahrplandatenbanken
+        %    - Conversational AI für Kundenservice
+        %    - Voice-Assistenten in Fahrzeugen
+        %
+        % 4. VERKEHRSAMPEL-STEUERUNG:
+        %    - NLP für adaptive Steuerungssysteme
+        %    - Textbasierte Koordination zwischen Systemen
+        %    - (Weniger relevant für diese Arbeit)
+        %
+        % 5. AUTOMATISIERTE BERICHTSERSTELLUNG & DOKUMENTENANALYSE:
+        %    *** KERNRELEVANT FÜR DIESE ARBEIT ***
+        %    - Zusammenfassung von Unfallberichten (Zhang et al., 2023) - [SOURCE-MISSING]
+        %    - Klassifizierung der Unfall-Schwere aus Textbeschreibungen (Zhen et al., 2024) - [SOURCE-MISSING]
+        %    - Erhebliche Fortschritte in letzten Jahren
+        %    - Leistungsstarke Sprachmodelle: Textbasierte Verarbeitung stark verbessert
+        %
+        % 6. ÖFFENTLICHE VERKEHRSINFORMATIONSDIENSTE:
+        %    *** DIREKT RELEVANT FÜR DIESE ARBEIT ***
+        %    - Fahrgastanfragen: LLMs effektiv in Analyse & Aufbereitung (Jonnala et al., 2024) - [SOURCE-MISSING]
+        %    - Transformation technischer Informationen → Endnutzerformat
+        %    - Unterstützt zentrale Aufgabe dieser Arbeit: Verkehrsanweisungen aufbereiten
+        %    - Konsistente, verständliche Kommunikation
+        %
+        % 7. MEHRSPRACHIGE VERARBEITUNG:
+        %    - Mit steigender Vielseitigkeit von LLMs möglich (Kaur et al., 2024) - [SOURCE-MISSING]
+        %    - Aktuell sekundäres Ziel
+        %    - Wird in dieser Arbeit nicht tiefergehend behandelt
+        %    - Potenzial für zukünftige Erweiterungen
+        
+        % FOKUS DIESER ARBEIT:
+        % - Primär: Automatisierte Berichtserstellung & Öffentliche Informationsdienste
+        % - Konkreter Anwendungsfall: Transformation LVB-Verkehrsanweisungen
+        % - Brücke zwischen technischer Fachsprache und Allgemeinverständlichkeit
+        % - Verwandt mit: Dokumentenanalyse, Textzusammenfassung, Stiladaption
+        % - Unterschied zu reiner Klassifizierung: Generative Komponente essentiell
+        
+        % EMPIRISCHE ERFOLGE:
+        % - Zusammenfassung & Klassifizierung: State-of-the-Art-Performance
+        % - Fahrgastanfragen: Effektive Bearbeitung nachgewiesen
+        % - Unfallberichte: Automatisierte Verarbeitung übertrifft regelbasierte Systeme
+        % - Stützt Hypothese: LLMs geeignet für Verkehrsanweisungs-Transformation
+        
+        % HERAUSFORDERUNGEN:
+        % - Domänenspezifisches Vokabular erfordert Spezialisierung
+        % - Faktentreue: Keine Halluzinationen bei sicherheitskritischen Infos
+        % - Konsistenz: Gleiche Eingabe → gleiche Ausgabe (Determinismus)
+        % - Mehrsprachigkeit: Technisch möglich, aber Ressourcen-intensiv
         
         
         \subsubsection{Domänenspezifische Sprachmodelle}
         \label{sec:2.1.3}
         
         % Ziel: 1,5-2 Seiten
-        % Spezialisierte Modelle und ihre Erfolge:
-        % - TrafficSafetyGPT: Domänenspezifisches Feintuning als Erfolgsfaktor
-        % - Multimodale Integration (Reduktion der Fehlerrate um 54,2%)
-        % - Domain-Specific Pre-Training auf Verkehrssicherheits-Korpora
-        % - Erweiterte Fachterminologie-Datenbanken
-        % - Besonderheiten deutschsprachiger Modelle (LeoLM-Familie)
+        
+        % VON GENERAL-PURPOSE ZU SPECIALIZED MODELS:
+        % - Allgemeine LLMs (GPT-4, Claude): Beeindruckende Breite
+        % - Verkehrsdomäne: Spezialisierung zeigt signifikante Vorteile
+        % - Trade-off: Generalität vs. Domänen-Expertise
+        
+        % TRAFFICSSAFETYGPT - CASE STUDY:
+        % Laut Zheng et al. (2023) - [SOURCE-MISSING] hinzufügen
         %
-        % Erkenntnisse für diese Arbeit:
-        % - Stufenweise multimodale Integration verschiedener Optimierungsmethoden
-        % - Strategien für kleine Datensätze
+        % - Domänenspezifisches Feintuning: Kritischer Erfolgsfaktor
+        % - Übertrifft konsistent allgemeine Modelle in verkehrsspezifischen Aufgaben
+        % - Technische Komponenten:
+        %   * Erweiterte Fachterminologie-Datenbanken
+        %   * Domain-Specific Pre-Training auf Verkehrssicherheits-Korpora
+        %   * Professionelle Ausdrucksfähigkeiten (technische Präzision)
+        % - Vorteile:
+        %   * Effizientere Zuweisung von Rechenressourcen
+        %   * Kürzere Trainingszeiten bei höherer Qualität
+        %   * Deutlich höhere Informationsabdeckung vs. General Models
+        
+        % MULTIMODALE INTEGRATION - ERFOLGSFAKTOR:
+        % Laut Bhagat et al. (2025) - [SOURCE-MISSING] hinzufügen
+        %
+        % - Definition: Kombination verschiedener Datenmodalitäten
+        %   * Narrativer Text (unstrukturiert)
+        %   * Strukturierte Unfalldaten (Tabellen, Kategorien)
+        %   * Metadaten (Zeit, Ort, Beteiligte)
+        % - Empirischer Erfolg: 54,2% Reduktion der Fehlerrate
+        % - Synergieeffekt: Text liefert Kontext, Struktur liefert Präzision
+        % - Vielversprechendste Strategie zur Leistungssteigerung
+        
+        % DOMAIN-SPECIFIC PRE-TRAINING:
+        % - Continued Pretraining auf Verkehrssicherheits-Korpora
+        % - Modelle lernen spezialisierte Terminologie und Kontexte
+        % - Signifikante Leistungsverbesserung dokumentiert
+        % - Analog zu LeoLM: Deutsches Continued Pretraining auf Mistral
+        
+        % ÜBERTRAGUNG AUF DIESE ARBEIT:
+        % - Strategie: Stufenweise multimodale Integration verschiedener Optimierungen
+        %   1. Base Model: LeoLM (bereits deutsch-optimiert)
+        %   2. Fine-Tuning: Domänenspezifische Verkehrsanweisungen
+        %   3. Knowledge Enhancement: Linien-Fahrzeug-Zuordnungen (strukturiert)
+        %   4. Prompt Engineering: Stilrichtlinien, Beispiele
+        % - Ziel: Trotz kleinem Datensatz fehlerfreies Ergebnis
+        % - Rechtfertigung durch Forschung: Multi-Methoden-Ansatz kompensiert Datenmangel
+        
+        % DEUTSCHSPRACHIGE MODELLE - BESONDERHEITEN:
+        % - LeoLM-Familie: Mistral + Deutsches Continued Pretraining
+        % - Vorteil: Sprachspezifische Optimierung (Komposita, Morphologie)
+        % - Relevanz: LVB-Anwendungsfall rein deutschsprachig
+        % - Vergleich: Englische Modelle + Translation vs. Native German Models
+        %   * Native: Bessere Idiomatik, Präzision
+        %   * Translation: Risiko von Artefakten, Stilbrüchen
+        
+        % HERAUSFORDERUNGEN DEUTSCHSPRACHIGER VERKEHRSDATEN:
+        % Laut Schiersch et al. (2018) & Troxler et al. (2022) - [SOURCE-MISSING]n hinzufügen
+        %
+        % 1. Heterogene Formatvielfalt:
+        %    - Telegrafische Texte (verkürzt, ohne Artikel)
+        %    - Tabelleneinträge (strukturiert, fragmentiert)
+        %    - Fließtext-Berichte (vollständige Sätze)
+        %    - Standardisierte Verarbeitung erschwert
+        %    - Vorverarbeitungs-Herausforderungen erheblich
+        %
+        % 2. Cross-Language Transferability-Problem:
+        %    - Englisch-trainierte Modelle: Nicht direkt auf Deutsch anwendbar
+        %    - Erhebliche Leistungseinbußen ohne deutschsprachiges Training
+        %    - Zwei Lösungswege:
+        %      a) Separates Training für deutschsprachige Daten (→ LeoLM-Ansatz)
+        %      b) Mehrsprachige Trainingsdatensätze (mindestens 20% Deutsch für vergleichbare Performance)
+        %    - Begründet Wahl deutschsprachiger Basismodelle für diese Arbeit
+        %
+        % 3. Fehleranfälligkeit bei generischen Modellen:
+        %    - Problem 1: Primär englischsprachiges Pretraining
+        %      * Modelle können übersetzen, aber Fehlerrate steigt deutlich
+        %      * Idiomatische Fehler, ungünstige Wortwahl
+        %    - Problem 2: Generisches Training ohne Verkehrsdomäne
+        %      * Fehlende Fachterminologie
+        %      * Mangelndes Kontextverständnis für verkehrsspezifische Abkürzungen
+        %    - Schiersch (2018): Einziger deutscher Verkehrsdatensatz (veraltet, limitiert)
+        %    - Implikation: Eigenständiges Fine-Tuning unumgänglich
+        %
+        % Überleitung zu Kapitel~\ref{chap:4}:
+        % - Theoretisch: Domänenspezifische Modelle überlegen
+        % - Praktisch: Deutsche Verkehrsmodelle fehlen
+        % - Lösung: Deutsches Basismodell + verkehrsspezifisches Fine-Tuning
+        % - Detaillierte Auswahlbegründung in Modellauswahl-Kapitel
+        
+        % VERKEHRSSPEZIFISCHE MODELLE - LANDSCAPE:
+        % WARUM NICHT GEEIGNET FÜR DIESE ARBEIT:
+        %
+        % TrafficSafetyGPT (Zheng et al., 2023; Karim et al., 2025) - [SOURCE-MISSING]n
+        % - Basis: LLaMA (Meta AI)
+        % - Datensatz: TrafficSafety-2k (behördliche Richtlinien + ChatGPT-generiert)
+        % - Fokus: Verkehrssicherheit (Traffic Safety)
+        % - Vorteile: Effiziente Ressourcen, kurze Trainingszeiten
+        % - NICHT GEEIGNET für LVB, weil:
+        %   * Englischsprachig (keine deutsche Sprachkompetenz)
+        %   * Safety-Fokus ≠ Fahrgastinformation
+        %   * Closed-Source-Basis (DSGVO-Probleme für lokales Deployment)
+        %
+        % TransGPT-Familie (Wang et al., 2024; Karim et al., 2025) - [SOURCE-MISSING]n
+        % - TransGPT-SM: Unimodal (Text), basierend auf ChatGLM2-6B
+        % - TransGPT-MM: Multimodal (Text + Vision)
+        % - Training: Verkehrsunterlagen, Bücher, Berichte
+        % - Anwendung: Dokumentenanalyse, Führerscheinprüfungen
+        % - NICHT GEEIGNET für LVB, weil:
+        %   * Chinesischsprachig (ChatGLM2 = chinesisches Modell)
+        %   * Fokus auf Wissensvermittlung, nicht Texttransformation
+        %   * Keine Open-Source-Verfügbarkeit für lokales Fine-Tuning
+        %
+        % Anwendungsspezifische Chatbots:
+        % - TP-GPT (Traffic Performance GPT): Verkehrsüberwachung, Echtzeit-Daten (Li et al., 2024) - [SOURCE-MISSING]
+        % - TrafficGPT: Integration mit Traffic Foundation Models, Aufgaben-Dekomposition (Li et al., 2024) - [SOURCE-MISSING]
+        % - ChatSUMO: SUMO-Simulator-Integration, Szenario-Generierung (Taleb et al., 2025) - [SOURCE-MISSING]
+        % - NICHT GEEIGNET für LVB, weil:
+        %   * Aufgaben-spezifische Frameworks (nicht General-Purpose)
+        %   * Echtzeit-Datenbanken erforderlich (Infrastructure-Overhead)
+        %   * Keine Texttransformation, sondern Query-Beantwortung
+        %   * Englischsprachig
+        %
+        % Multimodale & Sicherheitskritische Modelle:
+        % - ChatScene: AV-Sicherheitsszenarien (Li et al., 2024; Zhang et al., 2024) - [SOURCE-MISSING]n
+        % - AccidentGPT: Kollisionsvermeidung (Li et al., 2024; Wang et al., 2024) - [SOURCE-MISSING]n
+        % - IDM-GPT: 5 spezialisierte Agenten für Verkehrsanalysen (Karim et al., 2025) - [SOURCE-MISSING]
+        % - STEP-LLM: Räumlich-zeitliche Verkehrsvorhersage (Karim et al., 2025) - [SOURCE-MISSING]
+        % - NICHT GEEIGNET für LVB, weil:
+        %   * Fokus: Autonome Fahrzeuge, Predictive Analytics
+        %   * Aufgabe: Nicht Textgenerierung, sondern Szenario-Simulation
+        %   * Keine deutschsprachigen Varianten
+        %   * Zu spezialisiert für allgemeine Fahrgastinformation
+        %
+        % ZUSAMMENFASSUNG - WARUM KEINES DIESER MODELLE:
+        % 1. Sprachbarriere: Alle englisch- oder chinesischsprachig
+        % 2. Aufgaben-Mismatch: Safety, Prediction, Simulation ≠ Text-Transformation
+        % 3. Lizenzierung: Meist proprietär oder Closed-Source-Basis
+        % 4. Infrastruktur: Echtzeit-Datenbanken, Multi-Agenten erforderlich
+        % 5. Deployment: Nicht für lokale, offline-fähige Ausführung konzipiert
+        %
+        % KONSEQUENZ FÜR DIESE ARBEIT:
+        % - Keine Off-the-Shelf-Lösung verfügbar
+        % - Notwendigkeit: Eigenständige Modellentwicklung
+        % - Strategie: Deutsches Basismodell (LeoLM) + domänenspezifisches Fine-Tuning
+        % - Rechtfertigung: Forschungslücke bei deutschsprachiger Verkehrsinformation
+        % - Detaillierte Begründung in Kapitel~\ref{chap:4}
+        
+        % ERKENNTNISSE FÜR KLEINE DATENSÄTZE:
+        % - Herausforderung: LVB-Datensatz vergleichsweise klein
+        % - Strategie aus Forschung:
+        %   * Transfer Learning von vortrainierten Modellen
+        %   * Multimodale Integration (Text + Strukturdaten)
+        %   * Data Augmentation (siehe Abschnitt~\ref{sec:2.2.3})
+        %   * Parameter-effizientes Fine-Tuning (LoRA, siehe Abschnitt~\ref{sec:2.2.1})
+        % - Kombination dieser Methoden: Nachweislich erfolgreich
+        
+        % ÜBERLEITUNG ZU ABSCHNITT 2.2:
+        % - Domänenspezifische Modelle: Theoretische Überlegenheit etabliert
+        % - Nächster Schritt: Wie erstellt man solche Modelle?
+        % - Fine-Tuning-Methoden, Datenstrategien, Optimierungen
+        % - Von "Was funktioniert?" zu "Wie macht man es?"
 
 
     \subsection{Sprachmodelle und Fine-Tuning}
@@ -89,29 +391,598 @@
     
     % Ziel: 4-5 Seiten
     
+% ABSCHNITT-EINLEITUNG - STICHPUNKTE:
+%
+% Problemstellung der Modellanpassung
+% - Vortrainierte Sprachmodelle verfügen über umfassendes allgemeines Sprachverständnis
+% - Spezialisierung auf domänenspezifische Aufgaben erfordert gezielte Anpassung
+% - LeoLM: Deutschsprachige Kompetenz vorhanden, Verkehrsdomäne nicht abgedeckt
+% - Transfer von allgemeinem zu spezialisiertem Wissen als zentrale Herausforderung
+%
+% Ressourcenbeschränkungen beim Fine-Tuning
+% - Full Fine-Tuning: Anpassung sämtlicher Modellparameter (7 Milliarden bei Mistral-7B)
+% - Rechenaufwand: Training auf Multi-GPU-Clustern über mehrere Wochen
+% - Speicherbedarf: Über 100 GB VRAM für Gradientenberechnung und Optimizer-States
+% - Kostenstruktur: Cloud-Computing-Ressourcen im vier- bis fünfstelligen Bereich
+% - Constraint dieser Arbeit: Consumer-Hardware mit begrenzten Ressourcen
+% - Konsequenz: Parameter-effiziente Fine-Tuning-Methoden erforderlich
+%
+% Herausforderung begrenzter Trainingsdaten
+% - LVB-Datensatz: Geschätzte Größenordnung 100-500 Trainingsbeispiele
+% - Vergleich: ImageNet mit über 1 Million annotierten Bildern, LAION mit 5 Milliarden Text-Bild-Paaren
+% - Risiko: Overfitting bei vollständiger Parameteranpassung mit kleinem Datensatz
+% - Vorteil parameter-effizienter Verfahren: Reduzierter Datenbedarf durch gezielte Adaption
+%
+% Methodische Ansätze
+% - Parameter-effiziente Fine-Tuning-Verfahren reduzieren Anzahl trainierbarer Parameter
+% - Prompt Engineering als komplementärer Ansatz zur Leistungssteigerung
+% - Datenaufbereitung und Augmentation bei limitierter Datenverfügbarkeit
+% - Gegenmaßnahmen zu Overfitting und Catastrophic Forgetting
+%
+% Bezug zur praktischen Implementierung
+% - Theoretische Konzepte dieses Abschnitts finden Anwendung in der Implementierung
+% - Fundierte Entscheidungsfindung durch Verständnis methodischer Trade-offs
+% - Wissenschaftlich fundierte Vorgehensweise statt empirischem Trial-and-Error-Ansatz
+    
         \subsubsection{Fine-Tuning-Methoden}
         \label{sec:2.2.1}
         
         % Ziel: 2,5-3 Seiten
-        % - Transfer Learning: Grundkonzept
-        % - LoRA (Low-Rank Adaptation) - ausführlich, da verwendet
-        %   * Funktionsweise
-        %   * Parameter (Rank, Alpha, Target Modules)
-        %   * Vorteile gegenüber Full Fine-Tuning
-        % - Andere parameter-effiziente Methoden (kurz erwähnen)
-        %   * Adapter
-        %   * Prefix Tuning
-        %   * Prompt Tuning
+        
+        % VON FULL FINE-TUNING ZU PEFT:
+        % - Herausforderung großer vortrainierter Modelle \cite{smith2023,hua2023}
+        %   * Training aller Modellparameter für jede Downstream-Aufgabe
+        %   * Mit wachsenden Modellgrößen zunehmend unpraktikabel
+        %   * Rechenressourcen und Speicherbedarf steigen exponentiell \cite{hua2023}
+        % - Full Fine-Tuning bei 7B-Modellen:
+        %   * 7 Milliarden Parameter müssen angepasst werden
+        %   * Über 100 GB VRAM für Gradienten und Optimizer-States
+        %   * Multi-GPU-Cluster über mehrere Wochen erforderlich
+        %   * Kostenstruktur: Vier- bis fünfstelliger Bereich für Cloud-Computing
+        % - Konsequenz: Parameter-effiziente Transferlernmethoden erforderlich
+        
+        % PEFT-TAXONOMIE:
+        % Drei Hauptkategorien \cite{liu2025up}:
+        %
+        % 1. ADDITIVE FINE-TUNING:
+        %    - Fügt zusätzliche trainierbare Module zum gefrorenen Basismodell hinzu
+        %    - Originalgewichte bleiben unverändert
+        %    - Beispiele: Adapter, Prefix Tuning, Prompt Tuning
+        %    - Trade-off: Geringe Parameteranzahl vs. potenzielle Inferenz-Latenz
+        %
+        % 2. REPARAMETERIZED FINE-TUNING:
+        %    - Zerlegt Gewichtsupdates in niedrigrangige Matrizen
+        %    - Modifiziert indirekt die Originalgewichte
+        %    - Hauptvertreter: LoRA (Low-Rank Adaptation)
+        %    - Vorteil: Keine Inferenz-Latenz durch Weight Merging
+        %
+        % 3. SELECTIVE FINE-TUNING:
+        %    - Trainiert nur ausgewählte Teilmengen existierender Parameter
+        %    - Friert Großteil des Modells ein
+        %    - Weniger verbreitet, nicht in dieser Arbeit verwendet
+        
+        % ============================================================================
+        % LORA (LOW-RANK ADAPTATION) - AUSFÜHRLICH
+        % ============================================================================
+        
+        % GRUNDPRINZIP & FUNKTIONSWEISE:
+        % - Reparameterized Fine-Tuning-Ansatz \cite{liu2025up,he2025rasa}
+        % - Theoretische Hypothese \cite{adegoke2024lora}:
+        %   * Gewichtsänderungen während Adaptation haben niedrigen "intrinsic rank"
+        %   * ΔW lässt sich effizient durch Low-Rank-Dekomposition approximieren
+        %   * Ermöglicht indirekte Optimierung denser Layers via Rank-Decomposition
+        % - Gewichtsupdates als niedrigrangige Dekomposition: ΔW = BA
+        %   * W₀: Originalgewichte (eingefroren)
+        %   * W = W₀ + ΔW = W₀ + BA
+        %   * B ∈ ℝ^(d×r), A ∈ ℝ^(r×k), wobei r << d,k
+        %   * Rank r als Hyperparameter kontrolliert Expressivität vs. Effizienz
+        % - Keine direkten Änderungen an vortrainierten Gewichten
+        % - Low-Rank-Matrizen werden separat trainiert \cite{gao2023,he2025rasa}
+        % - Minimiert Bedarf an Hyperparameter-Retuning bei Rank-Variation \cite{adegoke2024lora}
+        
+        % EFFIZIENZGEWINNE:
+        % Parameter-Reduktion \cite{hu2021lora}:
+        %   * Bis zu 10.000-fache Reduktion trainierbarer Parameter
+        %   * Vergleichbare Performance zu Full Fine-Tuning
+        %   * Typisch: < 1% der Gesamtparameter trainierbar
+        %
+        % Speichereffizienz \cite{hu2021lora,adegoke2024lora}:
+        %   * 3x weniger GPU-Memory-Bedarf als traditionelles Fine-Tuning \cite{hu2021lora}
+        %   * Empirisch: 35% Reduktion der Memory Usage bei GPT-2 \cite{adegoke2024lora}
+        %   * Besonders geeignet für ressourcenbeschränkte Umgebungen
+        %   * Ermöglicht Training auf Consumer-Hardware
+        %   * Bei Adam-Optimizer: VRAM-Reduktion bis zu 2/3 \cite{adegoke2024lora}
+        %
+        % Trainingszeit-Reduktion \cite{adegoke2024lora}:
+        %   * 30% kürzere Trainingszeit im Vergleich zu Full Fine-Tuning
+        %   * Benchmark (GPT-2 auf Tesla T4): 5,1 min (LoRA) vs. 7,4 min (Full FT)
+        %   * Effizienzgewinn trotz erhöhter Iterationszahl (siehe Konvergenzproblematik)
+        %
+        % Deployment-Vorteile \cite{hu2021lora,adegoke2024lora}:
+        %   * Modulare Architektur: Ein Basismodell, viele Task-Adapter
+        %   * Nur Adapter-Parameter müssen pro Aufgabe gespeichert werden \cite{adegoke2024lora}
+        %   * Löst "One-Domain-One-Model"-Problem
+        %   * Kostengünstiges Task-Switching: Nur LoRA-Gewichte austauschen statt aller Parameter
+        %   * Reduziert Storage- und Switching-Overhead im Multi-Task-Deployment \cite{adegoke2024lora}
+        
+        % INFERENZ-EIGENSCHAFTEN:
+        % - Kein zusätzlicher Inferenz-Overhead \cite{hua2023,hu2021lora}
+        % - Weight Merging nach Training: W_final = W₀ + BA
+        % - Post-Training Integration in Originalgewichte \cite{hu2021lora}
+        % - Entscheidender Vorteil gegenüber Adapter- und Prompt-Methoden
+        
+        % LIMITIERUNGEN & HERAUSFORDERUNGEN:
+        %
+        % 1. Konvergenzproblematik \cite{wang2025floe}:
+        %    * Signifikant langsamere Konvergenz als Full Fine-Tuning
+        %    * 5-6x mehr Iterationen und FLOPs für gleiche Performance
+        %    * Erhöht Gesamt-Trainingskosten trotz Pro-Iteration-Effizienz
+        %    * Kann zu schlechterer Testperformance führen
+        %
+        % 2. Architektonische Ursachen \cite{hu2021lora}:
+        %    * Initialisierung von B mit Nullen: Langsame Trainingsdynamik zwischen A und B
+        %    * Dropout nur für lange Trainings-Episoden geeignet
+        %    * Skalierungsfaktor verursacht "kurzsichtige" Inter-Layer-Interaktionen
+        %
+        % 3. Weitere Training-Herausforderungen:
+        %    * Potenzielle Catastrophic Forgetting-Probleme
+        %    * Beeinträchtigung von Weltwissen in vortrainierten Modellen
+        %    * Degradierung von Safety Alignment in fein-justierten Modellen
+        %
+        % 4. Rank-Sensitivität \cite{wang2025floe}:
+        %    * Fixed-Rank-Constraint limitiert Flexibilität
+        %    * Hohe Sensitivität gegenüber Rank-Auswahl
+        %    * Optimaler Rank muss im Voraus identifiziert werden
+        %    * Kostspieliges Retraining bei suboptimaler Wahl
+        %
+        % 5. Skalierungs-Limitierungen:
+        %    * Performance sinkt bei kleineren Modellen (< 7B Parameter)
+        %    * Besonders in Vision-Language-Pre-Training-Kontexten
+        %
+        % 6. Performance-Gap bei Komplexität \cite{wang2025floe}:
+        %    * Lücke zu Full Fine-Tuning bei komplexen Datensätzen
+        %    * Diverse Sub-Domänen und Task-Typen verschärfen Problem
+        %    * Gap wächst mit zunehmender Szenario-Komplexität
+        %
+        % 7. Batching-Limitierungen \cite{adegoke2024lora}:
+        %    * Herausforderung: Inputs verschiedener Tasks mit unterschiedlichen A/B-Matrizen
+        %    * Schwierig in einem single Forward Pass zu batchen
+        %    * Reduziert Parallelisierungspotenzial bei Multi-Task-Inferenz
+        %    * Beeinträchtigt Durchsatz in produktiven Multi-Tenant-Systemen
+        
+        % QLORA - KOMBINATION MIT QUANTISIERUNG:
+        % - Optimierte Implementation \cite{dettmers2023}
+        % - LoRA-Adapter + 4-bit Quantisierung der Basisgewichte
+        % - Weitere Speicherreduktion (~70%) ohne Qualitätsverlust
+        % - Ermöglicht 7B-Modelle auf GPUs mit < 24 GB VRAM
+        % - Wird in Abschnitt~\ref{sec:2.3.2} (Quantisierung) vertieft
+        
+        % KONFIGURATIONSPARAMETER:
+        % - Rank (r): Dimensionalität der Low-Rank-Matrizen
+        %   * Typisch: 4, 8, 16, 32, 64
+        %   * Trade-off: Expressivität vs. Speicherbedarf
+        % - Alpha: Skalierungsfaktor für LoRA-Updates
+        %   * Beeinflusst Lernrate der Adapter-Gewichte
+        % - Target Modules: Welche Transformer-Layer angepasst werden
+        %   * Query, Key, Value, Output Projections
+        %   * Gate, Up, Down Projections (bei Mistral-Architektur)
+        
+        % ============================================================================
+        % ADAPTER - ADDITIVE FINE-TUNING
+        % ============================================================================
+        
+        % GRUNDKONZEPT \cite{houlsby2019,gao2023}:
+        % - Eines der frühesten PEFT-Frameworks
+        % - Fügt kleine aufgabenspezifische Module mit Feedforward-Layers hinzu
+        % - Skip-Connections integrieren Adapter-Output
+        % - Originalgewichte bleiben eingefroren
+        
+        % ARCHITEKTUR:
+        % - Bottleneck-Design: Down-Projektion → Aktivierung → Up-Projektion
+        % - Einfügung zwischen Transformer-Schichten
+        % - Modularer Austausch für verschiedene Tasks
+        
+        % EFFIZIENZ [SOURCE-MISSING: Houlsby et al., 2019; Shen et al., 2025; Deng et al., 2025]:
+        % - Nur 3,6% zusätzliche Parameter pro Task
+        % - Performance innerhalb 0,4% von Full Fine-Tuning
+        % - Kompakte, erweiterbare Modelle
+        % - Parameteranzahl: O(r(d_in + d_out)) pro Layer [SOURCE-MISSING: Shen, 2025]
+        % - Weniger effizient als LoRAs Low-Rank-Dekomposition
+        
+        % DEPLOYMENT:
+        % - Hohe Parameter-Sharing durch gefrorenes Basismodell [SOURCE-MISSING: Houlsby et al., 2019]
+        % - Neue Tasks ohne Revisitation vorheriger
+        % - Task-spezifische Adapter-Parameter müssen gespeichert werden
+        
+        % LIMITIERUNG - INFERENZ-LATENZ:
+        % - Erhöht Modelltiefe durch zusätzliche Layer [SOURCE-MISSING: Ding et al., 2024; Li et al., 2021; Hu et al., 2021]
+        % - Zusätzliche Latenz während Inferenz
+        % - Weniger geeignet für latenz-sensitive Anwendungen [SOURCE-MISSING: Li et al., 2025]
+        % - Struktureller Nachteil gegenüber LoRA (Weight Merging nicht möglich)
+        
+        % ============================================================================
+        % PREFIX TUNING - ATTENTION-BASIERTES PEFT
+        % ============================================================================
+        
+        % GRUNDKONZEPT [SOURCE-MISSING: Li et al., 2021]:
+        % - Optimiert kontinuierliche aufgabenspezifische Vektoren
+        % - Prefix-Vektoren vor Input-Embeddings
+        % - Nachfolgende Tokens können auf Prefixes "attenden"
+        % - Modifiziert Attention-Keys und -Values
+        
+        % EFFIZIENZ [SOURCE-MISSING: Li et al., 2021; Eyuboglu et al., 2025; Shen, 2025]:
+        % - Lernt nur 0,1% der Originalparameter
+        % - Extremste Parameter-Effizienz aller PEFT-Methoden
+        % - Vergleichbare Performance bei ausreichender Modellgröße
+        % - Modifiziert Input-Repräsentationen statt Modellgewichte
+        
+        % STÄRKEN IN SPEZIFISCHEN KONTEXTEN:
+        % Multilingual Adaptation [SOURCE-MISSING: Snegha et al., 2025]:
+        % - Überlegen gegenüber LoRA in mehrsprachigen Tasks
+        % - Bis zu 28% höhere Accuracy auf XNLI
+        % - 13% höhere F1 auf XQUAD
+        % - 18% höhere Accuracy auf Belebele vs. Base Models
+        % - Zusätzliche 4-6% Verbesserung gegenüber LoRA
+        
+        % LIMITIERUNGEN:
+        % - Reduziert effektive Sequenzlänge durch Prefix-Tokens
+        % - Inferenz-Overhead durch zusätzliche Kontext-Tokens [SOURCE-MISSING: Li et al., 2025; Diep et al., 2025]
+        % - Erhöhter Computational Cost während Inferenz
+        % - Sensitiv gegenüber Initialisierung [SOURCE-MISSING: Huang et al., 2024]
+        % - Challenging to train, reduziert verfügbare Sequenzlänge [SOURCE-MISSING: Ding et al., 2024]
+        
+        % ============================================================================
+        % PROMPT TUNING - SOFT PROMPTS
+        % ============================================================================
+        
+        % GRUNDKONZEPT [SOURCE-MISSING: Lester et al., 2021]:
+        % - Verwendet lernbare "Soft Prompts"
+        % - Kontinuierliche Embeddings statt diskreter Tokens
+        % - Training via Backpropagation
+        % - Nur Prompt-Embeddings trainierbar
+        
+        % SKALIERUNGSVERHALTEN [SOURCE-MISSING: Lester et al., 2021]:
+        % - Wird kompetitiver mit steigender Modellgröße
+        % - Matched Full Fine-Tuning ab mehreren Milliarden Parametern
+        % - Bei kleineren Modellen (<11B): Geringere Performance
+        
+        % EFFIZIENZ [SOURCE-MISSING: Lester et al., 2021; Eyuboglu et al., 2025]:
+        % - Extreme Parameter-Effizienz durch diskrete Token-Level-Optimierung
+        % - Minimale Speicheranforderungen
+        % - Modifiziert Input-Repräsentationen wie Prefix Tuning
+        
+        % LIMITIERUNGEN:
+        % - Inferenz-Overhead durch Prepending task-spezifischer Tokens [SOURCE-MISSING: Li et al., 2025]
+        % - Zusätzlicher Computational Cost durch Prefix-Tokens
+        % - Erhöhte Latenz vs. gefrorene Backbone-Modelle [SOURCE-MISSING: Diep et al., 2025; Lester et al., 2021]
+        % - Sensitive Initialisierung [SOURCE-MISSING: Huang et al., 2024]
+        
+        % ============================================================================
+        % VERGLEICHENDE BEWERTUNG DER PEFT-METHODEN
+        % ============================================================================
+        
+        % PARAMETER-EFFIZIENZ (aufsteigend):
+        % 1. Prompt Tuning: ~0,01% - Extremste Reduktion
+        % 2. Prefix Tuning: ~0,1% - Sehr gering
+        % 3. LoRA: ~0,1-1% (je nach Rank) - Stark reduziert
+        % 4. Adapter: ~3,6% - Moderat reduziert
+        
+        % INFERENZ-OVERHEAD (aufsteigend):
+        % 1. LoRA: ≈0 (Weight Merging möglich) - OPTIMAL
+        % 2. Prefix Tuning: Gering (zusätzliche Tokens)
+        % 3. Prompt Tuning: Gering (zusätzliche Tokens)
+        % 4. Adapter: Hoch (zusätzliche Layer) - PROBLEMATISCH
+        
+        % PERFORMANCE-CHARAKTERISTIKA:
+        % - LoRA [SOURCE-MISSING: Hu et al., 2021; Moghadas et al., 2024]:
+        %   * On-par oder besser als Full Fine-Tuning (RoBERTa, DeBERTa, GPT-2, GPT-3)
+        %   * Übertrifft Prompt Tuning in Gesamtperformance, Memory, Flexibilität
+        %   * Performance-Gap bei komplexen, heterogenen Datensätzen [SOURCE-MISSING: Wang et al., 2025]
+        %
+        % - Adapter [SOURCE-MISSING: Houlsby et al., 2019]:
+        %   * Konsistent stark auf Benchmarks (GLUE: innerhalb 0,4% von Full FT)
+        %   * Zuverlässige Performance über verschiedene Tasks
+        %
+        % - Prefix Tuning [SOURCE-MISSING: Snegha et al., 2025; Kim et al., 2023]:
+        %   * Superior in multilingualen Adaptation-Tasks
+        %   * Besser in zeit-beschränkten Szenarien (3-5 Minuten Training)
+        %   * Outperforms LoRA in spezifischen Kontexten
+        %
+        % - Prompt Tuning:
+        %   * Schwächer bei kleinen Modellen
+        %   * Konkurrenzfähig ab >11B Parametern
+        
+        % TRAINING-DYNAMIK:
+        % - LoRA: Langsame Konvergenz (5-6x mehr Iterationen) [SOURCE-MISSING: Wang et al., 2024]
+        % - Prompt/Prefix: Initialisierungs-sensitiv [SOURCE-MISSING: Huang et al., 2024]
+        % - Adapter: Stabile Konvergenz, aber Speicher-intensiv
+        
+        % WARUM LORA FÜR DIESE ARBEIT:
+        % 1. Kein Inferenz-Overhead: Kritisch für Produktionsumgebung
+        % 2. Gute Balance: Parameter-Effizienz vs. Performance
+        % 3. Modularität: Mehrere Task-Adapter möglich
+        % 4. Hardware-Feasibility: Kombination mit QLoRA für Consumer-GPUs
+        % 5. Bewährte Performance: Erfolgreich in ähnlichen Domänen-Adaptionen
+        % 6. Community-Support: Umfangreiche Implementierungen und Best Practices
+        
+        % Konvergenz-Limitierung akzeptabel, da:
+        % - Kleiner Datensatz (kurze Trainings-Episoden weniger kritisch)
+        % - Unsloth-Optimierungen kompensieren teilweise (siehe unten)
+        % - Quality over Speed: Finale Performance wichtiger als Trainingszeit
+        
+        % ============================================================================
+        % UNSLOTH - OPTIMIERUNGSFRAMEWORK FÜR EFFIZIENTES TRAINING
+        % ============================================================================
+        %
+        % - UNSLOTH: Optimierungsframework für effizientes Training
+        %   
+        %   PROBLEMSTELLUNG & MOTIVATION:
+        %   * Herausforderung: Auch PEFT-Methoden wie LoRA erfordern bei 7B-Modellen erhebliche Ressourcen
+        %   * Traditionelle Frameworks (Hugging Face Transformers, PyTorch): Hardware-Limitierungen
+        %   * Instabilitäten bei LoRA-Training: Gradient Explosion, numerische Instabilität \cite{zhong2025}
+        %   * Zugangshürde: Enterprise-Grade GPUs oder Multi-GPU-Setups erforderlich
+        %   * Relevanz für diese Arbeit: Consumer-Hardware-Constraints (siehe Abschnitt~\ref{sec:6.1})
+        %   
+        %   TECHNISCHE OPTIMIERUNGEN:
+        %   
+        %   1. Speichereffizienz (50-80% Reduktion des VRAM-Bedarfs) \cite{hasan2025,pingua2025,lu2025}:
+        %      * 4-bit Quantization der Base-Model-Weights (~70% Memory-Reduktion) \cite{zhong2025}
+        %      * Optimierte QLoRA-Implementation: LoRA-Adapter + 4-bit Quantization \cite{dettmers2023}
+        %      * Gradient Checkpointing für reduzierte Aktivierungs-Speicherung
+        %      * Ermöglicht 7B-Modelle auf Consumer-GPUs (RTX 3090, Tesla T4) \cite{tahir2024,phan2025,bandara2025}
+        %      * Praktisch: Training ohne Qualitätsverlust bei drastisch reduziertem VRAM
+        %   
+        %   2. Training-Beschleunigung (2-5x schneller) \cite{hasan2025,lu2025,pingua2025}:
+        %      * Flash Attention 2: IO-optimierte Attention-Berechnung \cite{dao2022}
+        %        - Reduzierte Transfers zwischen GPU-Memory-Komponenten \cite{lea2025}
+        %        - Effizientere Key-Value-Query-Matrix-Operationen
+        %      * Custom Kernel Implementations (OpenAI Triton) \cite{lea2025}:
+        %        - Fused Operations: Weniger Speicherzugriffe
+        %        - Optimierte Matrix-Multiplikationen für LoRA
+        %        - Custom PyTorch Autograd-Funktionen
+        %      * Praktisch: Training-Epochen in 26 Minuten (statt Stunden) \cite{mohammadi2025}
+        %   
+        %   3. Numerische Stabilität:
+        %      * Gradient Clipping gegen Gradient Explosion \cite{zhong2025}
+        %      * Layer Normalization Calibration für LoRA-spezifische Instabilitäten \cite{zhong2025}
+        %      * Multi-Precision Support (8-bit, bfloat16) für Hardware-Flexibilität \cite{upadhyay2025,pourcel2025}
+        %      * Verhindert Training-Abbrüche durch Overflow
+        %   
+        %   4. PEFT-Integration:
+        %      * Unterstützung für LoRA-Target-Modules: q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj \cite{upadhyay2025,rao2025}
+        %      * Vollständig kompatibel mit Hugging Face PEFT
+        %      * Nahtlose Integration in bestehende Workflows
+        %   
+        %   DEMOKRATISIERUNG & ZUGÄNGLICHKEIT:
+        %   * Hardware-Accessibility: Single-GPU statt Multi-GPU \cite{lea2025}
+        %   * Consumer-Grade Hardware: RTX 3090, NVIDIA A40, Tesla T4 \cite{tahir2024,bandara2025,phan2025}
+        %   * Free Cloud Platforms: Google Colab (T4, TPU), Kaggle (P100) \cite{phan2025,bandara2025}
+        %   * Strukturierte Templates: Guided Notebooks für niedrige Einstiegshürde \cite{jimenez2025}
+        %   * Relevanz: Ermöglicht Forschung ohne Enterprise-Budget \cite{huang2025,machlovi2025}
+        %   
+        %   SYNERGIEEFFEKTE:
+        %   * LoRA: Reduziert trainierbare Parameter → weniger Rechenaufwand
+        %   * Unsloth: Optimiert verbleibende Operationen → schnellere Ausführung
+        %   * QLoRA + Unsloth: Memory-Effizienz + Speed-Optimierung \cite{dettmers2023}
+        %   * Keine Qualitätseinbußen gegenüber Standard-Fine-Tuning
+        %   
+        %   ABGRENZUNG:
+        %   * DeepSpeed: Multi-GPU-Verteiltes Training
+        %   * Unsloth: Single-GPU-Optimierung
+        %   * Komplementär zu PEFT, nicht alternatives Verfahren
+        %   * Fokus: Accessibility statt Scale
+        %   
+        %   PRAKTISCHE IMPLIKATIONEN FÜR DIESE ARBEIT:
+        %   * Iterationsgeschwindigkeit: Mehr Experimente in gleicher Zeit
+        %   * Hardware-Feasibility: Training auf verfügbarer Hardware möglich
+        %   * Energieeffizienz: Reduzierte Trainingszeit → geringerer Energieverbrauch
+        %   * Stabilität: Zuverlässigere Training-Runs in Constrained Environments \cite{mansha2025}
+        %   
+        %   Verweis: Konkrete Anwendung, Konfiguration und Trainings-Logs in Abschnitt~\ref{sec:6.2.1}
         
         
         \subsubsection{Prompt Engineering}
         \label{sec:2.2.2}
         
         % Ziel: 1,5-2 Seiten
-        % - Few-Shot Learning
-        % - Instruction Tuning
-        % - Template-Design für Automatisierung
-        % - Zero-Shot (kurz)
+        
+        % EINLEITUNG - PROMPT ENGINEERING ALS KOMPLEMENTÄRE METHODE:
+        % - Fine-Tuning (Abschnitt~\ref{sec:2.2.1}): Permanente Modellanpassung durch Parameteränderung
+        % - Prompt Engineering: Verhaltenssteuerung ohne Gewichtsänderungen
+        % - Synergieeffekt: Fine-Tuning für domänenspezifische Fähigkeiten, Prompts für aufgabenspezifische Kontrolle
+        % - Relevanz für diese Arbeit: Stilrichtlinien, Formatvorgaben, Konsistenz
+        
+        % VON ZERO-SHOT ZU FEW-SHOT:
+        % - Zero-Shot Prompting: Nur Instruktion, keine Beispiele
+        %   * Definition: Modell erhält Aufgabenbeschreibung ohne Demonstrationen
+        %   * Stärke: Funktioniert bei großen, instruction-tuned Modellen (GPT-4, Claude)
+        %   * Limitation: Base Models (wie LeoLM-7B) haben schwache Zero-Shot-Performance
+        %   * Nicht ausreichend für komplexe Transformationsaufgaben
+        %   * Beispiel: "Schreibe diese Verkehrsanweisung verständlich um." → Unpräzise Ergebnisse
+        %
+        % - Few-Shot Learning: Aufgabe + Beispiele im Prompt \cite{wei2021finetuned,berryman2024prompt}
+        %   * Definition: In-Context Learning durch Demonstration gewünschten Verhaltens
+        %   * Mechanismus: Modell erkennt Muster aus Input-Output-Paaren
+        %   * Anzahl Beispiele: Typisch 1-10 Shots (Context-Window-limitiert) \cite{berryman2024prompt}
+        %   * Empirische Erkenntnisse: Dramatische Leistungssteigerung vs. Zero-Shot \cite{wei2021finetuned}
+        %   * Performance skaliert mit Beispielanzahl (bis zu Plateau-Effekt) \cite{berryman2024prompt}
+        %
+        % - Few-Shot vs. Fine-Tuning \cite{berryman2024prompt}:
+        %   * Few-Shot: Keine permanenten Änderungen, flexibel anpassbar
+        %   * Fine-Tuning: Modellgewichte ändern sich, domänenspezifische Expertise
+        %   * Trade-off: Few-Shot benötigt längere Prompts (Kontext-Token-Kosten)
+        %   * Kombination optimal: Fine-Tuning für Grundfähigkeiten + Few-Shot für Nuancen
+        
+        % FEW-SHOT PROMPT DESIGN - PRAKTISCHE ÜBERLEGUNGEN:
+        %
+        % 1. Beispielauswahl (Example Selection) \cite{berryman2024prompt}:
+        %    - Diversität: Abdeckung verschiedener Störungstypen (Bauarbeiten, technische Störungen, Umleitungen)
+        %    - Repräsentativität: Häufigste Fälle zuerst, Edge Cases später
+        %    - Qualität über Quantität: 3 perfekte Beispiele > 10 durchschnittliche \cite{berryman2024prompt}
+        %    - Balancierung: Gleiche Verteilung wie im Datensatz (siehe Abschnitt~\ref{sec:2.2.3})
+        %
+        % 2. Beispielreihenfolge (Example Ordering) \cite{berryman2024prompt}:
+        %    - Recency Bias: Letzte Beispiele haben stärksten Einfluss
+        %    - Strategie: Komplexität aufsteigend (einfach → schwierig)
+        %    - Ähnlichkeitsbasierte Sortierung: Relevanteste Beispiele zuerst
+        %
+        % 3. Formatierung und Struktur \cite{berryman2024prompt}:
+        %    - Klare Trennung zwischen Input und Output (z.B. "Input:", "Output:")
+        %    - Konsistente Formatierung über alle Beispiele hinweg
+        %    - Delimiter zwischen Beispielen (z.B. "---", "\n\n")
+        %    - Template-Konsistenz: Gleiche Struktur wie bei Inferenz
+        
+        % INSTRUCTION PROMPTING - SYSTEMANWEISUNGEN:
+        %
+        % - Definition: Explizite Aufgabenbeschreibung vor Beispielen
+        % - Komponenten effektiver Instructions \cite{berryman2024prompt,ouyang2022training}:
+        %   * Rollenspezifikation: "Du bist ein Experte für Fahrgastinformation im ÖPNV"
+        %   * Aufgabendefinition: Präzise Beschreibung der Transformation
+        %   * Constraints: Was NICHT getan werden darf (keine Halluzinationen, keine Informationsweglassung)
+        %   * Stilrichtlinien: Tonalität, Formalität, Zielgruppe
+        %   * Ausgabeformat: Erwartete Struktur des generierten Texts
+        %
+        % - Instruction-Länge und Spezifität \cite{berryman2024prompt}:
+        %   * Trade-off: Detailliert vs. flexibel
+        %   * Zu vage: "Schreibe verständlich" → Interpretation variiert
+        %   * Zu spezifisch: "Nutze genau 2 Sätze mit maximal 15 Wörtern" → Unnatürlich
+        %   * Optimal: Prinzipien statt starre Regeln ("Bevorzuge aktive Formulierungen")
+        %
+        % - Negativbeispiele und Abgrenzungen \cite{berryman2024prompt}:
+        %   * "Schreibe NICHT im Telegrammstil" (effektiver als nur positive Vorgaben)
+        %   * "Erfinde KEINE Details, die nicht in der Eingabe stehen" (Anti-Halluzination)
+        %   * Empirisch: Kombination aus positiven und negativen Constraints am effektivsten
+        
+        % CHAIN-OF-THOUGHT PROMPTING - KOMPLEXE REASONING:
+        %
+        % - Grundkonzept \cite{berryman2024prompt,bonstra2024prompt}:
+        %   * Standard-Prompting: Direkte Input → Output-Zuordnung
+        %   * Chain-of-Thought: Zwischenschritte explizit machen
+        %   * Mechanismus: Modell zeigt Denkprozess ("Lass uns Schritt für Schritt denken") \cite{bonstra2024prompt}
+        %   * Besonders effektiv bei Multi-Hop-Reasoning und komplexen Transformationen \cite{berryman2024prompt}
+        %
+        % - Anwendung auf Verkehrsanweisungs-Transformation:
+        %   * Schritt 1: Identifiziere Kernaussage (welche Linie, welche Störung)
+        %   * Schritt 2: Extrahiere Entitäten (Liniennummern, Haltestellen, Zeitangaben)
+        %   * Schritt 3: Bestimme Fahrzeugtyp aus Knowledge Base
+        %   * Schritt 4: Formuliere verständlichen Satz mit allen Informationen
+        %   * Vorteil: Reduziert Fehler durch strukturierten Prozess
+        %
+        % - Zero-Shot-CoT vs. Few-Shot-CoT \cite{bonstra2024prompt}:
+        %   * Zero-Shot-CoT: "Lass uns Schritt für Schritt denken" als Trigger
+        %   * Few-Shot-CoT: Beispiele mit expliziten Reasoning-Schritten
+        %   * Few-Shot-CoT überlegen bei domänenspezifischen Aufgaben
+        %   * Relevant für diese Arbeit: Strukturierte Transformation mit Reasoning
+        %
+        % - Limitierungen \cite{berryman2024prompt}:
+        %   * Erhöhter Token-Verbrauch durch Zwischenschritte
+        %   * Nicht notwendig bei einfachen Transformationen
+        %   * Produktionsumgebung: Post-Processing entfernt Reasoning (nur Endergebnis ausgeben)
+        
+        % PROMPT TEMPLATE DESIGN FÜR AUTOMATISIERUNG:
+        %
+        % - Motivation: Manuelle Prompts für einzelne Anfragen vs. Templates für Batch-Verarbeitung \cite{berryman2024prompt}
+        % - Template-Struktur \cite{berryman2024prompt}:
+        %   * System Prompt: Statisch, enthält Rollenspezifikation und Grundregeln
+        %   * Few-Shot Examples: Statisch oder dynamisch ausgewählt
+        %   * User Prompt: Variabel, enthält konkrete Verkehrsanweisung
+        %   * Optional: Knowledge Context (Linien-Fahrzeug-Zuordnungen als JSON)
+        %
+        % - Variablen-Substitution \cite{berryman2024prompt}:
+        %   * Platzhalter für dynamische Inhalte: {INPUT_INSTRUCTION}, {KNOWLEDGE_BASE}
+        %   * Formatierung: JSON-Escaping, Whitespace-Normalisierung
+        %   * Validierung: Prüfung auf vollständige Substitution vor Inferenz
+        %
+        % - Template-Typen für verschiedene Störungskategorien:
+        %   * Typ A: Bauarbeiten (erfordert Alternativrouten-Information)
+        %   * Typ B: Technische Störungen (erfordert Fahrzeugtyp-Präzision)
+        %   * Typ C: Umleitungen (erfordert geografische Klarheit)
+        %   * Adaptive Template-Auswahl basierend auf Input-Klassifizierung
+        
+        % PROMPT OPTIMIZATION - ITERATIVE VERBESSERUNG:
+        %
+        % - Systematische Optimierung \cite{berryman2024prompt}:
+        %   * Baseline erstellen: Einfacher Prompt als Ausgangspunkt
+        %   * Fehleranalyse: Welche Arten von Fehlern treten auf?
+        %   * Gezielte Constraints hinzufügen: Adressierung spezifischer Fehlerklassen
+        %   * A/B-Testing: Verschiedene Prompt-Varianten vergleichen
+        %   * Iterative Refinement: Schrittweise Verbesserung
+        %
+        % - Automatische Prompt Optimization (kurz erwähnen) \cite{berryman2024prompt}:
+        %   * APE (Automatic Prompt Engineering)
+        %   * LLMs generieren und evaluieren Prompt-Varianten
+        %   * Nicht in dieser Arbeit verwendet (zu ressourcenintensiv)
+        %   * Manuelle Optimierung praktikabler bei kleinem Anwendungsbereich
+        %
+        % - Metrik-gesteuerte Optimierung \cite{berryman2024prompt}:
+        %   * Faktentreue: Prüfung gegen strukturierte Eingabedaten
+        %   * Stilkonformität: Einhaltung der Richtlinien (siehe Abschnitt~\ref{sec:3.2})
+        %   * Konsistenz: Gleiche Eingaben → identische Ausgaben (deterministische Temperatur)
+        %   * Effizienz: Token-Länge minimieren bei gleichbleibender Qualität
+        
+        % ADVANCED PROMPTING TECHNIQUES (KURZ):
+        %
+        % - Self-Consistency \cite{bonstra2024prompt}:
+        %   * Mehrfache Generierung mit Sampling, dann Mehrheitsentscheidung
+        %   * Reduziert Halluzinationen durch Konsensbildung
+        %   * Trade-off: Mehrfache Inferenz-Kosten
+        %   * Anwendbar bei kritischen Transformationen
+        %
+        % - Least-to-Most Prompting \cite{berryman2024prompt}:
+        %   * Zerlegt komplexe Aufgaben in einfachere Teilschritte
+        %   * Jeder Schritt baut auf vorherigem auf
+        %   * Ähnlich zu Chain-of-Thought, aber strukturierter
+        %
+        % - ReAct (Reasoning + Acting) \cite{berryman2024prompt}:
+        %   * Kombination aus Reasoning und Tool-Use
+        %   * Modell entscheidet, wann externe Informationen benötigt werden
+        %   * Nicht direkt relevant für diese Arbeit (keine externen Tools)
+        
+        % PROMPTING BEI BASE MODELS VS. INSTRUCTION-TUNED MODELS:
+        %
+        % - Base Models (wie LeoLM-7B Base) \cite{berryman2024prompt}:
+        %   * Schwache Instruktionsbefolgung ohne Fine-Tuning
+        %   * Tendenz zur Textkontinuation statt Aufgabenlösung
+        %   * Erfordern präzisere, strukturiertere Prompts
+        %   * Few-Shot Examples essentiell (nicht optional)
+        %   * Completion-Framing: "Text: ... Umschreibung:" (statt "Schreibe um:")
+        %
+        % - Instruction-Tuned Models (wie LeoLM-7B-Instruct) \cite{berryman2024prompt,ouyang2022training}:
+        %   * Bessere Zero-Shot-Performance
+        %   * Verstehen imperative Formulierungen ("Transformiere", "Schreibe")
+        %   * Flexiblere Prompt-Formate akzeptabel
+        %   * Few-Shot verbessert weiter, aber weniger kritisch
+        %
+        % - Implikation für diese Arbeit \cite{berryman2024prompt}:
+        %   * Base Model gewählt (siehe Kapitel~\ref{chap:4})
+        %   * Prompt Engineering umso wichtiger bei Base Models
+        %   * Fine-Tuning kann Prompt-Abhängigkeit reduzieren, aber nicht eliminieren
+        %   * Post-Fine-Tuning Prompts: Kürzer und direkter möglich
+        
+        % PROMPT ENGINEERING IM KONTEXT DIESER ARBEIT:
+        %
+        % - Einsatz in verschiedenen Phasen:
+        %   1. Pre-Fine-Tuning: Evaluation verschiedener Base Models (Kapitel~\ref{chap:4})
+        %   2. Training: Few-Shot Examples als Teil des Trainingsformats (Kapitel~\ref{chap:5})
+        %   3. Post-Fine-Tuning: Inference-Zeit-Prompts für Konsistenz (Kapitel~\ref{chap:6})
+        %
+        % - Spezifische Anwendungen:
+        %   * System Prompt: LVB-Stilrichtlinien, Zielgruppendefinition (Fahrgäste)
+        %   * Knowledge Integration: Linien-Fahrzeug-Zuordnungen als strukturierter Kontext
+        %   * Constraint Specification: Keine Halluzinationen, vollständige Informationswiedergabe
+        %   * Format Control: Einzelner Fließtext-Satz als Output
+        %
+        % - Synergieeffekt mit Fine-Tuning:
+        %   * Fine-Tuning lernt domänenspezifisches Vokabular und Muster
+        %   * Prompts steuern aufgabenspezifische Nuancen und Edge Cases
+        %   * Kombination robuster als jede Methode einzeln
+        %   * Reduziert Overfitting-Risiko (Abschnitt~\ref{sec:2.2.4}) durch flexible Steuerung
+        
+        % ÜBERLEITUNG ZU ABSCHNITT 2.2.3:
+        % - Prompt Engineering: Verhaltenssteuerung zur Inferenzzeit
+        % - Nächster Schritt: Datenqualität und -struktur für Fine-Tuning
+        % - Zusammenspiel: Prompts definieren Aufgabe, Daten trainieren Fähigkeiten
+        % - Von "Wie kommuniziere ich die Aufgabe?" zu "Wie bereite ich Trainingsdaten auf?"
         
         
         \subsubsection{Datensätze für Fine-Tuning}
@@ -130,6 +1001,13 @@
         % - Konsistenz in Struktur und Formatierung
         % - Annotationsrichtlinien: Klare, eindeutige Richtlinien zur Qualitätssicherung
         % - Inter-Annotator Agreement als Qualitätsmetrik
+        %
+        % Prompt-Template-basiertes Format-Design \cite{berryman2024prompt}:
+        % - Training-Daten sollten Inference-Format widerspiegeln
+        % - Instruction + Few-Shot Examples + Task als Trainingsstruktur
+        % - Konsistente Delimiter und Formatierung zwischen Training und Inferenz
+        % - Vorteil: Modell lernt nicht nur Inhalt, sondern auch Format-Erwartungen
+        % - Verweis auf Prompt Engineering-Prinzipien (siehe Abschnitt~\ref{sec:2.2.2})
         
         % 2. DATA AUGMENTATION STRATEGIEN
         % - Definition und Motivation: Vergrößerung des Datensatzes ohne zusätzliche manuelle Annotation
@@ -216,20 +1094,242 @@
         \subsubsection{Herausforderungen beim Fine-Tuning}
         \label{sec:2.2.4}
         
-        % Ziel: 1-1,5 Seiten
-        % - Overfitting: Ursachen und Vermeidungsstrategien
-        %   * Regulierung (Dropout, Weight Decay)
-        %   * Early Stopping
-        %   * Datenaugmentierung
-        % - Catastrophic Forgetting
-        %   * Definition: Verlust von vortrainierten Fähigkeiten
-        %   * Ursachen: Zu aggressives Fine-Tuning
-        %   * Gegenmaßnahmen:
-        %     - Niedrigere Learning Rates
-        %     - LoRA als sanftere Alternative zu Full Fine-Tuning
-        %     - Regularisierung
-        %     - Mixed Task Training
-        % - Underfitting und suboptimale Konvergenz
+        % Ziel: 1,5-2 Seiten
+        
+        % EINLEITUNG:
+        % - Fine-Tuning vortrainierter Modelle bringt spezifische Herausforderungen
+        % - Spannungsfeld: Spezialisierung auf neue Aufgabe vs. Erhalt allgemeiner Fähigkeiten
+        % - Besonders kritisch bei kleinen domänenspezifischen Datensätzen
+        % - Drei zentrale Problemfelder: Overfitting, Catastrophic Forgetting, Konvergenz
+        
+        % ============================================================================
+        % 1. OVERFITTING - ÜBERANPASSUNG AN TRAININGSDATEN
+        % ============================================================================
+        
+        % DEFINITION UND SYMPTOME:
+        % - Modell lernt Trainingsdaten auswendig statt Muster zu generalisieren
+        % - Charakteristisch: Hohe Training Accuracy, niedrige Validation/Test Accuracy
+        % - Divergenz zwischen Training und Validation Loss
+        % - Besonders ausgeprägt bei kleinen Datensätzen (< 1000 Beispiele)
+        % - LoRA reduziert Overfitting-Risiko gegenüber Full Fine-Tuning, eliminiert es aber nicht
+        %
+        % URSACHEN:
+        % - Modellkomplexität übersteigt Informationsgehalt der Trainingsdaten
+        % - Zu hohe Anzahl trainierbarer Parameter relativ zur Datensatzgröße
+        % - Zu viele Trainings-Epochen: Modell memoriert statt zu lernen
+        % - Unbalancierte Datensätze: Bias zu überrepräsentierten Kategorien
+        % - Zu hohe Learning Rate: Instabile, zu schnelle Anpassung an Trainingsdaten
+        %
+        % Bei LoRA-Fine-Tuning spezifisch:
+        % - Höherer Rank (r) → mehr trainierbare Parameter → höheres Overfitting-Risiko
+        % - Mehr Target Modules → größere Angriffsfläche für Überanpassung
+        % - Trade-off: Expressivität vs. Generalisierung
+        %
+        % VERMEIDUNGSSTRATEGIEN:
+        %
+        % a) Regularisierung [SOURCE-MISSING: Goodfellow et al., 2016]:
+        %    - L2-Regularisierung (Weight Decay): Bestraft große Gewichtswerte
+        %      * Mathematisch: Zusätzlicher Term λ||w||² zur Loss-Funktion
+        %      * Fördert kleinere, gleichmäßiger verteilte Gewichte
+        %    - L1-Regularisierung: Fördert Sparsity (weniger relevant für LoRA)
+        %    - Dropout [SOURCE-MISSING: Srivastava et al., 2014]:
+        %      * Zufälliges Deaktivieren von Neuronen während Training
+        %      * Bei LoRA: Nur für lange Trainings-Episoden geeignet (siehe Abschnitt~\ref{sec:2.2.1})
+        %      * Verhindert Co-Adaptationen zwischen Neuronen
+        %
+        % b) Early Stopping [SOURCE-MISSING: Prechelt, 1998]:
+        %    - Kontinuierliches Monitoring von Validation Loss während Training
+        %    - Training stoppen, wenn Validation Loss nicht mehr sinkt oder ansteigt
+        %    - Typische Patience-Strategie: 3-5 Epochen ohne Verbesserung
+        %    - Verhindert Überanpassung in späten Trainingsphasen
+        %    - Erfordert separates Validation Set (nicht Teil der Trainingsdaten)
+        %
+        % c) Datenaugmentierung (siehe Abschnitt~\ref{sec:2.2.3}):
+        %    - Künstliche Vergrößerung des effektiven Datensatzes
+        %    - Reduziert Overfitting durch erhöhte Variabilität
+        %    - Methoden: EDA, Back-Translation, Synthetic Data Generation
+        %    - Erhöht Robustheit gegenüber Formulierungsvariationen
+        %
+        % d) Cross-Validation:
+        %    - K-Fold Cross-Validation bei sehr kleinen Datensätzen
+        %    - Robustere Schätzung der Generalisierungsfähigkeit
+        %    - Rechenintensiv, aber aussagekräftiger bei limitierten Daten
+        %
+        % e) PEFT-spezifische Strategien:
+        %    - Niedrigerer LoRA-Rank: Reduziert trainierbare Parameter
+        %    - Selektive Target Modules: Nur kritische Layer anpassen
+        %    - Trade-off: Geringere Expressivität vs. bessere Generalisierung
+        %
+        % UNDERFITTING VS. OVERFITTING - BALANCIERUNG:
+        % - Underfitting: Modell zu einfach, erfasst Muster nicht (zu niedriger Rank, zu wenig Training)
+        % - Overfitting: Modell zu komplex, memoriert Daten (zu hoher Rank, zu viel Training)
+        % - Optimaler Arbeitspunkt liegt zwischen beiden Extremen
+        % - Empirische Bestimmung durch Validation-Set-Performance notwendig
+        % - Bias-Variance Trade-off [SOURCE-MISSING: Geman et al., 1992]
+        
+        % ============================================================================
+        % 2. CATASTROPHIC FORGETTING - VERLUST VORTRAINIERTER FÄHIGKEITEN
+        % ============================================================================
+        
+        % DEFINITION:
+        % - Phänomen: Modell verliert während Fine-Tuning Fähigkeiten aus Pretraining-Phase
+        % - Spezialisierung auf neue Aufgabe geht zu Lasten allgemeiner Kompetenzen
+        % - Graduelle oder abrupte Verschlechterung auf Pretraining-Tasks
+        % - Erstmals dokumentiert in neuronalen Netzen [SOURCE-MISSING: McCloskey & Cohen, 1989]
+        % - Bei LoRA: Weniger ausgeprägt als bei Full Fine-Tuning, aber vorhanden [SOURCE-MISSING: Luo et al., 2025; Yang et al., 2024]
+        %
+        % MANIFESTATIONEN:
+        % - Wissensverlust: Fakten aus Pretraining-Korpora nicht mehr abrufbar
+        % - Sprachkompetenz-Degradation: Verschlechterung grammatikalischer Fähigkeiten
+        % - Task Interference: Neue Aufgabe überschreibt Wissen über alte Aufgaben
+        % - Safety Alignment Degradation [SOURCE-MISSING: Qi et al., 2023; Hsu et al., 2024]:
+        %   * Fine-Tuning kann Safety Guardrails schwächen
+        %   * Betrifft alle PEFT-Methoden (LoRA, Adapter, Prefix Tuning)
+        %   * Selbst bei benign Training Data möglich (nicht nur adversarial)
+        %
+        % THEORETISCHE URSACHEN:
+        % - Weight Interference: Neue Gewichtsanpassungen überschreiben alte Repräsentationen
+        % - Gradient Descent Bias: Optimierung favorisiert aktuelle Task über vorherige
+        % - Representation Overlap: Shared Weights müssen beide Tasks gleichzeitig kodieren
+        % - Distribution Shift: Trainingsverteilung unterscheidet sich stark von Pretraining-Daten
+        %
+        % LoRA-spezifische Faktoren:
+        % - Zero-Initialisierung der B-Matrix kann Konvergenz verlangsamen [SOURCE-MISSING: Luo et al., 2025]
+        % - Low-Rank Updates können wichtige Pretraining-Repräsentationen nicht vollständig bewahren
+        % - Trotz eingefrorener Basisgewichte: Adapter-Outputs können Aktivierungen verzerren
+        %
+        % GEGENMAÄSSNAHMEN:
+        %
+        % a) Niedrigere Learning Rates [SOURCE-MISSING: Howard & Ruder, 2018]:
+        %    - Typisch: 1e-4 bis 5e-5 für LoRA (vs. 1e-3 für Full Fine-Tuning)
+        %    - Sanftere Anpassung erhält mehr Pretraining-Wissen
+        %    - Trade-off: Langsamere Konvergenz
+        %
+        % b) LoRA als sanftere Alternative zu Full Fine-Tuning:
+        %    - Originalgewichte bleiben eingefroren (siehe Abschnitt~\ref{sec:2.2.1})
+        %    - Nur Low-Rank-Adapter werden trainiert
+        %    - Reduziert Catastrophic Forgetting im Vergleich zu Full Fine-Tuning
+        %    - Aber: Nicht vollständig eliminiert [SOURCE-MISSING: Luo et al., 2025]
+        %
+        % c) Mixed Task Training:
+        %    - Kombination domänenspezifischer und allgemeiner Daten
+        %    - Typisches Verhältnis: 85-90% spezifisch, 10-15% allgemein \cite{raffel2020exploring}
+        %    - Erhält Generalisierungsfähigkeit während Spezialisierung
+        %    - Beispiel: LVB-Verkehrsanweisungen + allgemeine deutsche Texte
+        %
+        % d) Regularisierungstechniken:
+        %    - Elastic Weight Consolidation (EWC) [SOURCE-MISSING: Kirkpatrick et al., 2017]
+        %    - Knowledge Distillation vom Pretraining-Modell
+        %    - Bei LoRA: Weniger kritisch aufgrund gefrorener Basisgewichte
+        %
+        % e) Early Stopping basierend auf Generalisierungsmetriken:
+        %    - Monitoring nicht nur Task-Accuracy, sondern auch allgemeine Sprachfähigkeiten
+        %    - Perplexity auf Out-of-Domain-Daten als Indikator
+        %    - Training stoppen bei signifikantem Anstieg
+        
+        % ============================================================================
+        % 3. KONVERGENZ-HERAUSFORDERUNGEN BEI LORA
+        % ============================================================================
+        
+        % LANGSAME KONVERGENZ:
+        % - LoRA konvergiert signifikant langsamer als Full Fine-Tuning [SOURCE-MISSING: Wang et al., 2024]
+        % - Empirisch dokumentiert: 5-6x mehr Iterationen und FLOPs für gleiche Performance
+        % - Paradoxe Situation: Pro-Iteration effizienter, aber Gesamt-Trainingskosten höher
+        % - Kann zu schlechterer finaler Test-Performance führen
+        % - Nicht nur Geschwindigkeitsproblem, sondern fundamentale Optimierungsschwierigkeit
+        %
+        % ARCHITEKTONISCHE URSACHEN:
+        %
+        % a) Zero-Initialisierung der B-Matrix [SOURCE-MISSING: Wang et al., 2024]:
+        %    - Bei Training-Start: ΔW = BA = 0 (keine initiale Störung)
+        %    - Langsame Trainingsdynamik zwischen A und B in frühen Epochen
+        %    - "Kurzsichtige" Inter-Layer-Interaktionen
+        %    - Verzögert Entwicklung komplexer Feature-Transformationen
+        %
+        % b) Low-Rank Constraint [SOURCE-MISSING: Shen et al., 2025; Xia et al., 2024]:
+        %    - Gewichtsupdates auf niedrigdimensionalen Unterraum beschränkt
+        %    - Kann komplexe Adaptionen nicht vollständig abbilden
+        %    - Limitiert Expressivität der Weight Updates
+        %    - Performance-Gap zu Full Fine-Tuning bei komplexen Datensätzen [SOURCE-MISSING: Wang et al., 2025]
+        %
+        % c) Imbalancierte Weight Updates [SOURCE-MISSING: Zhang et al., 2025; Yen et al., 2024]:
+        %    - Low-Rank-Faktorisierung ist nicht eindeutig (non-unique)
+        %    - Verschiedene A-B-Kombinationen ergeben gleiches ΔW
+        %    - Führt zu inkonsistenten und imbalancierten Updates
+        %    - Suboptimale Konvergenzpfade im Optimierungsraum
+        %
+        % RANK-AUSWAHL-DILEMMA - "LOW-RANK BOTTLENECK":
+        %
+        % - Fundamentales Trade-off [SOURCE-MISSING: Dong et al., 2025; Biderman et al., 2024]:
+        %   * Niedriger Rank (r=4-8): 
+        %     - Hohe Parameter-Effizienz
+        %     - Schnelles Training pro Iteration
+        %     - ABER: Signifikanter Performance-Gap zu Full Fine-Tuning
+        %     - Expressivität zu gering für komplexe Aufgaben
+        %   
+        %   * Hoher Rank (r=64-128):
+        %     - Bessere Performance, nähert sich Full Fine-Tuning an
+        %     - Höhere Expressivität der Weight Updates
+        %     - ABER: Parameter-Kosten wachsen linear mit Rank
+        %     - Schwächt fundamentalen Vorteil der Parameter-Effizienz
+        %
+        % - Empirische Beobachtungen:
+        %   * Performance verbessert sich monoton mit steigendem Rank [SOURCE-MISSING: Dong et al., 2025]
+        %   * Aber: Diminishing Returns ab bestimmtem Rank (task-abhängig)
+        %   * Optimaler Rank variiert nach Modellgröße, Task-Komplexität, Datensatzgröße
+        %   * Keine universelle Heuristik: Empirische Bestimmung erforderlich [SOURCE-MISSING: Rajabzadeh et al., 2024]
+        %
+        % - "Low-Rank Bottleneck":
+        %   * Narrowing Performance-Gap erfordert Rank-Erhöhung
+        %   * Bei sehr hohem Rank: Annäherung an Full Fine-Tuning-Kosten
+        %   * Fundamentale Limitation der Low-Rank-Annahme
+        %   * Theoretische Grenze der PEFT-Effizienz
+        %
+        % PERFORMANCE-GAP ZU FULL FINE-TUNING:
+        % - Konsistent dokumentiert über verschiedene Benchmarks [SOURCE-MISSING: Tastan et al., 2025; Biderman et al., 2024]
+        % - Besonders ausgeprägt bei:
+        %   * Komplexen Datensätzen mit diversen Sub-Domänen
+        %   * Tasks mit hoher semantischer Variabilität
+        %   * Kleinen Modellen (< 7B Parameter) [SOURCE-MISSING: Wang et al., 2025]
+        % - Gap verringert sich mit:
+        %   * Größeren Basismodellen
+        %   * Höherem LoRA-Rank
+        %   * Längeren Trainings-Episoden
+        %
+        % OVERFITTING BEI LORA-TRAINING:
+        % - Widersprüchliche Phänomene [SOURCE-MISSING: Mao et al., 2024]:
+        %   * Höherer Rank bringt nicht zwingend bessere Performance
+        %   * Kann zu Overfitting führen, besonders bei kleinen Datensätzen
+        %   * Non-monotones Verhalten: Optimum liegt oft bei mittlerem Rank
+        % - Initialization Bottleneck [SOURCE-MISSING: Xue, 2025]:
+        %   * Zero-Initialisierung limitiert Aktivierung der Originalgewichte
+        %   * Kann optimale Performance-Pfade blockieren
+        
+        % ============================================================================
+        % ZUSAMMENFASSUNG & INTERAKTIONEN
+        % ============================================================================
+        
+        % WECHSELWIRKUNGEN ZWISCHEN HERAUSFORDERUNGEN:
+        % - Overfitting und Catastrophic Forgetting:
+        %   * Beide profitieren von Regularisierung und Early Stopping
+        %   * Gegenläufig: Overfitting will Spezialisierung, CF will Generalisierung
+        %   * Balance erforderlich: Weder zu spezialisiert noch zu generisch
+        %
+        % - Konvergenz und Overfitting:
+        %   * Langsame Konvergenz kann Overfitting verzögern (implizite Regularisierung)
+        %   * Zu viele Epochen: Langsame Konvergenz führt trotzdem zu Overfitting
+        %   * Early Stopping muss beide Faktoren berücksichtigen
+        %
+        % - Learning Rate als zentraler Hebel:
+        %   * Zu hoch: Schnelle Konvergenz, aber Overfitting und CF-Risiko
+        %   * Zu niedrig: Langsame Konvergenz, paradoxerweise auch Overfitting möglich
+        %   * Optimal: Task- und datensatzabhängig, empirisch zu bestimmen
+        %
+        % THEORETISCHE PERSPEKTIVE:
+        % - Fine-Tuning als Optimierungsproblem mit multiplen Constraints
+        % - Keine universelle Lösung: Trade-offs zwischen verschiedenen Zielen
+        % - PEFT-Methoden wie LoRA: Verschieben Trade-offs, eliminieren sie nicht
+        % - Empirische Validierung unerlässlich für praktische Anwendungen
 
 
     \subsection{Ressourceneffizienz und Modelloptimierung}
@@ -292,18 +1392,130 @@
         \label{sec:2.4.1}
         
         % Ziel: 1 Seite
-        % - BLEU, ROUGE (kurz)
-        % - Semantische Ähnlichkeitsmetriken (BERTScore)
-        % - Perplexity
-        % - Domänenspezifische Metriken
+        
+        % AUTOMATISCHE METRIKEN:
+        % - BLEU, ROUGE (kurz): N-gram Overlap-basiert
+        %   * Ursprünglich für Maschinenübersetzung entwickelt
+        %   * Limitiert für semantische Äquivalenz
+        %   * Schnell berechenbar, aber oberflächlich
+        %
+        % - Semantische Ähnlichkeitsmetriken (BERTScore):
+        %   * Contextualized Embeddings statt Surface-Form
+        %   * Bessere Erfassung von Paraphrasen
+        %   * Rechenintensiver, aber aussagekräftiger
+        %
+        % - Perplexity:
+        %   * Misst Konfidenz des Modells
+        %   * Niedriger = besseres Language Modeling
+        %   * Nicht direkt für Qualität, aber für Training-Monitoring
+        %
+        % PROMPT-BASIERTE EVALUATION \cite{berryman2024prompt}:
+        % - LLM-as-a-Judge: Nutzung größerer Modelle zur Bewertung
+        %   * Prompt: "Bewerte die Qualität dieser Transformation auf Skala 1-5"
+        %   * Kriterien: Faktentreue, Verständlichkeit, Stilkonformität
+        %   * Vorteil: Flexibel, domänenspezifisch anpassbar
+        %   * Limitation: Bias des Evaluator-Modells, Kosten
+        %
+        % - Comparative Evaluation \cite{berryman2024prompt}:
+        %   * A/B-Vergleich zweier Outputs
+        %   * "Welcher Text ist verständlicher: A oder B?"
+        %   * Robuster als absolute Bewertungen
+        %   * Nützlich für Prompt-Optimierung (siehe Abschnitt~\ref{sec:2.2.2})
+        %
+        % DOMÄNENSPEZIFISCHE METRIKEN:
+        % - Faktentreue: Prüfung gegen strukturierte Eingabedaten
+        %   * Entitätsextraktion: Liniennummer, Haltestellen, Zeitangaben
+        %   * Vollständigkeitsprüfung: Alle Input-Informationen im Output?
+        %   * Halluzination Detection: Erfundene Details? (siehe Abschnitt~\ref{sec:2.4.2})
+        %
+        % - Stilkonformität:
+        %   * Einhaltung von Stilrichtlinien (siehe Abschnitt~\ref{sec:3.2})
+        %   * Regelbasierte Checks: Passiv vs. Aktiv, Fachbegriffe vs. Allgemeinsprache
+        %   * Pattern-Matching für verbotene Formulierungen
+        %
+        % - Konsistenz:
+        %   * Gleiche Eingabe → identische Ausgabe (bei deterministischer Temperatur)
+        %   * Messung: Wiederholte Generierung, Hamming-Distanz zwischen Outputs
+        %   * Wichtig für Produktionsumgebung: Vorhersagbarkeit
         
         
         \subsubsection{Halluzination Detection und Validierung}
         \label{sec:2.4.2}
         
         % Ziel: 1-1,5 Seiten
-        % - Self-Consistency Checks
-        % - Fact Checking gegen Eingabedaten
-        % - Automatisierte vs. manuelle Evaluation
-        % - Praktische Ansätze für ressourcenlimitierte Umgebungen
+        
+        % PROBLEMSTELLUNG:
+        % - Halluzinationen: Modell generiert faktisch inkorrekte oder erfundene Informationen
+        % - Besonders kritisch bei sicherheitsrelevanten Verkehrsinformationen
+        % - Herausforderung: Plausibel klingende, aber falsche Aussagen
+        % - Beispiel: "Straßenbahn Linie 10" statt korrekter "Bus Linie 10"
+        %
+        % SELF-CONSISTENCY CHECKS \cite{bonstra2024prompt}:
+        % - Grundprinzip: Mehrfache Generierung mit Sampling (siehe Abschnitt~\ref{sec:2.2.2})
+        % - Mechanismus:
+        %   * Gleiche Eingabe → N verschiedene Outputs generieren (typisch N=3-10)
+        %   * Sampling mit Temperature > 0 für Variabilität
+        %   * Mehrheitsentscheidung oder Konsensanalyse
+        % - Annahme: Korrekte Antworten konvergieren, Halluzinationen divergieren
+        % - Vorteil: Keine externe Wissensquelle erforderlich
+        % - Limitation: Mehrfache Inferenz-Kosten (N-facher Rechenaufwand)
+        % - Anwendung: Kritische Transformationen, wo Faktentreue essentiell ist
+        %
+        % FACT CHECKING GEGEN EINGABEDATEN:
+        % - Strukturierte Validierung \cite{berryman2024prompt}:
+        %   * Extraktion von Entitäten aus Input und Output
+        %   * Vergleich: Sind alle Input-Entitäten im Output enthalten?
+        %   * Regel: Output darf KEINE Entitäten enthalten, die nicht im Input sind
+        % - Named Entity Recognition (NER) für Extraktion:
+        %   * Liniennummern, Haltestellen, Zeitangaben, Fahrzeugtypen
+        %   * Pattern-Matching oder NER-Modell
+        % - Constraint-basierte Validierung:
+        %   * Whitelist-Ansatz: Nur bekannte Liniennummern erlaubt
+        %   * Knowledge Base: Linien-Fahrzeug-Zuordnungen als Ground Truth
+        %   * Reject-Output bei Verletzung von Constraints
+        %
+        % PROMPT-BASIERTE HALLUZINATION PREVENTION \cite{berryman2024prompt}:
+        % - Negative Constraints in System Prompt (siehe Abschnitt~\ref{sec:2.2.2}):
+        %   * "Erfinde KEINE Details, die nicht in der Eingabe stehen"
+        %   * "Nutze NUR Informationen aus dem bereitgestellten Kontext"
+        %   * "Bei Unsicherheit: NICHT spekulieren, sondern Information weglassen"
+        % - Knowledge Grounding:
+        %   * Explizite Einbettung von Fakten im Prompt
+        %   * Beispiel: "Linie 10 ist ein Bus, Linie 11 ist eine Straßenbahn"
+        %   * Reduziert Halluzinationen durch direkte Verfügbarkeit von Wissen
+        % - Chain-of-Thought für Faktentreue:
+        %   * Zwischenschritt: "Welche Informationen sind in der Eingabe enthalten?"
+        %   * Explizite Verifikation vor Generierung
+        %   * Erhöht Token-Kosten, aber verbessert Zuverlässigkeit
+        %
+        % AUTOMATISIERTE VS. MANUELLE EVALUATION:
+        % - Automatisiert (skalierbar, aber limitiert):
+        %   * Entitätsvergleich: Schnell, deterministisch
+        %   * Pattern-Matching: Regelbasiert, wartungsintensiv
+        %   * Self-Consistency: Rechenintensiv, keine externe Referenz
+        % - Manuell (präzise, aber teuer):
+        %   * Human Evaluation: Gold Standard, aber nicht skalierbar
+        %   * Stichprobenbasiert: Regelmäßige Quality Checks
+        %   * Iterative Verbesserung: Fehleranalyse → Prompt-Anpassung
+        % - Hybrid-Ansatz (optimal für Praxis):
+        %   * Automatisierte Pre-Filter: Offensichtliche Fehler abfangen
+        %   * Manuelle Review: Grenzfälle und Stichproben
+        %   * Feedback-Loop: Erkannte Fehler → Prompt-Optimierung
+        %
+        % PRAKTISCHE ANSÄTZE FÜR RESSOURCENLIMITIERTE UMGEBUNGEN:
+        % - Deterministische Temperatur (T=0) reduziert Halluzinationen \cite{berryman2024prompt}
+        %   * Trade-off: Weniger kreativ, aber konsistenter
+        %   * Geeignet für faktische Transformationen
+        % - Kleinere Validierungsmodelle:
+        %   * Leichtgewichtige NER-Modelle für Entitätsextraktion
+        %   * Regelbasierte Checks statt LLM-as-a-Judge
+        % - Cached Knowledge Integration:
+        %   * Statische Wissensbasis im Prompt (kein RAG-Overhead)
+        %   * Siehe Abschnitt~\ref{sec:2.3.3} für Knowledge Integration ohne RAG
+        %
+        % ÜBERGANG ZU KAPITEL 7 (EVALUATION):
+        % - Theoretische Konzepte hier: Methodik und Prinzipien
+        % - Praktische Anwendung in Kapitel~\ref{chap:7}: Konkrete Metriken und Ergebnisse
+        % - Kombination automatisierter und manueller Validierung in Implementierung
+
 
